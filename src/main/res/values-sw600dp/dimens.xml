@@ -1,0 +1,62 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Customize dimensions originally defined in res/values/dimens.xml (such as
+         screen margins) for sw600dp devices (e.g. 7" tablets) here. -->
+
+    <dimen name="font_8sp">8sp</dimen>
+    <dimen name="font_10sp">10sp</dimen>
+    <dimen name="font_12sp">12sp</dimen>
+    <dimen name="font_14sp">14sp</dimen>
+    <dimen name="font_16sp">16sp</dimen>
+    <dimen name="font_18sp">18sp</dimen>
+    <dimen name="font_24sp">24sp</dimen>
+    <dimen name="font_26sp">26sp</dimen>
+    <dimen name="font_36sp">36sp</dimen>
+    <dimen name="font_39sp" tools:ignore="UnusedResources">39sp</dimen>
+    <dimen name="font_48sp">48sp</dimen>
+
+
+    <dimen name="dim_1">1.5dp</dimen>
+    <dimen name="dim_2">3dp</dimen>
+    <dimen name="dim_4">6dp</dimen>
+    <dimen name="dim_5" tools:ignore="UnusedResources">7.5dp</dimen>
+    <dimen name="dim_6">9dp</dimen>
+    <dimen name="dim_7" tools:ignore="UnusedResources">10.5dp</dimen>
+    <dimen name="dim_8">12dp</dimen>
+    <dimen name="dim_10">15dp</dimen>
+    <dimen name="dim_11">16.5dp</dimen>
+    <dimen name="dim_12">18dp</dimen>
+    <dimen name="dim_15">22.5dp</dimen>
+    <dimen name="dim_16">24dp</dimen>
+    <dimen name="dim_17">25.5dp</dimen>
+    <dimen name="dim_18">27dp</dimen>
+    <dimen name="dim_20">30dp</dimen>
+    <dimen name="dim_22">33dp</dimen>
+    <dimen name="dim_23">34.5dp</dimen>
+    <dimen name="dim_24">36dp</dimen>
+    <dimen name="dim_25">37.5dp</dimen>
+    <dimen name="dim_28">42dp</dimen>
+    <dimen name="dim_29">43.5dp</dimen>
+    <dimen name="dim_30">45dp</dimen>
+    <dimen name="dim_31">46.5dp</dimen>
+    <dimen name="dim_32" tools:ignore="UnusedResources">48dp</dimen>
+    <dimen name="dim_33">49.5dp</dimen>
+    <dimen name="dim_35">52.5dp</dimen>
+    <dimen name="dim_37">55.5dp</dimen>
+    <dimen name="dim_40">60dp</dimen>
+    <dimen name="dim_41">61.5dp</dimen>
+    <dimen name="dim_46">69dp</dimen>
+    <dimen name="dim_47">70.5dp</dimen>
+    <dimen name="dim_53">79.5dp</dimen>
+    <dimen name="dim_60" tools:ignore="UnusedResources">90dp</dimen>
+    <dimen name="dim_70">105dp</dimen>
+    <dimen name="dim_80" tools:ignore="UnusedResources">120dp</dimen>
+    <dimen name="dim_81">121.5dp</dimen>
+    <dimen name="dim_84">126dp</dimen>
+    <dimen name="dim_100">150dp</dimen>
+    <dimen name="dim_110">165dp</dimen>
+    <dimen name="dim_160dp">240dp</dimen>
+    <dimen name="dim_225">337.5dp</dimen>
+    <dimen name="dim_250">375dp</dimen>
+    <dimen name="dim_260">390dp</dimen>
+    <dimen name="dim_400">600dp</dimen>
+</resources>

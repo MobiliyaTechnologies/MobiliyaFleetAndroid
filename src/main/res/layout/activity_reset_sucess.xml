@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/dim_16"
+    android:paddingLeft="@dimen/dim_16"
+    android:paddingRight="@dimen/dim_16"
+    android:paddingTop="@dimen/dim_16"
+    tools:context="com.mobiliya.fleet.activity.BluetoothConnectionActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical"
+        tools:ignore="UselessParent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/dim_24"
+            android:orientation="vertical"
+            tools:ignore="UselessParent">
+
+            <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="69dp"
+                android:gravity="center"
+                android:text="@string/reset_success"
+                android:textColor="@color/heading_text_color"
+                android:textSize="@dimen/font_26sp"
+                tools:ignore="RtlHardcoded" />
+
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="137dp"
+                android:src="@drawable/tick"
+                tools:ignore="ContentDescription" />
+
+            <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="@dimen/dim_24"
+                android:layout_marginRight="@dimen/dim_24"
+                android:layout_marginTop="38dp"
+                android:text="@string/check_your_email_for_the_link_to_reset_n_your_password"
+                android:textColor="@color/text_color_email_add"
+                android:textSize="@dimen/font_14sp"
+                tools:ignore="RtlHardcoded" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="bottom"
+                android:layout_marginLeft="@dimen/dim_24"
+                android:layout_marginRight="@dimen/dim_24"
+                android:gravity="bottom"
+                android:orientation="horizontal">
+
+                <com.mobiliya.fleet.customViews.CustomButtonMedium
+                    android:id="@+id/btn_done"
+                    android:layout_width="fill_parent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/login_button_gradient"
+                    android:paddingLeft="@dimen/dim_18"
+                    android:paddingRight="@dimen/dim_18"
+                    android:text="@string/sign_in"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_color_white"
+                    android:textSize="@dimen/font_14sp"
+                    tools:ignore="RtlHardcoded" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

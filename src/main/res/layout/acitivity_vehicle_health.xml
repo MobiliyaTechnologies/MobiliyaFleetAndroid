@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?><!--suppress ALL -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.mobiliya.fleet.activity.VehicleHealthAcitivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:weightSum="10">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:background="@drawable/vehical_health_rec_gradient"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingTop="@dimen/dim_12">
+
+            <LinearLayout
+                android:id="@+id/back_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="@dimen/dim_30">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:src="@drawable/back_white" />
+            </LinearLayout>
+
+            <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="@dimen/dim_24"
+                android:text="@string/vehicle_health_text"
+                android:textColor="@color/text_color_white"
+                android:textSize="@dimen/font_24sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="8">
+
+
+            <LinearLayout
+                android:id="@+id/error_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <ImageView
+                    android:layout_width="@dimen/dim_84"
+                    android:layout_height="@dimen/dim_84"
+                    android:src="@drawable/networkerror" />
+
+                <com.mobiliya.fleet.customViews.CustomTextViewSemiBold
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dim_37"
+                    android:text="@string/omg"
+                    android:textColor="@color/outer_space"
+                    android:textSize="@dimen/font_14sp" />
+
+                <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dim_20"
+                    android:text="@string/something_went_wrong"
+                    android:textColor="@color/ash_tray"
+                    android:textSize="@dimen/font_14sp" />
+
+
+            </LinearLayout>
+
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!--<TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:tag="FUEL_CONSUMPTION"
+            android:text="@string/text_consumption_default" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:tag="ENGINE_RUNTIME"
+            android:text="@string/text_runtime_default" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:tag="ENGINE_RPM"
+            android:text="" />
+    </TableRow>
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="top"
+        android:layout_margin="10dp"
+        android:layout_weight="1"
+        android:elevation="2dp"
+        android:visibility="gone"
+        android:outlineProvider="bounds">
+
+        <TableLayout
+            android:id="@+id/data_table"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="*">
+        </TableLayout>
+    </ScrollView>
+-->
+</LinearLayout>

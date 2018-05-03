@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?><!--suppress ALL -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.mobiliya.fleet.activity.TripListActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dim_30"
+        android:orientation="horizontal"
+        tools:ignore="RtlHardcoded">
+
+        <ImageButton
+            android:id="@+id/back_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:paddingLeft="@dimen/dim_30"
+            android:paddingRight="@dimen/dim_24"
+            android:paddingTop="@dimen/dim_11"
+            android:src="@drawable/back_arrow"
+            tools:ignore="ContentDescription,RtlHardcoded" />
+
+        <LinearLayout
+            android:id="@+id/backButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/dim_84">
+
+            <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/driver_score"
+                android:textColor="@color/outer_space"
+                android:textSize="@dimen/font_24sp"
+                tools:ignore="RtlHardcoded" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.mobiliya.fleet.customViews.CustomTextViewSemiBold
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/dim_53"
+                android:text="@string/overall_score"
+                android:textColor="@color/ash_tray"
+                android:textSize="@dimen/font_24sp" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ProgressBar
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dim_225"
+                    android:layout_marginTop="@dimen/dim_20"
+                    android:indeterminate="false"
+                    android:max="100"
+                    android:progress="100"
+                    android:progressDrawable="@drawable/pb_background" />
+
+                <ProgressBar
+                    android:id="@+id/scoreDriver"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dim_225"
+                    android:layout_marginTop="@dimen/dim_20"
+                    android:indeterminate="false"
+                    android:max="100"
+                    android:progress="100"
+                    android:progressDrawable="@drawable/pb_gradient"
+                    android:rotation="-180" />
+
+                <LinearLayout
+                    android:id="@+id/scrore"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerInParent="true"
+                    android:layout_marginTop="@dimen/dim_40"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <com.mobiliya.fleet.customViews.GradientTextView
+                        android:id="@+id/scoreText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="100"
+                        android:textColor="@color/text_color_forget_pw"
+                        android:textSize="@dimen/font_48sp" />
+
+                    <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/out_of_hundred"
+                        android:textColor="@color/text_color_forget_pw"
+                        android:textSize="@dimen/font_12sp" />
+                </LinearLayout>
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="3px"
+                android:layout_marginLeft="@dimen/dim_30"
+                android:layout_marginRight="@dimen/dim_30"
+                android:layout_marginTop="@dimen/dim_20"
+                android:background="@color/gainsboro" />
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dim_30"
+                android:layout_marginRight="@dimen/dim_30"
+                android:gravity="center">
+
+                <TableRow
+
+                    android:orientation="horizontal"
+                    android:weightSum="10">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="5"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:padding="@dimen/dim_15">
+
+                            <ImageView
+                                android:layout_width="@dimen/dim_53"
+                                android:layout_height="@dimen/dim_53"
+                                android:background="@drawable/stops" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center|left"
+                            android:orientation="vertical">
+
+                            <com.mobiliya.fleet.customViews.GradientTextView
+                                android:id="@+id/vehicleStops"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="@dimen/font_24sp" />
+
+                            <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/vehicle_stops"
+                                android:textSize="@dimen/font_14sp" />
+
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="5"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:padding="@dimen/dim_15">
+
+                            <ImageView
+
+                                android:layout_width="@dimen/dim_53"
+                                android:layout_height="@dimen/dim_53"
+                                android:background="@drawable/overspeed" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center|left"
+                            android:orientation="vertical">
+
+                            <com.mobiliya.fleet.customViews.GradientTextView
+                                android:id="@+id/overSpeeding"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="@dimen/font_24sp" />
+
+                            <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/over_speeding"
+                                android:textSize="@dimen/font_14sp" />
+
+                        </LinearLayout>
+                    </LinearLayout>
+                </TableRow>
+
+                <TableRow>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="5"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:padding="@dimen/dim_15">
+
+                            <ImageView
+                                android:layout_width="@dimen/dim_53"
+                                android:layout_height="@dimen/dim_53"
+                                android:background="@drawable/hardbrake" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center|left"
+                            android:orientation="vertical">
+
+                            <com.mobiliya.fleet.customViews.GradientTextView
+                                android:id="@+id/hardBreaking"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="@dimen/font_24sp" />
+
+                            <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/hard_breaking"
+                                android:textSize="@dimen/font_14sp" />
+
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="5"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:padding="@dimen/dim_15">
+
+                            <ImageView
+                                android:layout_width="@dimen/dim_53"
+                                android:layout_height="@dimen/dim_53"
+                                android:background="@drawable/acceletor" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center|left"
+                            android:orientation="vertical">
+
+                            <com.mobiliya.fleet.customViews.GradientTextView
+                                android:id="@+id/agressiveAccel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="@dimen/font_24sp" />
+
+                            <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/aggresive_accelerator"
+                                android:textSize="@dimen/font_14sp" />
+
+                        </LinearLayout>
+                    </LinearLayout>
+                </TableRow>
+
+                <TableRow>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="5"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:padding="@dimen/dim_15">
+
+                            <ImageView
+                                android:layout_width="@dimen/dim_53"
+                                android:layout_height="@dimen/dim_53"
+                                android:layout_marginTop="@dimen/dim_30"
+                                android:background="@drawable/phoneusage" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical">
+
+                            <com.mobiliya.fleet.customViews.CustomTextViewSemiBold
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="03"
+                                android:textSize="@dimen/font_24sp" />
+
+                            <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/phone_usage"
+                                android:textSize="@dimen/font_14sp" />
+
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="5"
+                        android:orientation="horizontal"></LinearLayout>
+                </TableRow>
+
+
+            </TableLayout>
+        </LinearLayout>
+    </ScrollView>
+
+
+</LinearLayout>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/dim_100"
+    android:background="@color/primary_white"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/dim_5"
+    android:weightSum="5"
+    tools:ignore="Overdraw,RtlSymmetry">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:gravity="center_vertical">
+
+        <ImageButton
+            android:id="@+id/start_activity"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:padding="@dimen/dim_15"
+            android:src="@drawable/arrow"
+            tools:ignore="ContentDescription" />
+
+
+        <com.mobiliya.fleet.customViews.CustomTextViewSemiBold
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/ongoingtrip"
+            android:textColor="@color/outer_space"
+            android:textSize="@dimen/font_14sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="@dimen/dim_16"
+        android:layout_weight="3"
+        android:paddingStart="@dimen/dim_5"
+        android:weightSum="10"
+        tools:ignore="DisableBaselineAlignment,RtlSymmetry">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="6"
+            tools:ignore="DisableBaselineAlignment,NestedWeights">
+
+            <LinearLayout
+                android:id="@+id/floating_miles_layout"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="3"
+                android:orientation="vertical"
+                tools:ignore="NestedWeights">
+
+                <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/miles_driven"
+                    android:textColor="@color/manatee"
+                    android:textSize="@dimen/font_8sp" />
+
+                <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                    android:id="@+id/miles_driven"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="NA"
+                    android:textColor="@color/outer_space"
+                    android:textSize="@dimen/font_14sp"
+                    tools:ignore="HardcodedText" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/floating_time_layout"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="3"
+                android:orientation="vertical">
+
+                <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/trip_time"
+                    android:textColor="@color/manatee"
+                    android:textSize="@dimen/font_8sp" />
+
+                <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                    android:id="@+id/trip_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="NA"
+                    android:textColor="@color/outer_space"
+                    android:textSize="@dimen/font_14sp"
+                    tools:ignore="HardcodedText" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="4"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/dim_10"
+            android:weightSum="4"
+            tools:ignore="RtlSymmetry">
+
+
+            <ImageButton
+                android:id="@+id/btn_pause"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="@dimen/dim_20"
+                android:layout_weight="2"
+                android:background="@drawable/login_button_gradient"
+                android:src="@drawable/pause"
+                tools:ignore="ContentDescription" />
+
+
+            <ImageButton
+                android:id="@+id/btn_stop"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="@dimen/dim_18"
+                android:layout_marginRight="@dimen/dim_18"
+                android:layout_marginTop="@dimen/dim_20"
+                android:layout_weight="2"
+                android:background="@drawable/login_out_button_gradient"
+                android:src="@drawable/stop"
+                tools:ignore="ContentDescription" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</LinearLayout>

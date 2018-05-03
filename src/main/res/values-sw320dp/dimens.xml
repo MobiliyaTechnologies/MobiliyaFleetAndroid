@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- regular dimens -->
+    <dimen name="dim_1">0.75dp</dimen>
+    <dimen name="dim_2">1.5dp</dimen>
+    <dimen name="dim_3" tools:ignore="UnusedResources">2.25dp</dimen>
+    <dimen name="dim_4">3.0dp</dimen>
+    <dimen name="dim_5">3.75dp</dimen>
+    <dimen name="dim_6">4.5dp</dimen>
+    <dimen name="dim_7" tools:ignore="UnusedResources">5.25dp</dimen>
+    <dimen name="dim_8">6.0dp</dimen>
+    <dimen name="dim_9" tools:ignore="UnusedResources">6.75dp</dimen>
+    <dimen name="dim_10">7.5dp</dimen>
+    <dimen name="dim_11">8.25dp</dimen>
+    <dimen name="dim_12">9.0dp</dimen>
+    <dimen name="dim_13" tools:ignore="UnusedResources">9.75dp</dimen>
+    <dimen name="dim_14">10.5dp</dimen>
+    <dimen name="dim_15">11.25dp</dimen>
+    <dimen name="dim_16">12.0dp</dimen>
+    <dimen name="dim_17">12.75dp</dimen>
+    <dimen name="dim_18">13.5dp</dimen>
+    <dimen name="dim_19" tools:ignore="UnusedResources">14.25dp</dimen>
+    <dimen name="dim_20">15.0dp</dimen>
+    <dimen name="dim_22">16.5dp</dimen>
+    <dimen name="dim_23">17.25dp</dimen>
+    <dimen name="dim_24">18.0dp</dimen>
+    <dimen name="dim_25">18.75dp</dimen>
+    <dimen name="dim_28">21.0dp</dimen>
+    <dimen name="dim_29">21.75dp</dimen>
+    <dimen name="dim_30">22.5dp</dimen>
+    <dimen name="dim_31">23.25dp</dimen>
+    <dimen name="dim_32" tools:ignore="UnusedResources">24dp</dimen>
+    <dimen name="dim_33">24.75dp</dimen>
+    <dimen name="dim_35">26.25dp</dimen>
+    <dimen name="dim_37">24dp</dimen>
+    <dimen name="dim_40">30dp</dimen>
+    <dimen name="dim_41">30.75dp</dimen>
+    <dimen name="dim_46">34.5dp</dimen>
+    <dimen name="dim_47">35.25dp</dimen>
+    <dimen name="dim_60" tools:ignore="UnusedResources">52.5dp</dimen>
+    <dimen name="dim_53">39.75dp</dimen>
+    <dimen name="dim_70">52.5dp</dimen>
+    <dimen name="dim_80" tools:ignore="UnusedResources">60dp</dimen>
+    <dimen name="dim_81">60.75dp</dimen>
+    <dimen name="dim_84">63.0dp</dimen>
+    <dimen name="dim_100">68dp</dimen>
+    <dimen name="dim_110">82.5dp</dimen>
+    <dimen name="dim_160dp">120dp</dimen>
+    <dimen name="dim_225">168.75dp</dimen>
+    <dimen name="dim_250">187.5dp</dimen>
+    <dimen name="dim_260">195dp</dimen>
+    <dimen name="dim_400" tools:ignore="UnusedResources">300dp</dimen>
+</resources>

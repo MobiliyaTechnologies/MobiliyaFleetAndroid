@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/dim_40"
+        android:paddingRight="@dimen/dim_40"
+        tools:ignore="UselessParent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/dim_35"
+            android:orientation="vertical"
+            android:weightSum="10"
+            tools:ignore="UselessParent">
+
+            <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="@dimen/dim_40"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="@string/sign_in"
+                android:textColor="@color/heading_text_color"
+                android:textSize="@dimen/font_26sp" />
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_gravity="center"
+                android:layout_marginBottom="@dimen/dim_8"
+                android:layout_weight="6"
+                android:gravity="center"
+                android:orientation="vertical">
+
+
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fillViewport="true"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        tools:ignore="ScrollViewSize">
+                        <!--  Email Label -->
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/dim_10"
+                            android:orientation="vertical">
+
+                            <com.mobiliya.fleet.customViews.CustomEditTextMedium
+                                android:id="@+id/input_email"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:background="@drawable/edittext_selector"
+                                android:drawableLeft="@drawable/user"
+                                android:drawablePadding="@dimen/dim_16"
+                                android:hint="@string/_email"
+                                android:inputType="textEmailAddress"
+                                android:lines="1"
+                                android:paddingStart="@dimen/dim_20"
+                                android:textSize="@dimen/font_14sp"
+                                tools:ignore="RtlHardcoded,RtlSymmetry" />
+
+                            <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                                android:id="@+id/username_error"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingStart="@dimen/dim_40"
+                                android:text="@string/username_not_exist"
+                                android:textColor="@color/deep_carpen_pink"
+                                android:textSize="@dimen/font_12sp"
+                                android:visibility="gone"
+                                tools:ignore="RtlSymmetry" />
+                        </LinearLayout>
+
+                        <!--  Company Label -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <com.mobiliya.fleet.customViews.CustomEditTextMedium
+                                android:id="@+id/input_company"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:background="@drawable/edittext_selector"
+                                android:drawableLeft="@drawable/company"
+                                android:drawablePadding="@dimen/dim_16"
+                                android:hint="@string/your_company_name"
+                                android:inputType="text"
+                                android:lines="1"
+                                android:paddingStart="@dimen/dim_20"
+                                android:textSize="@dimen/font_14sp"
+                                tools:ignore="RtlHardcoded,RtlSymmetry" />
+
+                            <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                                android:id="@+id/company_error"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingStart="@dimen/dim_40"
+                                android:text="@string/company_name_empty"
+                                android:textColor="@color/deep_carpen_pink"
+                                android:textSize="@dimen/font_12sp"
+                                android:visibility="gone"
+                                tools:ignore="RtlSymmetry" />
+                        </LinearLayout>
+
+                        <!--  Vehical registration Label -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <com.mobiliya.fleet.customViews.CustomEditTextMedium
+                                android:id="@+id/input_vehical_registration"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:background="@drawable/edittext_selector"
+                                android:drawableLeft="@drawable/vehicle"
+                                android:drawablePadding="@dimen/dim_16"
+                                android:hint="@string/vehcile_registration_number"
+                                android:inputType="text"
+                                android:lines="1"
+                                android:paddingStart="@dimen/dim_20"
+                                android:textSize="@dimen/font_14sp"
+                                tools:ignore="RtlHardcoded,RtlSymmetry" />
+
+                            <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                                android:id="@+id/vehicle_error"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingStart="@dimen/dim_40"
+                                android:text="@string/vehicle_is_empty"
+                                android:textColor="@color/deep_carpen_pink"
+                                android:textSize="@dimen/font_12sp"
+                                android:visibility="gone"
+                                tools:ignore="RtlSymmetry" />
+                        </LinearLayout>
+
+                        <!--  Password Label -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <com.mobiliya.fleet.customViews.CustomEditTextMedium
+                                android:id="@+id/input_password"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:background="@drawable/edittext_selector"
+                                android:drawableLeft="@drawable/lock"
+                                android:drawablePadding="@dimen/dim_16"
+                                android:hint="@string/password"
+                                android:inputType="textPassword"
+                                android:lines="1"
+                                android:paddingStart="@dimen/dim_20"
+                                android:textSize="@dimen/font_14sp"
+                                tools:ignore="RtlHardcoded,RtlSymmetry" />
+
+                            <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                                android:id="@+id/password_error"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingStart="@dimen/dim_40"
+                                android:text="@string/password_is_empty"
+                                android:textColor="@color/deep_carpen_pink"
+                                android:textSize="@dimen/font_12sp"
+                                android:visibility="gone"
+                                tools:ignore="RtlSymmetry" />
+                        </LinearLayout>
+
+                        <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                            android:id="@+id/forgot_password"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/dim_24"
+                            android:gravity="right"
+                            android:padding="@dimen/dim_8"
+                            android:text="@string/forgot_password"
+                            android:textColor="@color/text_color_sign_in_forget_pw"
+                            android:textSize="@dimen/font_12sp"
+                            tools:ignore="RtlHardcoded" />
+
+                    </LinearLayout>
+                </ScrollView>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_gravity="bottom"
+                android:layout_weight="3"
+                android:gravity="bottom"
+                android:orientation="vertical">
+
+                <com.mobiliya.fleet.customViews.CustomButtonMedium
+                    android:id="@+id/btn_login"
+                    android:layout_width="fill_parent"
+                    android:layout_height="40dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginTop="@dimen/dim_24"
+                    android:background="@drawable/login_button_gradient"
+                    android:gravity="center"
+                    android:text="@string/sign_in"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_color_white"
+                    android:textSize="@dimen/font_14sp" />
+
+                <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                    android:id="@+id/link_tern_condition"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:layout_marginBottom="@dimen/dim_24"
+                    android:layout_marginTop="@dimen/dim_18"
+                    android:gravity="center"
+                    android:text="@string/term_conditions"
+                    android:textColor="@color/text_color_forget_pw"
+                    android:textSize="@dimen/font_12sp"
+                    android:visibility="invisible" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

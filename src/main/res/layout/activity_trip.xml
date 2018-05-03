@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="10">
+
+    <LinearLayout
+        android:id="@+id/down_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dim_22"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="@dimen/dim_35"
+                android:layout_marginRight="@dimen/dim_28"
+                android:background="@null"
+                android:src="@drawable/back_down"
+                tools:ignore="ContentDescription,RtlHardcoded" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/dim_110"
+                android:text="@string/ongoingtrip"
+                android:textColor="@color/outer_space"
+                android:textSize="@dimen/font_24sp"
+                tools:ignore="RtlHardcoded" />
+
+            <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                android:id="@+id/tripdate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/dim_110"
+                android:text="@string/ongoingtrip"
+                android:textColor="@color/outer_space"
+                android:textSize="@dimen/font_10sp"
+                tools:ignore="RtlHardcoded" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="6"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#ff0000"
+            android:fadingEdge="vertical"
+            tools:ignore="UselessParent">
+
+            <fragment
+                android:id="@+id/map"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </RelativeLayout>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dim_1"
+        android:layout_margin="@dimen/dim_30"
+        android:background="@color/lighter_gray" />
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="center"
+        android:layout_marginLeft="@dimen/dim_30"
+        android:layout_marginRight="@dimen/dim_30"
+        android:layout_weight="2.5"
+        android:scrollbars="vertical">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal"
+            android:weightSum="15">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="5"
+                android:orientation="vertical">
+
+                <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:lines="1"
+                    android:text="@string/miles_driven"
+                    android:textAllCaps="true"
+                    android:textColor="@color/manatee"
+                    android:textSize="@dimen/font_10sp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                        android:id="@+id/tv_milesdriven"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/dim_2"
+                        android:ellipsize="end"
+                        android:lines="1"
+                        android:text="@string/na"
+                        android:textColor="@color/outer_space"
+                        android:textSize="@dimen/font_16sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="5"
+                android:orientation="vertical">
+
+                <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:lines="1"
+                    android:text="@string/trip_time"
+                    android:textAllCaps="true"
+                    android:textColor="@color/manatee"
+                    android:textSize="@dimen/font_10sp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                        android:id="@+id/tv_triptime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/dim_2"
+                        android:ellipsize="end"
+                        android:lines="1"
+                        android:text="@string/na"
+                        android:textColor="@color/outer_space"
+                        android:textSize="@dimen/font_16sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="5"
+                android:orientation="vertical">
+
+                <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:lines="1"
+                    android:text="@string/fuel_used"
+                    android:textAllCaps="true"
+                    android:textColor="@color/manatee"
+                    android:textSize="@dimen/font_10sp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                        android:id="@+id/tv_fuelused"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/dim_2"
+                        android:ellipsize="end"
+                        android:lines="1"
+                        android:text="@string/na"
+                        android:textColor="@color/outer_space"
+                        android:textSize="@dimen/font_16sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </TableRow>
+
+        <TableRow
+
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/dim_20"
+            android:gravity="bottom"
+            android:orientation="horizontal"
+            android:weightSum="15">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="5"
+                android:orientation="vertical">
+
+                <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:lines="1"
+                    android:text="@string/stops"
+                    android:textAllCaps="true"
+                    android:textColor="@color/manatee"
+                    android:textSize="@dimen/font_10sp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                        android:id="@+id/tv_stops"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/dim_10"
+                        android:ellipsize="end"
+                        android:lines="1"
+                        android:text="@string/_00"
+                        android:textColor="@color/outer_space"
+                        android:textSize="@dimen/font_16sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="5"
+                android:orientation="vertical">
+
+                <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:lines="1"
+                    android:text="@string/speeding"
+                    android:textAllCaps="true"
+                    android:textColor="@color/manatee"
+                    android:textSize="@dimen/font_10sp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                        android:id="@+id/tv_speeding"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/dim_10"
+                        android:ellipsize="end"
+                        android:lines="1"
+                        android:text="@string/_00"
+                        android:textColor="@color/outer_space"
+                        android:textSize="@dimen/font_16sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="5"
+                android:orientation="vertical">
+
+                <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:lines="1"
+                    android:text="@string/hard_braking"
+                    android:textAllCaps="true"
+                    android:textColor="@color/manatee"
+                    android:textSize="@dimen/font_10sp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                        android:id="@+id/tv_hardbraking"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/dim_10"
+                        android:ellipsize="end"
+                        android:lines="1"
+                        android:text="@string/_00"
+                        android:textColor="@color/outer_space"
+                        android:textSize="@dimen/font_16sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </TableRow>
+    </TableLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.5"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:weightSum="5">
+
+        <LinearLayout
+            android:id="@+id/btn_pause"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="@dimen/dim_24"
+            android:layout_marginTop="@dimen/dim_24"
+            android:layout_weight="2"
+            android:background="@drawable/login_button_gradient"
+            android:gravity="center"
+            android:orientation="horizontal"
+            tools:ignore="NestedWeights">
+
+            <ImageView
+                android:layout_width="@dimen/dim_15"
+                android:layout_height="@dimen/dim_15"
+                android:src="@drawable/pause"
+                tools:ignore="ContentDescription" />
+
+            <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                android:id="@+id/tv_pause"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="@dimen/dim_18"
+                android:gravity="center"
+                android:text="@string/pause"
+                android:textAllCaps="false"
+                android:textColor="@color/text_color_white"
+                android:textSize="@dimen/font_14sp"
+                tools:ignore="RtlHardcoded" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.5" />
+
+        <LinearLayout
+            android:id="@+id/btn_stop"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="@dimen/dim_24"
+            android:layout_marginTop="@dimen/dim_24"
+            android:layout_weight="2"
+            android:background="@drawable/login_out_button_gradient"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="@dimen/dim_15"
+                android:layout_height="@dimen/dim_15"
+                android:src="@drawable/stop"
+                tools:ignore="ContentDescription" />
+
+            <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                android:id="@+id/tv_stop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="@dimen/dim_18"
+                android:gravity="center"
+                android:text="@string/stop"
+                android:textAllCaps="false"
+                android:textColor="@color/text_color_white"
+                android:textSize="@dimen/font_14sp"
+                tools:ignore="RtlHardcoded" />
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>

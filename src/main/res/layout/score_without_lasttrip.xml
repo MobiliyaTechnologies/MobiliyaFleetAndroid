@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="30dp"
+        android:orientation="vertical"
+        tools:ignore="UselessParent">
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dim_225"
+            android:indeterminate="false"
+            android:max="200"
+            android:progress="100"
+            android:progressDrawable="@drawable/pb_background"
+            android:rotation="-180" />
+
+        <ProgressBar
+            android:id="@+id/progressScore"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dim_225"
+            android:indeterminate="false"
+            android:max="200"
+            android:progress="100"
+            android:progressDrawable="@drawable/pb_gradient"
+            android:rotation="-180" />
+
+        <LinearLayout
+            android:id="@+id/scrore"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dim_40"
+            android:gravity="center"
+            android:orientation="vertical"
+            tools:ignore="DuplicateIncludedIds">
+
+            <com.mobiliya.fleet.customViews.GradientTextView
+                android:id="@+id/score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="100"
+                android:textColor="@color/text_color_forget_pw"
+                android:textSize="@dimen/font_48sp"
+                tools:ignore="HardcodedText" />
+
+            <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/yout_driving_score"
+                android:textColor="@color/text_color_forget_pw"
+                android:textSize="@dimen/font_12sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/fuel_guage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/scrore"
+            android:layout_marginBottom="@dimen/dim_20"
+            android:layout_marginLeft="@dimen/dim_70"
+            android:layout_marginRight="@dimen/dim_70"
+            android:layout_marginTop="@dimen/dim_25"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:ignore="DuplicateIncludedIds,RtlHardcoded">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="E"
+                    tools:ignore="HardcodedText" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:src="@drawable/fuel"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:gravity="right"
+                    android:text="F"
+                    tools:ignore="HardcodedText,RtlHardcoded" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="visible">
+
+                <ProgressBar
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dim_10"
+                    android:layout_gravity="center_horizontal"
+                    android:max="100"
+                    android:progress="78"
+                    android:progressDrawable="@drawable/fuel_arc" />
+
+                <View
+                    android:layout_width="@dimen/dim_7"
+                    android:layout_height="@dimen/dim_10"
+                    android:layout_centerInParent="true"
+                    android:background="@color/text_color_white" />
+            </RelativeLayout>
+        </LinearLayout>
+
+
+    </RelativeLayout>
+</RelativeLayout>

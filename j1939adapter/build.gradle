@@ -1,0 +1,2 @@
+configurations.maybeCreate("default")
+artifacts.add("default", file('j1939adapter-v1.0-minified.aar'))

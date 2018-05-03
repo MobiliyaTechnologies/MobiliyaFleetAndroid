@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="@dimen/dim_16"
+        android:layout_marginTop="@dimen/dim_17"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:weightSum="5"
+        tools:ignore="UselessParent">
+
+        <com.mobiliya.fleet.customViews.CustomTextViewMedium
+            android:id="@+id/tvDeviceName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="2.25"
+            android:gravity="center"
+            android:textColor="@color/text_color_device_found"
+            android:textSize="@dimen/font_14sp" />
+
+        <com.mobiliya.fleet.customViews.CustomTextViewMedium
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/text_colon"
+            android:textSize="@dimen/font_14sp" />
+
+        <com.mobiliya.fleet.customViews.CustomTextViewMedium
+            android:id="@+id/tvDeviceAddress"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="2.25"
+            android:text="@string/not_connected"
+            android:textSize="@dimen/font_14sp" />
+    </LinearLayout>
+</LinearLayout>

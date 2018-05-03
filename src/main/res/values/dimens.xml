@@ -1,0 +1,62 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Default screen margins, per the Android Design guidelines. -->
+
+    <dimen name="font_8sp">8sp</dimen>
+    <dimen name="font_10sp">10sp</dimen>
+    <dimen name="font_12sp">12sp</dimen>
+    <dimen name="font_14sp">14sp</dimen>
+    <dimen name="font_16sp">16sp</dimen>
+    <dimen name="font_18sp">18sp</dimen>
+    <dimen name="font_24sp">24sp</dimen>
+    <dimen name="font_26sp">26sp</dimen>
+    <dimen name="font_36sp">36sp</dimen>
+    <dimen name="font_39sp" tools:ignore="UnusedResources">39sp</dimen>
+    <dimen name="font_48sp">48sp</dimen>
+
+
+    <dimen name="dim_1">1dp</dimen>
+    <dimen name="dim_2">2dp</dimen>
+    <dimen name="dim_4">4dp</dimen>
+    <dimen name="dim_5" tools:ignore="UnusedResources">5dp</dimen>
+    <dimen name="dim_6">6dp</dimen>
+    <dimen name="dim_7" tools:ignore="UnusedResources">7dp</dimen>
+    <dimen name="dim_8">8dp</dimen>
+    <dimen name="dim_10">10dp</dimen>
+    <dimen name="dim_11">11dp</dimen>
+    <dimen name="dim_12">12dp</dimen>
+    <dimen name="dim_15">15dp</dimen>
+    <dimen name="dim_16">16dp</dimen>
+    <dimen name="dim_17">17dp</dimen>
+    <dimen name="dim_18">18dp</dimen>
+    <dimen name="dim_20">20dp</dimen>
+    <dimen name="dim_22">22dp</dimen>
+    <dimen name="dim_23">23dp</dimen>
+    <dimen name="dim_24">24dp</dimen>
+    <dimen name="dim_25">25dp</dimen>
+    <dimen name="dim_28">28dp</dimen>
+    <dimen name="dim_29">29dp</dimen>
+    <dimen name="dim_30">30dp</dimen>
+    <dimen name="dim_31">31dp</dimen>
+    <dimen name="dim_32" tools:ignore="UnusedResources">32dp</dimen>
+    <dimen name="dim_33">33dp</dimen>
+    <dimen name="dim_35">35dp</dimen>
+    <dimen name="dim_37">37dp</dimen>
+    <dimen name="dim_40">40dp</dimen>
+    <dimen name="dim_41">41dp</dimen>
+    <dimen name="dim_46">46dp</dimen>
+    <dimen name="dim_47">47dp</dimen>
+    <dimen name="dim_53">53dp</dimen>
+    <dimen name="dim_60" tools:ignore="UnusedResources">60dp</dimen>
+    <dimen name="dim_70">70dp</dimen>
+    <dimen name="dim_80" tools:ignore="UnusedResources">80dp</dimen>
+    <dimen name="dim_81">81dp</dimen>
+    <dimen name="dim_84">84dp</dimen>
+    <dimen name="dim_100">100dp</dimen>
+    <dimen name="dim_110">110dp</dimen>
+    <dimen name="dim_160dp">160dp</dimen>
+    <dimen name="dim_225">225dp</dimen>
+    <dimen name="dim_250">250dp</dimen>
+    <dimen name="dim_260">260dp</dimen>
+    <dimen name="dim_400">400dp</dimen>
+
+</resources>
