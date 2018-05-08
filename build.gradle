@@ -3,9 +3,10 @@ buildscript {
     repositories {
         mavenCentral()
         google()
+        jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.3'
+        classpath 'com.android.tools.build:gradle:3.0.1'
     }
 }
 
@@ -23,7 +24,7 @@ repositories {
 }
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 27
     android.buildToolsVersion "23.0.3"
     defaultConfig {
         minSdkVersion 23
@@ -81,10 +82,8 @@ dependencies {
     compile 'org.apache.httpcomponents:httpcore:4.4.1'
     compile 'org.apache.httpcomponents:httpclient:4.5'
     //noinspection UseOfBundledGooglePlayServices
+    implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:6.1.0'
     compile 'com.google.android.gms:play-services:10.0.1'
-    compile 'com.google.android.gms:play-services-maps:10.0.1'
-    compile 'com.google.android.gms:play-services-location:10.0.1'
-    compile 'com.google.android.gms:play-services-drive:10.0.1'
     // Remote binary dependency
     compile 'com.microsoft.azure.sdk.iot:iot-device-client:1.2.28'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'

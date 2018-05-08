@@ -20,19 +20,22 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.volley.VolleyError;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.Icon;
+import com.mapbox.mapboxsdk.annotations.IconFactory;
+import com.mapbox.mapboxsdk.annotations.Marker;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.annotations.Polyline;
+import com.mapbox.mapboxsdk.annotations.PolylineOptions;
+import com.mapbox.mapboxsdk.camera.CameraUpdate;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapView;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.adapters.ApiCallBackListener;
 import com.mobiliya.fleet.adapters.CustomIgnitionListenerTracker;
@@ -67,7 +70,7 @@ import static com.mobiliya.fleet.utils.CommonUtil.showToast;
 @SuppressWarnings({"ALL", "unused"})
 public class TripActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final String TAG = TripActivity.class.getName();
-    private GoogleMap mMap;
+    private MapboxMap mMap;
     private Trip mTrip;
     private TextView mTripDate;
     private TextView mMilesDriven;
@@ -88,6 +91,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     public Marker mMarkerStart;
     public Marker markerEnd;
     private GpsLocationReceiver gpsLocationReceiver = new GpsLocationReceiver();
+    MapView mapView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,9 +101,14 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         mPref = SharePref.getInstance(this);
         mProtocol = mPref.getItem(Constants.PREF_ADAPTER_PROTOCOL);
         connectToAdapetrService();
-        mOptions = new PolylineOptions().width(5).color(getColor(R.color.accent_black)).geodesic(true);
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        mOptions = new PolylineOptions().width(5).color(getColor(R.color.accent_black));
+        Mapbox.getInstance(getApplicationContext(), Constants.MAP_TOKEN);
+
+        mapView = (MapView) findViewById(R.id.map);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(this);
+
+
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.NOTIFICATION_PAUSE_BROADCAST);
         filter.addAction(Constants.NOTIFICATION_STOP_BROADCAST);
@@ -270,8 +279,10 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(MapboxMap googleMap) {
         mMap = googleMap;
+        mMap.getUiSettings().setAttributionEnabled(false);
+        mMap.getUiSettings().setLogoEnabled(false);
         Trip trip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
         if (trip == null) {
             startTrip();
@@ -307,7 +318,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (mOptions.getPoints().size() > 1) {
             List<LatLng> points_list = mOptions.getPoints();
             LatLng points = points_list.get(points_list.size() - 1);
-            LatLong end_location = new LatLong(String.valueOf(points.latitude), String.valueOf(points.longitude));
+            LatLong end_location = new LatLong(String.valueOf(points.getLatitude()), String.valueOf(points.getLongitude()));
             if (end_location != null) {
                 plotMarker("end", end_location);
             }
@@ -350,12 +361,13 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                     if (markerEnd != null) {
                         markerEnd.remove();
                     }
-                    markerEnd = mMap.addMarker(new MarkerOptions().position(position).icon(BitmapDescriptorFactory.fromResource(customIcon)).title(AddressStr));
+                    Icon icon_img = IconFactory.getInstance(TripActivity.this).fromResource(customIcon);
+                    markerEnd = mMap.addMarker(new MarkerOptions().position(position).icon(icon_img).title(AddressStr));
                     markerEnd.setPosition(position);
                 } else if ("start".equals(icon)) {
                     customIcon = R.drawable.startlocation;
-
-                    mMarkerStart = mMap.addMarker(new MarkerOptions().position(position).icon(BitmapDescriptorFactory.fromResource(customIcon)).title(AddressStr));
+                    Icon icon_img = IconFactory.getInstance(TripActivity.this).fromResource(customIcon);
+                    mMarkerStart = mMap.addMarker(new MarkerOptions().position(position).icon(icon_img).title(AddressStr));
                     mMarkerStart.setPosition(position);
                 }
 

@@ -14,19 +14,22 @@ import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.VolleyError;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.Icon;
+import com.mapbox.mapboxsdk.annotations.IconFactory;
+import com.mapbox.mapboxsdk.annotations.Marker;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.annotations.PolylineOptions;
+import com.mapbox.mapboxsdk.camera.CameraUpdate;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLngBounds;
+import com.mapbox.mapboxsdk.maps.MapView;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.adapters.CustomIgnitionListenerTracker;
 import com.mobiliya.fleet.comm.VolleyCallback;
@@ -56,20 +59,25 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
     TextView mStartLocation, mEndLocation, mStartTime, mEndTime;
     TextView mMilesDriven, mTriptime, mFuelused, mAveragespeed, mTopspeed, mMilage;
     TextView mStops, mSpeeding, mHardnraking, mEnginefaults, mAccelerator, mPhoneUsage;
-    private GoogleMap mMap;
+    private MapboxMap mMap;
     private List<Marker> mMarkerList = new ArrayList<>();
     String mTripId;
     private LinearLayout mBackButton;
     private TextView mTripName;
     LatLngBounds.Builder mBoundsBuilder = new LatLngBounds.Builder();
     private GpsLocationReceiver gpsLocationReceiver = new GpsLocationReceiver();
-
+    MapView mapView;
+    TripDetailModel MtDetail;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trip_details);
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        Mapbox.getInstance(getApplicationContext(), Constants.MAP_TOKEN);
+
+        mapView = (MapView) findViewById(R.id.map);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(this);
+
         mTripId = getIntent().getStringExtra(Constants.TRIPID);
     }
 
@@ -150,6 +158,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
     @SuppressLint("SetTextI18n")
     private void assignValues(TripDetailModel tDetail) {
         if (tDetail != null) {
+            MtDetail=tDetail;
             String start_address = "NA", start_longitude = null, start_latitude = null;
             String end_address = "NA", end_longitude = null, end_latitude = null;
 
@@ -345,11 +354,17 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
                     customIcon = R.drawable.startlocation;
                     mBoundsBuilder.include(position);
                 }
-                Marker marker = mMap.addMarker(new MarkerOptions().position(position).title(AddressStr).icon(BitmapDescriptorFactory.fromResource(customIcon)));
+
+
+                Icon icon_img = IconFactory.getInstance(TripDetailsActivity.this).fromResource(customIcon);
+                Marker marker = mMap.addMarker(new MarkerOptions().position(position).title(AddressStr).icon(icon_img));
                 mMarkerList.add(marker);
-                CameraUpdate cameraPosition = CameraUpdateFactory.newLatLngBounds(mBoundsBuilder.build(), 100);
-                mMap.moveCamera(cameraPosition);
-                mMap.animateCamera(cameraPosition);
+
+                if(MtDetail.locationDetails == null|| MtDetail.locationDetails.size()==0) {
+                    CameraUpdate cameraPosition = CameraUpdateFactory.newLatLngZoom(position, 15);
+                    mMap.moveCamera(cameraPosition);
+                }
+
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -373,8 +388,9 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
             lineOptions.width(4);
             lineOptions.color(getColor(R.color.accent_black));
 
-            CameraUpdate cameraPosition = CameraUpdateFactory.newLatLngBounds(mBoundsBuilder.build(), 20);
+            CameraUpdate cameraPosition = CameraUpdateFactory.newLatLngBounds(mBoundsBuilder.build(), 50);
             mMap.moveCamera(cameraPosition);
+            mMap.easeCamera(cameraPosition, 5000);
             // Drawing polyline in the Google Map for the i-th route
             mMap.addPolyline(lineOptions);
         } catch (NumberFormatException e) {
@@ -383,8 +399,10 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(MapboxMap googleMap) {
         mMap = googleMap;
+        mMap.getUiSettings().setAttributionEnabled(false);
+        mMap.getUiSettings().setLogoEnabled(false);
         getTripsDetailsById(mTripId);
     }
 

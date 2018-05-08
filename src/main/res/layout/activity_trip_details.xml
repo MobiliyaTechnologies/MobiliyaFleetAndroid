@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:mapbox="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:paddingBottom="@dimen/dim_16">
 
@@ -68,11 +69,13 @@
             android:layout_height="@dimen/dim_250"
             android:orientation="vertical">
 
-            <fragment
+            <com.mapbox.mapboxsdk.maps.MapView
                 android:id="@+id/map"
-                android:name="com.google.android.gms.maps.SupportMapFragment"
+                mapbox:mapbox_cameraZoom="10"
+                mapbox:mapbox_cameraBearing="34.33"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                mapbox:mapbox_styleUrl="@string/mapbox_style_mapbox_streets" />
 
         </LinearLayout>
 

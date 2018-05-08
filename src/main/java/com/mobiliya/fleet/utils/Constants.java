@@ -142,5 +142,6 @@ public class Constants {
     public static final String KEY_TRIP_DATE_TIME = "tripDateTime";
     public static final String NOTIFICATION_PAUSE_BROADCAST = "NOTIFICATION_PAUSE";
     public static final String NOTIFICATION_STOP_BROADCAST = "NOTIFICATION_STOP";
+    public static final String MAP_TOKEN = "sk.eyJ1IjoibW9iaWxpeWExMjM0IiwiYSI6ImNqZ3g5bjEwcTFpaWYzM3MzdTltaXlxa2wifQ.aTtyhsaulAemRph24Crn_A";
 }
 
