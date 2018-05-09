@@ -59,6 +59,7 @@ public class TripManagementUtils {
         String formattedDate = df.format(new Date());
         String vehicle = SharePref.getInstance(activity).getVehicleID();
         GPSTracker address = GPSTracker.getInstance(activity);
+        address.setDistance(0);
 
         Trip newTrip = new Trip();
         UUID uuid = UUID.randomUUID();

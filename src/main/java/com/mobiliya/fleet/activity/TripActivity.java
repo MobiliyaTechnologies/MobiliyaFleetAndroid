@@ -382,7 +382,9 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void updateLoactionToList(LatLong latLong) {
-        DatabaseProvider.getInstance(getBaseContext()).addLatLong(mTrip.commonId, latLong);
+        if (mTrip != null) {
+            DatabaseProvider.getInstance(getBaseContext()).addLatLong(mTrip.commonId, latLong);
+        }
     }
 
     public void showStopDialog() {

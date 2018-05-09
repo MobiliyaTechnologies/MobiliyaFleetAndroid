@@ -103,6 +103,11 @@ public class J1939DongleService extends AbstractGatewayService {
                             commandResult.put("speed", String.valueOf(mParameter.Speed));
                         }
                         LogUtil.d(TAG, "Vehicle speed with out adapter:" + speed);
+                        float distance = Float.valueOf(String.format("%.2f", gpsTracker.getDistance()));
+                        if (distance >= 0) {
+                            mParameter.Distance = distance;
+                            commandResult.put("Distance", String.valueOf(mParameter.Distance));
+                        }
                     } catch (Exception e) {
                         LogUtil.d(TAG, "execption on calculation of speed");
                     }
@@ -160,8 +165,6 @@ public class J1939DongleService extends AbstractGatewayService {
 
     @Override
     public void stopService() {
-        unregisterReceiver(
-                mSignOutReceiver);
         LogUtil.d(TAG, "stopService adapter will disconnect");
         disconnectAdapter();
         isRunning = false;
@@ -185,6 +188,8 @@ public class J1939DongleService extends AbstractGatewayService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(
+                mSignOutReceiver);
     }
 
     /* Initialize J1939 adapter properties */

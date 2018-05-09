@@ -19,6 +19,7 @@ import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.utils.LogUtil;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Locale;
 
@@ -45,6 +46,7 @@ public class GPSTracker extends android.app.Service implements LocationListener 
     private Long time_old = System.currentTimeMillis() / 1000;
     private Long time_new = System.currentTimeMillis() / 1000;
     private double speed = 0;
+    private double distance = 0;
     private double latitude;
     private double longitude;
 
@@ -348,6 +350,20 @@ public class GPSTracker extends android.app.Service implements LocationListener 
         return 0;
     }
 
+    public double getDistance() {
+        if (location != null) {
+            return this.distance;
+        }
+        return 0;
+    }
+    public double setDistance(double distance) {
+        if (location != null) {
+            this.distance = distance;
+            return this.distance;
+        }
+        return 0;
+    }
+
     @Override
     public void onLocationChanged(Location location) {
         LogUtil.d(TAG, "lat:" + location.getLatitude() + " long:" + location.getLongitude());
@@ -365,7 +381,7 @@ public class GPSTracker extends android.app.Service implements LocationListener 
             String longitude = "Longitude: " + location.getLongitude();
             String latitude = "Latitude: " + location.getLatitude();
             try {
-                double distance = CalculationByDistance(lat_new, lon_new, lat_old, lon_old);
+                double distance = calculateSpeedByDistance(lat_new, lon_new, lat_old, lon_old);
                 LogUtil.d(TAG, "distance:" + distance);
                 time_new = System.currentTimeMillis() / 1000;
                 long time = time_new - time_old;
@@ -373,11 +389,13 @@ public class GPSTracker extends android.app.Service implements LocationListener 
                 double speed_mps = distance / time_s;
                 speed = (speed_mps * 3600.0) / 1000.0;
                 LogUtil.d(TAG, "Speed:" + speed);
+                this.distance += calculateDistance(lat_new, lon_new, lat_old, lon_old);
+                LogUtil.d(TAG, "Distance:" + this.distance);
                 lat_old = lat_new;
                 lon_old = lon_new;
                 time_old = time_new;
             } catch (Exception e) {
-                LogUtil.d(TAG, "exception while calculation speed");
+                LogUtil.d(TAG, "exception while calculation speed or distance");
                 e.printStackTrace();
             }
         }
@@ -404,7 +422,7 @@ public class GPSTracker extends android.app.Service implements LocationListener 
 
     static final Double EARTH_RADIUS = 6371.00;
 
-    public double CalculationByDistance(double lat1, double lon1, double lat2, double lon2) {
+    public double calculateSpeedByDistance(double lat1, double lon1, double lat2, double lon2) {
         double Radius = EARTH_RADIUS;
         double dLat = Math.toRadians(lat2 - lat1);
         double dLon = Math.toRadians(lon2 - lon1);
@@ -413,6 +431,27 @@ public class GPSTracker extends android.app.Service implements LocationListener 
                         Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.asin(Math.sqrt(a));
         return Radius * c;
+    }
+
+    public double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        Location oldLocation = new Location("oldLocation");
+        Location newLocation = new Location("newLocation");
+        oldLocation.setLatitude(lat2);
+        oldLocation.setLongitude(lon2);
+        newLocation.setLatitude(lat1);
+        newLocation.setLongitude(lon1);
+        float distance = oldLocation.distanceTo(newLocation);//  in meters
+        distance = distance / 1000; // in km
+        double miles = distance * 0.621; //in miles
+        return round(miles,2);
+    }
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
     }
     /*public void writeLog(String text){
         BufferedWriter bw = null;
