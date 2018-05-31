@@ -112,9 +112,9 @@ public class ConfigureUrlActivity extends AppCompatActivity {
     }
 
     private boolean validate() {
-        mIdentityurl = mIdentityUrl_edt.getText().toString();
-        mFleeturl = mFleetUrl_edt.getText().toString();
-        mTripurl = mTripUrl_edt.getText().toString();
+        mIdentityurl = mIdentityUrl_edt.getText().toString()+"/";
+        mFleeturl = mFleetUrl_edt.getText().toString()+"/";
+        mTripurl = mTripUrl_edt.getText().toString()+"/";
         mIoturl = mIotUrl_edt.getText().toString();
 
         if (TextUtils.isEmpty(mIdentityurl)) {
@@ -171,29 +171,29 @@ public class ConfigureUrlActivity extends AppCompatActivity {
     public void addItem(String name, String value) {
         LogUtil.d(TAG, "act_changes addItem name " + name
                 + " value{" + value + "}");
-        SharedPreferences.Editor mSharedPrefsEditor = mPreference.edit();
+        SharedPreferences.Editor mSharedPrefsEditor = getSharedInstance(getBaseContext()).edit();
         mSharedPrefsEditor.putString(name, value);
         mSharedPrefsEditor.apply();
     }
 
 
     public static String getIdentityUrl(Context cxt) {
-        return getItem(IDENTITYURL, "");
+        return getItem(cxt, IDENTITYURL, "");
     }
 
     public static String getFleetUrl(Context cxt) {
-        return getItem(FLEETURL, "");
+        return getItem(cxt, FLEETURL, "");
     }
 
     public static String getTripServiceUrl(Context cxt) {
-        return getItem(TRIPURL, "");
+        return getItem(cxt, TRIPURL, "");
     }
 
     public static String getIotUrl(Context cxt) {
-        return getItem(IOTURL, "");
+        return getItem(cxt, IOTURL, "");
     }
 
-    public static String getItem(String name, @SuppressWarnings("SameParameterValue") String defaultValue) {
-        return mPreference.getString(name, defaultValue);
+    public static String getItem(Context cxt, String name, @SuppressWarnings("SameParameterValue") String defaultValue) {
+        return getSharedInstance(cxt).getString(name, defaultValue);
     }
 }

@@ -233,7 +233,7 @@
     <string name="identity_url">Identity service url</string>
     <string name="fleet_url">Fleet service url</string>
     <string name="trip_url">Trip service url</string>
-    <string name="iot_url">IoT Hub url</string>
+    <string name="iot_url">IoT Hub connection string</string>
     <string name="missing_url">Please enter missing url</string>
     <string name="Please_configure_url">Please configure url first</string>
     <string name="reset">Reset</string>
