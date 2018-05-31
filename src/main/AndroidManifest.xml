@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.mobiliya.fleet"
-    android:versionCode="15"
-    android:versionName="1.0.13">
+    android:versionCode="16"
+    android:versionName="1.0.14">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -19,14 +19,13 @@
 
     <uses-feature android:name="android.hardware.bluetooth" />
 
-
     <!-- To auto-complete the email text field in the login form with the user's emails -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
-        android:name="com.mobiliya.fleet.AcceleratorApplication"
+        android:name=".AcceleratorApplication"
         android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -34,7 +33,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name="com.mobiliya.fleet.activity.SplashActivity"
+            android:name=".activity.SplashActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
@@ -54,114 +53,121 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name="com.mobiliya.fleet.activity.BluetoothConnectionActivity"
+            android:name=".activity.BluetoothConnectionActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme" />
         <activity
-            android:name="com.mobiliya.fleet.activity.ConfigActivity"
+            android:name=".activity.ConfigActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.mobiliya.fleet.activity.VehicleHealthAcitivity"
+            android:name=".activity.VehicleHealthAcitivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme" />
 
         <service
-            android:name="com.mobiliya.fleet.io.ObdGatewayService"
+            android:name=".io.ObdGatewayService"
             android:exported="false"
             android:launchMode="singleInstance" />
         <service
-            android:name="com.mobiliya.fleet.io.MockObdGatewayService"
+            android:name=".io.MockObdGatewayService"
             android:exported="false"
             android:launchMode="singleInstance" />
         <service
-            android:name="com.mobiliya.fleet.io.J1939DongleService"
+            android:name=".io.J1939DongleService"
             android:exported="false"
             android:launchMode="singleInstance" />
         <service
-            android:name="com.mobiliya.fleet.services.GPSTracker"
+            android:name=".services.GPSTracker"
             android:exported="false"
             android:launchMode="singleInstance" />
 
         <activity
-            android:name="com.mobiliya.fleet.activity.DashboardActivity"
+            android:name=".activity.DashboardActivity"
             android:label="@string/title_activity_dashboard"
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme" />
         <activity
-            android:name="com.mobiliya.fleet.activity.SettingsActivity"
+            android:name=".activity.SettingsActivity"
             android:label="@string/settings"
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme" />
         <activity
-            android:name="com.mobiliya.fleet.activity.LocationSettingActivity"
+            android:name=".activity.LocationSettingActivity"
             android:label="@string/location_settings"
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme" />
         <activity
-            android:name="com.mobiliya.fleet.activity.ForgotPasswordActivity"
+            android:name=".activity.ForgotPasswordActivity"
             android:label="@string/forgot_password"
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme"
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
-            android:name="com.mobiliya.fleet.activity.ResetSucessActivity"
+            android:name=".activity.ResetSucessActivity"
             android:label="@string/reset_success"
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme" />
         <activity
-            android:name="com.mobiliya.fleet.activity.SignInActivity"
+            android:name=".activity.SignInActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme"
             android:windowSoftInputMode="stateAlwaysHidden" />
-        <activity
-            android:name="com.mobiliya.fleet.activity.TripActivity"
+
+        <activity android:name=".activity.ConfigureUrlActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppFullScreenTheme" />
-        <activity
-            android:name="com.mobiliya.fleet.activity.TripDetailsActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppFullScreenTheme" />
-        <activity
-            android:name="com.mobiliya.fleet.activity.TripListActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppFullScreenTheme" />
-        <activity
-            android:name="com.mobiliya.fleet.activity.VehicleInfoActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppFullScreenTheme" />
-        <activity
-            android:name="com.mobiliya.fleet.activity.DiagnosticActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppFullScreenTheme" />
-        <activity
-            android:name="com.mobiliya.fleet.activity.DriverScoreActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppFullScreenTheme" />
-        <activity
-            android:name="com.mobiliya.fleet.activity.AboutUsActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppFullScreenTheme" />
-        <activity
-            android:name="com.mobiliya.fleet.activity.UserInfoActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppFullScreenTheme" />
+            android:theme="@style/AppFullScreenTheme"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
 
         <activity
-            android:name="com.mobiliya.fleet.activity.ShowDialogActivity"
+            android:name=".activity.TripActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppFullScreenTheme" />
+        <activity
+            android:name=".activity.TripDetailsActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppFullScreenTheme" />
+        <activity
+            android:name=".activity.TripListActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppFullScreenTheme" />
+        <activity
+            android:name=".activity.VehicleInfoActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppFullScreenTheme" />
+        <activity
+            android:name=".activity.DiagnosticActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppFullScreenTheme" />
+        <activity
+            android:name=".activity.DriverScoreActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppFullScreenTheme" />
+        <activity
+            android:name=".activity.AboutUsActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppFullScreenTheme" />
+        <activity
+            android:name=".activity.UserInfoActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppFullScreenTheme" />
+        <activity
+            android:name=".activity.ShowDialogActivity"
             android:theme="@android:style/Theme.Holo.Light.Dialog.NoActionBar" />
 
         <receiver
-            android:name="com.mobiliya.fleet.services.NotificationReceiver"
+            android:name=".services.NotificationReceiver"
             tools:ignore="ExportedReceiver">
             <intent-filter>
                 <action android:name="PAUSE" />
                 <action android:name="STOP" />
             </intent-filter>
         </receiver>
+
+
     </application>
 
 </manifest>

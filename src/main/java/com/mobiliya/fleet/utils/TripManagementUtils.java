@@ -38,6 +38,7 @@ import java.util.UUID;
 
 import static com.mobiliya.fleet.activity.DashboardActivity.sPopupWindow;
 import static com.mobiliya.fleet.utils.CommonUtil.showToast;
+import static com.mobiliya.fleet.utils.Constants.GET_TRIP_LIST_URL;
 import static com.mobiliya.fleet.utils.DateUtils.getLocalTimeString;
 
 @SuppressWarnings({"ALL", "unused"})
@@ -261,7 +262,7 @@ public class TripManagementUtils {
             e.printStackTrace();
         }
         String tenantId = SharePref.getInstance(ctx).getUser().getTenantId();
-        String url = String.format(Constants.ADD_TRIP_URL, tenantId);
+        String url = String.format(Constants.getTripsURLs(ctx,Constants.ADD_TRIP_URL), tenantId);
 
         try {
             VolleyCommunicationManager.getInstance().SendRequest(url, Request.Method.POST, newTripRequestData, ctx, new VolleyCallback() {
@@ -342,7 +343,7 @@ public class TripManagementUtils {
         }
         try {
             String tenantId = SharePref.getInstance(cxt.getBaseContext()).getUser().getTenantId();
-            String gettripsUrl = String.format(Constants.GET_TRIP_LIST_URL, tenantId);
+            String gettripsUrl = String.format(Constants.getTripsURLs(cxt,GET_TRIP_LIST_URL), tenantId);
             String vehicleId = SharePref.getInstance(cxt.getBaseContext()).getVehicleID();
             gettripsUrl = gettripsUrl + "?order=desc&limit=10&vehicleId=" + vehicleId;
             VolleyCommunicationManager.getInstance().SendRequest(gettripsUrl, Request.Method.GET, null, cxt, new VolleyCallback() {
@@ -396,7 +397,7 @@ public class TripManagementUtils {
 
         try {
             String tenantId = SharePref.getInstance(cxt.getBaseContext()).getUser().getTenantId();
-            String getTripsUrl = String.format(Constants.GET_TRIP_LIST_URL, tenantId);
+            String getTripsUrl = String.format(Constants.getTripsURLs(cxt,GET_TRIP_LIST_URL), tenantId);
             String vehicleId = SharePref.getInstance(cxt.getBaseContext()).getVehicleID();
             getTripsUrl = getTripsUrl + "?limit=1&vehicleId=" + vehicleId;
             LogUtil.d(TAG, "URL for get last trip: " + getTripsUrl);

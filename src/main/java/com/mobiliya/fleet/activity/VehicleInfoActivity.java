@@ -32,6 +32,7 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
+import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getFleetUrl;
 import static com.mobiliya.fleet.utils.Constants.REGISTRATION_NUMBER;
 import static com.mobiliya.fleet.utils.Constants.VEHICLES;
 
@@ -130,7 +131,6 @@ public class VehicleInfoActivity extends AppCompatActivity {
     };
 
     private void getVehicleDetails() {
-        {
             final ProgressDialog dialog = new ProgressDialog(this);
             dialog.setIndeterminate(true);
             dialog.setMessage("Please wait....");
@@ -141,7 +141,7 @@ public class VehicleInfoActivity extends AppCompatActivity {
             String mVehicleRegistrationNo = mPref.getItem(Constants.KEY_VEHICLE_REGISTRATION_NO, "");
             LogUtil.d(TAG, "Tenant Id is:" + mTenantId);
             LogUtil.d(TAG, "Vehicle registration no is:" + mVehicleRegistrationNo);
-            String VEHICLE_URL = Constants.FLEET_DEV_URL +
+            String VEHICLE_URL = getFleetUrl(getApplicationContext()) +
                     mTenantId + VEHICLES + REGISTRATION_NUMBER + mVehicleRegistrationNo;
             LogUtil.d(TAG, "Get vehicle details:" + VEHICLE_URL);
             try {
@@ -181,7 +181,6 @@ public class VehicleInfoActivity extends AppCompatActivity {
                 dialog.dismiss();
                 e.printStackTrace();
             }
-        }
     }
 
     private void setValues(Vehicle vehicle) {

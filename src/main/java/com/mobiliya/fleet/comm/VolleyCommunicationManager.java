@@ -127,7 +127,7 @@ public class VolleyCommunicationManager {
     }
 
     public static void refreshToken(final Context cxt, final String URL, final int method, final String requestBody, final VolleyCallback callback) {
-        String LOGIN_URL = Constants.LOGIN_URL;
+        String LOGIN_URL = Constants.getIdentityURLs(cxt,Constants.LOGIN_URL);
         JSONObject jsonBody = new JSONObject();
         try {
             final SharePref pref = SharePref.getInstance(cxt);

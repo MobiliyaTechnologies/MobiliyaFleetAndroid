@@ -28,6 +28,8 @@ import org.json.JSONObject;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
+import static com.mobiliya.fleet.utils.Constants.GET_USER_URL;
+
 @SuppressWarnings({"deprecation", "AccessStaticViaInstance", "WeakerAccess", "CanBeFinal", "unused", "TryWithIdenticalCatches"})
 public class UserInfoActivity extends AppCompatActivity {
     static final String TAG = UserInfoActivity.class.getName();
@@ -102,7 +104,7 @@ public class UserInfoActivity extends AppCompatActivity {
         dialog.setMessage("Logging in, please wait....");
         dialog.setCancelable(false);
         String email = mSharePref.getItem(Constants.PREF_EMAIL);
-        String USER_URL = Constants.GET_USER_URL + "?email=" + email;
+        String USER_URL = Constants.getIdentityURLs(getApplicationContext(),GET_USER_URL) + "?email=" + email;
         LogUtil.d(TAG, "Get User details for email:" + email);
         LogUtil.d(TAG, "Get User details for URL:" + USER_URL);
         try {

@@ -9,11 +9,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextPaint;
+import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +39,11 @@ import org.json.JSONObject;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
+import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getFleetUrl;
+import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getIdentityUrl;
+import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getIotUrl;
+import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getTripServiceUrl;
+import static com.mobiliya.fleet.utils.Constants.GET_USER_URL;
 import static com.mobiliya.fleet.utils.Constants.REGISTRATION_NUMBER;
 import static com.mobiliya.fleet.utils.Constants.VEHICLES;
 
@@ -70,6 +77,13 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
     TextView mForgotPassword_tv;
     @Bind(R.id.btn_login)
     Button mSignIn_btn;
+
+    @Bind(R.id.url_error)
+    TextView mConfigureError;
+
+    @Bind(R.id.configure)
+    ImageButton mConfigute_imbtn;
+
     private SharePref mSharePref;
     private ProgressDialog mDialog = null;
 
@@ -121,6 +135,13 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
         mPassword_edt.setOnFocusChangeListener(this);
         mCompany_edt.setOnFocusChangeListener(this);
         mVehicleReg_edt.setOnFocusChangeListener(this);
+        mConfigute_imbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mConfigureError.setVisibility(View.GONE);
+                startActivity(new Intent(SignInActivity.this,ConfigureUrlActivity.class));
+            }
+        });
     }
 
     private void startForgotActivity() {
@@ -168,10 +189,23 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
 
     public boolean validate() {
         boolean valid = true;
+
         String email = mEmail_edt.getText().toString();
         String password = mPassword_edt.getText().toString();
         String companyName = mCompany_edt.getText().toString();
         String vehicleRegistrationNumber = mVehicleReg_edt.getText().toString();
+
+
+        String identityurl=getIdentityUrl(getApplicationContext());
+        String fleeturl=getFleetUrl(getApplicationContext());
+        String tripurls=getTripServiceUrl(getApplicationContext());
+        String ioturl=getIotUrl(getApplicationContext());
+        if(!TextUtils.isEmpty(identityurl) && !TextUtils.isEmpty(fleeturl) &&   !TextUtils.isEmpty(tripurls) && !TextUtils.isEmpty(ioturl)){
+            mConfigureError.setVisibility(View.GONE);
+        }else{
+            mConfigureError.setVisibility(View.VISIBLE);
+            return valid=false;
+        }
 
         if (companyName.isEmpty()) {
             mCompanyError_tv.setVisibility(View.VISIBLE);
@@ -209,12 +243,13 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
         } else {
             mPasswordError_tv.setVisibility(View.GONE);
         }
+
         return valid;
     }
 
     private void attempLogin(final String email, final String password) {
         mDialog.show();
-        String LOGIN_URL = Constants.LOGIN_URL;
+        String LOGIN_URL = Constants.getIdentityURLs(getApplicationContext(),Constants.LOGIN_URL);
         JSONObject jsonBody = new JSONObject();
         try {
             jsonBody.put("email", email);
@@ -296,7 +331,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
     private void getUserDetails() {
         mDialog.setMessage("Please wait....");
         String email = mSharePref.getItem(Constants.PREF_EMAIL);
-        String USER_URL = Constants.GET_USER_URL + "?email=" + email;
+        String USER_URL = Constants.getIdentityURLs(getApplicationContext(),GET_USER_URL) + "?email=" + email;
         LogUtil.d(TAG, "Get User details for email:" + email);
         LogUtil.d(TAG, "Get User details for URL:" + USER_URL);
 
@@ -342,7 +377,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
         String mTenantId = mSharePref.getUser().getTenantId();
         String mVehicleRegistrationNo = mSharePref.getItem(Constants.KEY_VEHICLE_REGISTRATION_NO, "");
         LogUtil.d(TAG, "Vehicle registration no is:" + mVehicleRegistrationNo);
-        String VEHICLE_URL = Constants.FLEET_DEV_URL +
+        String VEHICLE_URL =getFleetUrl(getApplicationContext())+
                 mTenantId + VEHICLES + REGISTRATION_NUMBER + mVehicleRegistrationNo;
         LogUtil.d(TAG, "Get vehicle details:" + VEHICLE_URL);
         try {

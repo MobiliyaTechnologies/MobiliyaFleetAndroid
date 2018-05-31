@@ -89,7 +89,7 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
             dialog.setCancelable(false);
             dialog.show();
 
-            String FORGOT_PW_URL = Constants.FORGOT_PASSWORD_URL;
+            String FORGOT_PW_URL = Constants.getIdentityURLs(getApplicationContext(),Constants.FORGOT_PASSWORD_URL);
             JSONObject jsonBody = new JSONObject();
             try {
                 jsonBody.put("email", email);

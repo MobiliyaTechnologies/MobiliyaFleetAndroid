@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Date;
 
+import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getIotUrl;
 import static com.mobiliya.fleet.utils.Constants.LAST_SYNC_DATE;
 
 @SuppressWarnings({"ALL", "unused"})
@@ -55,7 +56,7 @@ public class IOTHubCommunication {
         LogUtil.i("SendMessage", "SendMessage called");
         if (client == null) {
             try {
-                client = new DeviceClient(Constants.IOT_CONNSTRING, protocol);
+                client = new DeviceClient(getIotUrl(mCtx), protocol);
             } catch (Exception e) {
                 e.printStackTrace();
                 return;

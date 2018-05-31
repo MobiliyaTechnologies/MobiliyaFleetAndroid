@@ -1,6 +1,12 @@
 package com.mobiliya.fleet.utils;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.text.TextUtils;
+
+import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getIdentityUrl;
+import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getTripServiceUrl;
 
 @SuppressWarnings({"ALL", "unused"})
 public class Constants {
@@ -10,30 +16,27 @@ public class Constants {
     final public static String J1939 = "J1939";
 
 
-    public static final String IOT_PROD_CONNSTRING = "HostName=MSFleetIotHub.azure-devices.net;DeviceId=mobileToIotHubDev;SharedAccessKey=7SEQU8wY7BqnUkJtTLSJ8nZqs64RGaclqhcM+2Yqt0k=";
+   /* public static final String IOT_PROD_CONNSTRING = "HostName=MSFleetIotHub.azure-devices.net;DeviceId=mobileToIotHubDev;SharedAccessKey=7SEQU8wY7BqnUkJtTLSJ8nZqs64RGaclqhcM+2Yqt0k=";
     public static final String IOT_NEW_CONNECTION = "HostName=MSFleetIotHub.azure-devices.net;DeviceId=mobileToIotHubDev;SharedAccessKey=ZfAVd9KW3OrErrbv3xoZJt5Jj1CISzkkVrEhMoL6gdM=";
+*/
 
-    public static final String IOT_CONNSTRING = IOT_NEW_CONNECTION;
 
 
     public static final String PREF_NAME = "UserSessionInfo";
     public static final String CONTENT_TYPE = "application/x-www-form-urlencoded";
     private static final String PROD_URL = "https://cloudprod.azurewebsites.net//"; //Production
-    private static final String QA_URL = "https://cloudqa.azurewebsites.net//"; //QA
+    private static final String QA_URL = "https://cloudqa.azurewebsites.net//"; //QA*/
 
-    private static final String IDENTITY_DEV_URL = "http://identity-service.azurewebsites.net/";//Dev
+
+    /*private static final String IDENTITY_DEV_URL = "http://identity-service.azurewebsites.net/";//Dev
     public static final String FLEET_DEV_URL = "http://fleet-service.azurewebsites.net/";//Dev
+    public static final String IOT_CONNSTRING = IOT_NEW_CONNECTION;
+    public static final String TRIP_SERVICE_BASEURL_PROD = "http://trip-service.azurewebsites.net/";*/
+
+
     public static final String VEHICLES = "/vehicles";
     public static final String REGISTRATION_NUMBER = "?registrationNumber=";
 
-
-    public static final String TRIP_SERVICE_BASEURL_PROD = "http://trip-service.azurewebsites.net/";
-
-
-    public static final String BASE_URL = IDENTITY_DEV_URL;
-    public static final String LOGIN_URL = BASE_URL + "login";
-    public static final String FORGOT_PASSWORD_URL = BASE_URL + "forgot-password";
-    public static final String GET_USER_URL = BASE_URL + "users";
 
     public static final String PREF_EMAIL = "email";
     public static final String PREF_PASSWORD = "password";
@@ -107,14 +110,11 @@ public class Constants {
     public static final String SYNC_TIME = "synctime";
     public static final int SET_DEFAULT_MEMORY_SIZE = 50;
 
-
     /**
      * Trip related apis
      **/
-    public static final String UPDATE_TRIP_URL = TRIP_SERVICE_BASEURL_PROD + "%s/trips/%s";
-    public static final String ADD_TRIP_URL = TRIP_SERVICE_BASEURL_PROD + "%s/trips";
-    public static final String GET_TRIP_LIST_URL = TRIP_SERVICE_BASEURL_PROD + "%s/trips";
-    public static final String GET_TRIP_DETAIL_URL = TRIP_SERVICE_BASEURL_PROD + "%s/trips/%s";
+
+
     public static final String TRIPID = "tripid";
     public static final String ADAPTER_STATUS = "adapter_status";
 
@@ -143,5 +143,66 @@ public class Constants {
     public static final String NOTIFICATION_PAUSE_BROADCAST = "NOTIFICATION_PAUSE";
     public static final String NOTIFICATION_STOP_BROADCAST = "NOTIFICATION_STOP";
     public static final String MAP_TOKEN = "sk.eyJ1IjoibW9iaWxpeWExMjM0IiwiYSI6ImNqZ3g5bjEwcTFpaWYzM3MzdTltaXlxa2wifQ.aTtyhsaulAemRph24Crn_A";
+
+
+    public static final String IDENTITYURL="Identityurl";
+    public static final String FLEETURL="fleeturl";
+    public static final String TRIPURL="tripurl";
+    public static final String IOTURL="ioturl";
+
+    public static final String UPDATE_TRIP_URL = "UPDATE_TRIP_URL";
+    public static final String ADD_TRIP_URL = "ADD_TRIP_URL";
+    public static final String GET_TRIP_LIST_URL = "GET_TRIP_LIST_URL";
+    public static final String GET_TRIP_DETAIL_URL = "GET_TRIP_DETAIL_URL";
+
+    public static final String LOGIN_URL = "LOGIN_URL";
+    public static final String FORGOT_PASSWORD_URL = "FORGOT_PASSWORD_URL";
+    public static final String GET_USER_URL = "GET_USER_URL";
+
+
+    public static  String getTripsURLs(Context cxt,String type){
+        String tripbaseurl=getTripServiceUrl(cxt);
+
+        if(!TextUtils.isEmpty(tripbaseurl)) {
+            if ("UPDATE_TRIP_URL".equals(type)) {
+                return tripbaseurl + "%s/trips/%s";
+            }
+
+            if ("ADD_TRIP_URL".equals(type)) {
+                return tripbaseurl + "%s/trips";
+            }
+
+            if ("GET_TRIP_LIST_URL".equals(type)) {
+                return tripbaseurl + "%s/trips";
+            }
+
+            if ("GET_TRIP_DETAIL_URL".equals(type)) {
+                return tripbaseurl +  "%s/trips/%s";
+            }
+        }
+
+        return null;
+    }
+
+    public static String getIdentityURLs(Context cxt,String type){
+        String identitybaseurl=getIdentityUrl(cxt);
+
+        if(!TextUtils.isEmpty(identitybaseurl)) {
+            if ("LOGIN_URL".equals(type)) {
+                return identitybaseurl + "/login";
+            }
+
+            if ("FORGOT_PASSWORD_URL".equals(type)) {
+                return identitybaseurl + "/forgot-password";
+            }
+
+            if ("GET_USER_URL".equals(type)) {
+                return identitybaseurl + "/users";
+            }
+        }
+
+        return null;
+    }
+
 }
 

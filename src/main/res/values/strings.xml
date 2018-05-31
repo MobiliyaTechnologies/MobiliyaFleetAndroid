@@ -75,7 +75,7 @@
     <string name="permission_rationale" tools:ignore="UnusedResources">"Contacts permissions are needed for providing email completions."
     </string>
     <string name="sign_in">Sign In</string>
-    <string name="connect_devices">Connect Devices</string>
+    <string name="connect_devices">Connect Dongle</string>
     <string name="back">Back</string>
     <string name="done">Done</string>
     <string name="retry_scan">Retry scan</string>
@@ -228,5 +228,14 @@
     <string name="gpa_alert">Please enable Location Services</string>
     <string name="trip_is_already_stopped">Trip has been already stopped</string>
     <string name="no_trips">No trips to show</string>
+    <string name="save">Save</string>
+    <string name="configuration">Server \nConfiguration</string>
+    <string name="identity_url">Identity service url</string>
+    <string name="fleet_url">Fleet service url</string>
+    <string name="trip_url">Trip service url</string>
+    <string name="iot_url">IoT Hub url</string>
+    <string name="missing_url">Please enter missing url</string>
+    <string name="Please_configure_url">Please configure url first</string>
+    <string name="reset">Reset</string>
 
 </resources>

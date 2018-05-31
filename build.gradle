@@ -84,6 +84,10 @@ dependencies {
     //noinspection UseOfBundledGooglePlayServices
     implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:6.1.0'
     compile 'com.google.android.gms:play-services:10.0.1'
+
+    compile 'com.google.android.gms:play-services-location:10.0.1'
+    compile 'com.google.android.gms:play-services-drive:10.0.1'
+
     // Remote binary dependency
     compile 'com.microsoft.azure.sdk.iot:iot-device-client:1.2.28'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'

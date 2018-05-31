@@ -34,6 +34,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 
+import static com.mobiliya.fleet.utils.Constants.GET_USER_URL;
 import static com.mobiliya.fleet.utils.Constants.LAST_SYNC_DATE;
 import static com.mobiliya.fleet.utils.Constants.SYNC_TIME;
 
@@ -143,7 +144,7 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
             String email = mPref.getItem(Constants.PREF_EMAIL);
             String access_token = mPref.getItem(Constants.PREF_ACCESS_TOKEN);
 
-            String USER_URL = Constants.GET_USER_URL + "?email=" + email;
+            String USER_URL = Constants.getIdentityURLs(getApplicationContext(),GET_USER_URL) + "?email=" + email;
             LogUtil.d(TAG, "Get User details for email:" + email);
             LogUtil.d(TAG, "Get User details for URL:" + USER_URL);
 

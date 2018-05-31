@@ -66,6 +66,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getTripServiceUrl;
 import static com.mobiliya.fleet.utils.CommonUtil.showToast;
 
 @SuppressWarnings({"ALL", "unused"})
@@ -650,7 +651,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
     }
 
     public void getDriverScore() {
-        String URL = Constants.TRIP_SERVICE_BASEURL_PROD;
+        String URL = getTripServiceUrl( getApplicationContext());
         String mTenantId = SharePref.getInstance(this).getUser().getTenantId();
         String mUserId = SharePref.getInstance(this).getUser().getId();
         URL = URL + mTenantId + "/" + "driver?userId=" + mUserId;

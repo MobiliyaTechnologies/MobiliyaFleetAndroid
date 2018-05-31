@@ -53,6 +53,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static com.mobiliya.fleet.utils.Constants.GET_TRIP_DETAIL_URL;
+
 @SuppressWarnings({"ALL", "unused"})
 public class TripDetailsActivity extends AppCompatActivity implements OnMapReadyCallback {
     private String TAG = TripDetailsActivity.class.getSimpleName();
@@ -105,7 +107,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
         User user = SharePref.getInstance(getApplicationContext()).getUser();
         String tenantId = user.getTenantId();
         try {
-            String trip_details_url = String.format(Constants.GET_TRIP_DETAIL_URL, tenantId, tripId);
+            String trip_details_url = String.format(Constants.getTripsURLs(getApplicationContext(),GET_TRIP_DETAIL_URL), tenantId, tripId);
             VolleyCommunicationManager.getInstance().SendRequest(trip_details_url, Request.Method.GET, null, getApplicationContext(), new VolleyCallback() {
                 @Override
                 public void onSuccess(JSONObject result) {
