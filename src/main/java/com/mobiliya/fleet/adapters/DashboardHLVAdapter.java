@@ -79,7 +79,7 @@ public class DashboardHLVAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 public void onClick(View view, int position, boolean isLongClick) {
                     Activity activity = (Activity) mContext;
                     Intent intent = new Intent(mContext, TripActivity.class);
-                    mContext.startActivity(intent);
+                    activity.startActivityForResult(intent, Constants.DASHBOARD_REQUEST_CODE);
                     activity.overridePendingTransition(R.anim.enter, R.anim.leave);
                 }
             });
@@ -99,8 +99,9 @@ public class DashboardHLVAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 @Override
                 public void onClick(View view, int position, boolean isLongClick) {
                     Intent intent = new Intent(mContext, TripListActivity.class);
-                    mContext.startActivity(intent);
                     Activity activity = (Activity) mContext;
+                    activity.startActivityForResult(intent, Constants.DASHBOARD_REQUEST_CODE);
+                    //Activity activity = (Activity) mContext;
                     activity.overridePendingTransition(R.anim.enter, R.anim.leave);
                 }
             });

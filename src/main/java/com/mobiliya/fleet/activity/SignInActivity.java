@@ -41,7 +41,6 @@ import butterknife.ButterKnife;
 
 import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getFleetUrl;
 import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getIdentityUrl;
-import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getIotUrl;
 import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getTripServiceUrl;
 import static com.mobiliya.fleet.utils.Constants.GET_USER_URL;
 import static com.mobiliya.fleet.utils.Constants.REGISTRATION_NUMBER;
@@ -87,6 +86,12 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
     private SharePref mSharePref;
     private ProgressDialog mDialog = null;
 
+    String email;
+    private String password;
+    private String companyName;
+    private String vehicleRegistrationNumber;
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,6 +135,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
         if (mBluetoothAdapter != null && mBluetoothAdapter.disable()) {
             mBluetoothAdapter.enable();
         }
+
 
         mEmail_edt.setOnFocusChangeListener(this);
         mPassword_edt.setOnFocusChangeListener(this);
@@ -181,7 +187,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
             }
             mSignIn_btn.setEnabled(true);
             mSignIn_btn.setBackgroundResource(R.drawable.login_button_gradient);
-            attempLogin(mEmail_edt.getText().toString(), mPassword_edt.getText().toString());
+            attempLogin();
         } else {
             CommonUtil.showToast(this, getString(R.string.no_internet_connection));
         }
@@ -190,18 +196,18 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
     public boolean validate() {
         boolean valid = true;
 
-        String email = mEmail_edt.getText().toString();
-        String password = mPassword_edt.getText().toString();
-        String companyName = mCompany_edt.getText().toString();
-        String vehicleRegistrationNumber = mVehicleReg_edt.getText().toString();
+        email = mEmail_edt.getText().toString().trim();
+        password = mPassword_edt.getText().toString().trim();
+        companyName = mCompany_edt.getText().toString().trim();
+        vehicleRegistrationNumber = mVehicleReg_edt.getText().toString().trim();
 
 
         String identityurl=getIdentityUrl(getApplicationContext());
         String fleeturl=getFleetUrl(getApplicationContext());
         String tripurls=getTripServiceUrl(getApplicationContext());
-        String ioturl=getIotUrl(getApplicationContext());
-        if(!TextUtils.isEmpty(identityurl) && !TextUtils.isEmpty(fleeturl) &&   !TextUtils.isEmpty(tripurls) && !TextUtils.isEmpty(ioturl)){
-            mConfigureError.setVisibility(View.GONE);
+
+        if(!TextUtils.isEmpty(identityurl) && !TextUtils.isEmpty(fleeturl) &&   !TextUtils.isEmpty(tripurls)){
+            mConfigureError.setVisibility(View.INVISIBLE);
         }else{
             mConfigureError.setVisibility(View.VISIBLE);
             return valid=false;
@@ -213,7 +219,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
             mCompany_edt.setTextColor(R.color.deep_carpen_pink);
             valid = false;
         } else {
-            mCompanyError_tv.setVisibility(View.GONE);
+            mCompanyError_tv.setVisibility(View.INVISIBLE);
         }
 
         if (vehicleRegistrationNumber.isEmpty()) {
@@ -222,7 +228,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
             mVehicleReg_edt.setTextColor(R.color.deep_carpen_pink);
             valid = false;
         } else {
-            mVehicleError_tv.setVisibility(View.GONE);
+            mVehicleError_tv.setVisibility(View.INVISIBLE);
         }
 
         if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
@@ -232,7 +238,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
             mEmailError_tv.setText("Enter a valid email address");
             valid = false;
         } else {
-            mEmailError_tv.setVisibility(View.GONE);
+            mEmailError_tv.setVisibility(View.INVISIBLE);
         }
 
         if (password.isEmpty()) {
@@ -241,13 +247,13 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
             mPassword_edt.setTextColor(R.color.deep_carpen_pink);
             valid = false;
         } else {
-            mPasswordError_tv.setVisibility(View.GONE);
+            mPasswordError_tv.setVisibility(View.INVISIBLE);
         }
 
         return valid;
     }
 
-    private void attempLogin(final String email, final String password) {
+    private void attempLogin() {
         mDialog.show();
         String LOGIN_URL = Constants.getIdentityURLs(getApplicationContext(),Constants.LOGIN_URL);
         JSONObject jsonBody = new JSONObject();
@@ -255,7 +261,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
             jsonBody.put("email", email);
             jsonBody.put("password", password);
             final String requestBody = CommonUtil.getPostDataString(jsonBody);
-            VolleyCommunicationManager.getInstance().SendRequest(LOGIN_URL, Request.Method.POST, requestBody, getApplicationContext(), new VolleyCallback() {
+            VolleyCommunicationManager.getInstance().SendRequest(LOGIN_URL, Request.Method.POST, requestBody, this, new VolleyCallback() {
                 @Override
                 public void onSuccess(JSONObject result) {
                     if (result != null) {
@@ -272,7 +278,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
                                 LogUtil.d(TAG, "expires:" + expires);
                                 String userData = responseData.
                                         getJSONObject("userDetails").getString("tenantCompany");
-                                if (!mCompany_edt.getText().toString().equalsIgnoreCase(userData)) {
+                                if (!companyName.equalsIgnoreCase(userData)) {
                                     mDialog.dismiss();
                                     CommonUtil.showToast(SignInActivity.this, getString(R.string.incorrect_company_name));
                                     return;
@@ -282,7 +288,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
                                 mSharePref.addItem(Constants.PREF_EMAIL, email);
                                 mSharePref.addItem(Constants.PREF_PASSWORD, password);
                                 mSharePref.addItem(Constants.KEY_COMPANY_NAME, userData);
-                                mSharePref.addItem(Constants.KEY_VEHICLE_REGISTRATION_NO, mVehicleReg_edt.getText().toString());
+                                mSharePref.addItem(Constants.KEY_VEHICLE_REGISTRATION_NO, vehicleRegistrationNumber);
                                 getUserDetails();
                             } else {
                                 mDialog.dismiss();
@@ -336,7 +342,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
         LogUtil.d(TAG, "Get User details for URL:" + USER_URL);
 
         try {
-            VolleyCommunicationManager.getInstance().SendRequest(USER_URL, Request.Method.GET, "", getApplicationContext(), new VolleyCallback() {
+            VolleyCommunicationManager.getInstance().SendRequest(USER_URL, Request.Method.GET, "", this, new VolleyCallback() {
                 @Override
                 public void onSuccess(JSONObject result) {
                     if (result != null) {
@@ -381,7 +387,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
                 mTenantId + VEHICLES + REGISTRATION_NUMBER + mVehicleRegistrationNo;
         LogUtil.d(TAG, "Get vehicle details:" + VEHICLE_URL);
         try {
-            VolleyCommunicationManager.getInstance().SendRequest(VEHICLE_URL, Request.Method.GET, "", getApplicationContext(), new VolleyCallback() {
+            VolleyCommunicationManager.getInstance().SendRequest(VEHICLE_URL, Request.Method.GET, "", this, new VolleyCallback() {
                 @Override
                 public void onSuccess(JSONObject result) {
                     if (result != null) {
@@ -393,6 +399,21 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
                             if (responseArray.length() > 0) {
                                 JSONObject responseData = (JSONObject) responseArray.get(0);
                                 Vehicle vehicle = mSharePref.convertVehicleResponse(responseData);
+                                if(TextUtils.isEmpty(vehicle.getDeviceId())){
+                                    mDialog.dismiss();
+                                    Toast.makeText(SignInActivity.this, getString(R.string.no_device),
+                                            Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+                                if(vehicle.getDeviceId().equalsIgnoreCase("null")){
+                                    mDialog.dismiss();
+                                    Toast.makeText(SignInActivity.this, getString(R.string.no_device),
+                                            Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+                                JSONObject deviceData = responseData.getJSONObject("Device");
+                                String iotConnectionString=deviceData.getString("connectionString");
+                                mSharePref.addItem(Constants.IOTURL, iotConnectionString);
                                 String mUserId = mSharePref.getItem(Constants.KEY_ID, "");
                                 LogUtil.d(TAG, "mUserId Id is:" + mUserId);
                                 if (mUserId.equalsIgnoreCase(vehicle.getUserId())) {
@@ -446,19 +467,19 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
         switch (view.getId()) {
             case R.id.input_email:
                 mEmail_edt.setBackgroundResource(R.drawable.edittext_selector);
-                mEmailError_tv.setVisibility(View.GONE);
+                mEmailError_tv.setVisibility(View.INVISIBLE);
                 break;
             case R.id.input_password:
                 mPassword_edt.setBackgroundResource(R.drawable.edittext_selector);
-                mPasswordError_tv.setVisibility(View.GONE);
+                mPasswordError_tv.setVisibility(View.INVISIBLE);
                 break;
             case R.id.input_company:
                 mCompany_edt.setBackgroundResource(R.drawable.edittext_selector);
-                mCompanyError_tv.setVisibility(View.GONE);
+                mCompanyError_tv.setVisibility(View.INVISIBLE);
                 break;
             case R.id.input_vehical_registration:
                 mVehicleReg_edt.setBackgroundResource(R.drawable.edittext_selector);
-                mVehicleError_tv.setVisibility(View.GONE);
+                mVehicleError_tv.setVisibility(View.INVISIBLE);
                 break;
         }
 

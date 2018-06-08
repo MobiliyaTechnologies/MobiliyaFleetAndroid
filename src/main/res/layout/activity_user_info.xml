@@ -3,19 +3,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:fitsSystemWindows="true"
-    tools:context="com.mobiliya.fleet.activity.SettingsActivity">
+    android:fillViewport="true"
+   >
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:weightSum="10">
+        android:weightSum="11"
+        >
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="4.5"
+            android:layout_weight="5"
             android:background="@drawable/gradient_blue"
             android:orientation="vertical">
 
@@ -59,7 +60,7 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingTop="@dimen/dim_33"
+                    android:paddingTop="@dimen/dim_37"
                     android:src="@drawable/user_setting"
                     tools:ignore="ContentDescription" />
             </LinearLayout>
@@ -75,6 +76,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingTop="@dimen/dim_18"
+                    android:text="fgvdhg"
                     android:textColor="@color/text_color_white"
                     android:textSize="@dimen/font_18sp" />
 
@@ -83,6 +85,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingTop="@dimen/dim_8"
+                    android:text="comjfehrfqher"
                     android:textColor="@color/text_color_white"
                     android:textSize="@dimen/font_12sp" />
             </LinearLayout>
@@ -91,7 +94,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="5.5"
+            android:layout_weight="6"
+
             android:orientation="vertical"
             android:paddingLeft="@dimen/dim_30"
             android:paddingRight="@dimen/dim_30">
@@ -135,35 +139,6 @@
                 android:orientation="vertical">
 
                 <com.mobiliya.fleet.customViews.CustomTextViewLight
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="@dimen/dim_10"
-                    android:paddingTop="@dimen/dim_18"
-                    android:text="@string/lname"
-                    android:textColor="@color/text_color_setting"
-                    android:textSize="@dimen/font_14sp" />
-
-                <com.mobiliya.fleet.customViews.CustomTextViewRegular
-                    android:id="@+id/lname"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/accent_black"
-                    android:textSize="@dimen/font_16sp" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/text_color_separator" />
-
-            </LinearLayout>
-
-            <LinearLayout
-
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <com.mobiliya.fleet.customViews.CustomTextViewLight
 
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -189,34 +164,29 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:visibility="gone">
+                android:gravity="bottom"
+                android:paddingLeft="@dimen/dim_46"
+                android:paddingRight="@dimen/dim_40"
 
-                <com.mobiliya.fleet.customViews.CustomTextViewLight
+                >
 
+                <com.mobiliya.fleet.customViews.CustomButtonMedium
+                    android:id="@+id/btn_change"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="@dimen/dim_10"
-                    android:paddingTop="@dimen/dim_18"
-                    android:text="@string/password"
-                    android:textColor="@color/text_color_setting"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="@dimen/dim_24"
+                    android:layout_marginBottom="@dimen/dim_30"
+
+                    android:background="@drawable/login_button_gradient"
+                    android:gravity="center"
+                    android:text="@string/changePassword"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_color_white"
                     android:textSize="@dimen/font_14sp" />
-
-                <com.mobiliya.fleet.customViews.CustomTextViewRegular
-                    android:id="@+id/password"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textPassword"
-                    android:textColor="@color/accent_black"
-                    android:textSize="@dimen/font_16sp" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/text_color_separator" />
             </LinearLayout>
-
 
         </LinearLayout>
     </LinearLayout>

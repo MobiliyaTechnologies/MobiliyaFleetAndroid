@@ -301,7 +301,7 @@ public class CommonUtil {
      * @param password password for validation
      * @return true valid password, false invalid password
      */
-    public static boolean isvalidPassword(final String password) {
+    public static boolean isValidPassword(final String password) {
         Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
         Matcher matcher = pattern.matcher(password);
         return matcher.matches();
@@ -618,6 +618,31 @@ public class CommonUtil {
         if (gpsLocationReceiver != null) {
             baseContext.unregisterReceiver(gpsLocationReceiver);
         }
+    }
+
+    public static void trimCache(Context cxt) {
+        try {
+            File dir = cxt.getCacheDir();
+            if (dir != null && dir.isDirectory()) {
+                deleteDirectory(dir);
+            }
+        } catch (Exception e) {
+            LogUtil.d(TAG, "Exception in trimCache");
+        }
+    }
+
+    public static boolean deleteDirectory(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+        // The directory is now empty so delete it
+        return dir.delete();
     }
 
 

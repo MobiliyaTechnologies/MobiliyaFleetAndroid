@@ -148,22 +148,25 @@ public class TripManagementUtils {
         dialog.setCancelable(false);
         dialog.show();
         GPSTracker address = GPSTracker.getInstance(activity);
-
+        SharePref pref=SharePref.getInstance(activity.getApplication());
         long recordAffected = -1;
         try {
             Trip newTrip = DatabaseProvider.getInstance(activity).getCurrentTrip();
-
+            if (newTrip == null) {
+                LogUtil.d(TAG, "currect trip is null");
+                return -1;
+            }
             newTrip.endLocation = address.getLatitude() + "," + address.getLongitude() + "#" + address.getAddressLine(activity.getApplicationContext());
             newTrip.endTime = getLocalTimeString();
             newTrip.EndDate = getLocalTimeString();
             newTrip.status = TripStatus.Stop.getValue();
+            newTrip.stops= DatabaseProvider.getInstance(activity).getStopsCount(newTrip.commonId);
             newTrip.IsSynced = false;
 
-            SharePref.getInstance(activity.getApplication()).addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
-            SharePref.getInstance(activity.getApplication()).addItem(Constants.MILES_ONGOING, 0.0f);
-            // SharePref.getsInstance(activity.getApplication()).addItem(Constants.STOPS_ONGOING,0);
-            SharePref.getInstance(activity.getApplication()).addItem(Constants.FUEL_ONGOING, "NA");
-            SharePref.getInstance(activity.getApplication()).addItem(Constants.TIME_ONGOING, "0");
+            pref.addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
+            pref.addItem(Constants.MILES_ONGOING, 0.0f);
+            pref.addItem(Constants.FUEL_ONGOING, "NA");
+            pref.addItem(Constants.TIME_ONGOING, "0");
 
             recordAffected = DatabaseProvider.getInstance(activity.getApplicationContext()).updateTrip(newTrip);
 
@@ -171,17 +174,22 @@ public class TripManagementUtils {
                 DatabaseProvider.getInstance(activity.getBaseContext()).deleteLatLong(newTrip.commonId);
                 showToast(activity, activity.getString(R.string.trip_stopped));
 
-
-                SharePref.getInstance(activity.getApplication()).addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
-                SharePref.getInstance(activity.getApplication()).addItem(Constants.MILES_ONGOING, 0.0f);
-                SharePref.getInstance(activity.getApplication()).addItem(Constants.SPEEDING, 0);
-                SharePref.getInstance(activity.getApplication()).addItem(Constants.FUEL_ONGOING, "NA");
-                SharePref.getInstance(activity.getApplication()).addItem(Constants.TIME_ONGOING, "0");
+                pref.addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
+                pref.addItem(Constants.MILES_ONGOING, 0.0f);
+                pref.addItem(Constants.SPEEDING, 0);
+                pref.addItem(Constants.FUEL_ONGOING, "NA");
+                pref.addItem(Constants.TIME_ONGOING, "0");
             }
-        } catch (Resources.NotFoundException e) {
+        }
+        catch (Resources.NotFoundException e) {
             e.printStackTrace();
         }
-        dialog.dismiss();
+        catch (Exception ex){
+            ex.getMessage();
+        }finally {
+            dialog.dismiss();
+        }
+
         return recordAffected;
     }
 
@@ -193,11 +201,16 @@ public class TripManagementUtils {
         long recordAffected = -1;
         try {
             Trip newTrip = DatabaseProvider.getInstance(context).getCurrentTrip();
+            if (newTrip == null) {
+                LogUtil.d(TAG, "currect trip is null");
+                return -1;
+            }
 
             newTrip.endLocation = address.getLatitude() + "," + address.getLongitude() + "#" + address.getAddressLine(context);
             newTrip.endTime = getLocalTimeString();
             newTrip.EndDate = getLocalTimeString();
             newTrip.status = TripStatus.Stop.getValue();
+            newTrip.stops= DatabaseProvider.getInstance(context).getStopsCount(newTrip.commonId);
             newTrip.IsSynced = false;
 
             recordAffected = DatabaseProvider.getInstance(context).updateTrip(newTrip);
@@ -225,12 +238,12 @@ public class TripManagementUtils {
                 addTripOnServer(ctx, trip, new ApiCallBackListener() {
                     @Override
                     public void onSuccess(JSONObject object) {
-
+                        LogUtil.d(TAG,"onSuccess");
                     }
 
                     @Override
                     public void onError(VolleyError result) {
-
+                        LogUtil.d(TAG,"onError");
                     }
                 });
             }
@@ -262,7 +275,7 @@ public class TripManagementUtils {
             e.printStackTrace();
         }
         String tenantId = SharePref.getInstance(ctx).getUser().getTenantId();
-        String url = String.format(Constants.getTripsURLs(ctx,Constants.ADD_TRIP_URL), tenantId);
+        String url = String.format(Constants.getTripsURLs(ctx, Constants.ADD_TRIP_URL), tenantId);
 
         try {
             VolleyCommunicationManager.getInstance().SendRequest(url, Request.Method.POST, newTripRequestData, ctx, new VolleyCallback() {
@@ -297,18 +310,18 @@ public class TripManagementUtils {
                                     DatabaseProvider.getInstance(ctx).updateTrip(trip);
                                 }
                                 LogUtil.d(TAG, "addTripOnServer() onSucess()");
-                            } else if (result.getString("message").equals("Unauthorized")) {
-                                Log.d(TAG, "Add Trip Request Failed due to:" + result.getString("message"));
+                            } /*else if (result.getString("message").equals("Unauthorized")) {
+                                LogUtil.d(TAG, "Add Trip Request Failed due to:" + result.getString("message"));
                                 if (trip.status == TripStatus.Stop.getValue()) {
                                     DatabaseProvider.getInstance(ctx).deleteTrip(trip.commonId);
                                 }
                             } else if (result.getString("message").equals("InternalServerError")) {
-                                Log.d(TAG, "Add Trip Request Failed due to:" + result.getString("message"));
+                                LogUtil.d(TAG, "Add Trip Request Failed due to:" + result.getString("message"));
                                 if (trip.status == TripStatus.Stop.getValue()) {
                                     DatabaseProvider.getInstance(ctx).deleteTrip(trip.commonId);
                                 }
-                            } else {
-                                Log.d(TAG, "Add Trip Request Failed (Duplicate Trip): " + result.getString("message"));
+                            }*/ else {
+                                LogUtil.d(TAG, "Add Trip Request Failed (Duplicate Trip): " + result.getString("message"));
                             }
 
                         } catch (JSONException e1) {
@@ -343,7 +356,7 @@ public class TripManagementUtils {
         }
         try {
             String tenantId = SharePref.getInstance(cxt.getBaseContext()).getUser().getTenantId();
-            String gettripsUrl = String.format(Constants.getTripsURLs(cxt,GET_TRIP_LIST_URL), tenantId);
+            String gettripsUrl = String.format(Constants.getTripsURLs(cxt, GET_TRIP_LIST_URL), tenantId);
             String vehicleId = SharePref.getInstance(cxt.getBaseContext()).getVehicleID();
             gettripsUrl = gettripsUrl + "?order=desc&limit=10&vehicleId=" + vehicleId;
             VolleyCommunicationManager.getInstance().SendRequest(gettripsUrl, Request.Method.GET, null, cxt, new VolleyCallback() {
@@ -397,7 +410,7 @@ public class TripManagementUtils {
 
         try {
             String tenantId = SharePref.getInstance(cxt.getBaseContext()).getUser().getTenantId();
-            String getTripsUrl = String.format(Constants.getTripsURLs(cxt,GET_TRIP_LIST_URL), tenantId);
+            String getTripsUrl = String.format(Constants.getTripsURLs(cxt, GET_TRIP_LIST_URL), tenantId);
             String vehicleId = SharePref.getInstance(cxt.getBaseContext()).getVehicleID();
             getTripsUrl = getTripsUrl + "?limit=1&vehicleId=" + vehicleId;
             LogUtil.d(TAG, "URL for get last trip: " + getTripsUrl);

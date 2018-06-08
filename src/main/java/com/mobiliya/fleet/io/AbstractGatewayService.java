@@ -260,9 +260,16 @@ public abstract class AbstractGatewayService extends RoboService {
             mParameter.TenantId = SharePref.getInstance(ctx).getUser().getTenantId();
             mParameter.UserId = SharePref.getInstance(ctx).getUser().getId();
             mParameter.VehicleId = SharePref.getInstance(ctx).getVehicleID();
+            if (!SharePref.getInstance(ctx).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false)) {
+                mParameter.isConnected = true;
+            } else {
+                mParameter.isConnected = false;
+            }
             Trip trip = DatabaseProvider.getInstance(getApplicationContext()).getCurrentTrip();
             if (trip != null) {
                 mParameter.TripId = trip.commonId;
+            } else {
+                mParameter.TripId = "NA";
             }
             addParameterToDatabase(mParameter);
             LogUtil.i("AbstractGatewayService Timer", "Paramters ->" + mParameter.TenantId);
@@ -284,7 +291,7 @@ public abstract class AbstractGatewayService extends RoboService {
         Parameter[] parameters = DatabaseProvider.getInstance(AbstractGatewayService.this).getParameterData();
         if (parameters != null && parameters.length > 0) {
             try {
-                LogUtil.i("AbstractGatewayService Timer", "broadcastToIoTHub called ->");
+                LogUtil.d("AbstractGatewayService Timer", "broadcastToIoTHub called ->");
 
                 IOTHubCommunication.getInstance(AbstractGatewayService.this).SendMessage(parameters);
                 if (mParameter != null && !TextUtils.isEmpty(mParameter.ParameterDateTime)) {
@@ -303,7 +310,8 @@ public abstract class AbstractGatewayService extends RoboService {
             DatabaseProvider.getInstance(ctx).addParameter(param);
         } else {
             Intent intent = new Intent(Constants.DATABASEFULL);
-            LocalBroadcastManager.getInstance(ctx).sendBroadcast(intent);
+            ctx.sendBroadcast(intent);
+            //LocalBroadcastManager.getInstance(ctx).sendBroadcast(intent);
         }
     }
 
@@ -319,12 +327,16 @@ public abstract class AbstractGatewayService extends RoboService {
     public void getVehicleData() {
     }
 
+    public void startTimer() {
+    }
+
     public void stopVehicleData() {
     }
 
     public void sendAdapterStatusBroadcast(boolean status) {
         Intent intent = new Intent(Constants.ADAPTER_STATUS);
-        LocalBroadcastManager.getInstance(ctx).sendBroadcast(intent);
+        ctx.sendBroadcast(intent);
+        //LocalBroadcastManager.getInstance(ctx).sendBroadcast(intent);
     }
 
 }

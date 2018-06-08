@@ -53,6 +53,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="@dimen/dim_20"
         android:text="@string/app_name"
+        android:textColor="@color/outer_space"
         android:textSize="@dimen/font_16sp" />
 
     <com.mobiliya.fleet.customViews.CustomTextViewRegular
@@ -80,6 +81,7 @@
         <com.mobiliya.fleet.customViews.CustomTextViewRegular
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:lineSpacingExtra="4dp"
             android:layout_marginLeft="@dimen/dim_35"
             android:layout_marginRight="@dimen/dim_35"
             android:text="Mobiliya Fleet is a Fleet Management Solution to enable the management of vehicles such as Cars and Trucks which support OBD-II or J1939 Solution."

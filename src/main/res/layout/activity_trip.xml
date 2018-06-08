@@ -336,8 +336,9 @@
             tools:ignore="NestedWeights">
 
             <ImageView
-                android:layout_width="@dimen/dim_15"
-                android:layout_height="@dimen/dim_15"
+                android:id="@+id/pause_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:src="@drawable/pause"
                 tools:ignore="ContentDescription" />
 
@@ -372,8 +373,8 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="@dimen/dim_15"
-                android:layout_height="@dimen/dim_15"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:src="@drawable/stop"
                 tools:ignore="ContentDescription" />
 

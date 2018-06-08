@@ -33,6 +33,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /**
@@ -50,9 +52,9 @@ public class J1939DongleService extends AbstractGatewayService {
     private int faultIndex;
     private Boolean mIsSkipEnabled = false;
     private SharePref mPref;
-    private Handler handle;
     int mSpeedCount = 0;
     boolean isSpeedLowered = true;
+    private Timer mTimer;
     private static boolean sStatusConnected = false;
 
     @Override
@@ -71,8 +73,7 @@ public class J1939DongleService extends AbstractGatewayService {
         mPref = SharePref.getInstance(this);
         mIsSkipEnabled = mPref.getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
         if (mIsSkipEnabled) {
-            handle = new Handler();
-            handle.post(runnable);
+            startTimer();
         } else {
             getVehicleData();
         }
@@ -80,45 +81,77 @@ public class J1939DongleService extends AbstractGatewayService {
                 mSignOutReceiver, new IntentFilter(Constants.SIGNOUT));
     }
 
-    private final Runnable runnable = new Runnable() {
-        public void run() {
-            if (!isRunning) {
-                LogUtil.d(TAG, "service stop, no need to run timer task.");
-                return;
-            }
-            LogUtil.d(TAG, "called runnable");
-            HashMap<String, String> commandResult = new HashMap<>();
-            if (gpsTracker.getIsGPSTrackingEnabled()) {
-                gpsTracker.getLocation();
-                commandResult.put("latitude", String.valueOf(gpsTracker.getLatitude()));
-                commandResult.put("longitude", String.valueOf(gpsTracker.getLongitude()));
-                if (mParameter != null) {
-                    mParameter.Latitude = String.valueOf(gpsTracker.getLatitude());
-                    mParameter.Longitude = String.valueOf(gpsTracker.getLongitude());
-                    try {
-                        float speed = Float.valueOf(String.format("%.2f", gpsTracker.getSpeed()));
-                        int speedInt = Math.round(speed);
-                        if (speedInt >= 0) {
-                            mParameter.Speed = speedInt;
-                            commandResult.put("speed", String.valueOf(mParameter.Speed));
-                        }
-                        LogUtil.d(TAG, "Vehicle speed with out adapter:" + speed);
-                        float distance = Float.valueOf(String.format("%.2f", gpsTracker.getDistance()));
-                        if (distance >= 0) {
-                            mParameter.Distance = distance;
-                            commandResult.put("Distance", String.valueOf(mParameter.Distance));
-                        }
-                    } catch (Exception e) {
-                        LogUtil.d(TAG, "execption on calculation of speed");
-                    }
-                    LogUtil.d(TAG, "latitude " + mParameter.Latitude + " Longitude:" + mParameter.Longitude);
-                }
-            }
-            sendMessageToActivity(commandResult);
-            handle.postDelayed(runnable, 10000);//10 sec
+    public void startTimer() {
+        mIsSkipEnabled = SharePref.getInstance(this).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
+        if (mIsSkipEnabled) {
+            initDataSyncTimer();
+        } else {
+            getVehicleData();
         }
-    };
+    }
 
+    /*method to initialize timer task*/
+    private void initDataSyncTimer() {
+        if (!SharePref.getInstance(this).getBooleanItem(Constants.PREF_MOVED_TO_DASHBOARD, false)) {
+            LogUtil.d(TAG, "Return since acitivity is not moved to dashboard");
+            return;
+        }
+
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
+            mTimer = new Timer();
+        } else {
+            mTimer = new Timer();
+        }
+
+        int delayTime = 1;
+
+        mTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                LogUtil.i("Default Timer", "10 sec timer callback callled ->" + 10);
+                performAction();
+            }
+        }, 0, (10 * 1000));
+    }
+
+
+    private void performAction(){
+        if (!isRunning) {
+            LogUtil.d(TAG, "service stop, no need to run timer task.");
+            return;
+        }
+        LogUtil.d(TAG, "called runnable");
+        HashMap<String, String> commandResult = new HashMap<>();
+        if (gpsTracker.getIsGPSTrackingEnabled()) {
+            gpsTracker.getLocation();
+            commandResult.put("latitude", String.valueOf(gpsTracker.getLatitude()));
+            commandResult.put("longitude", String.valueOf(gpsTracker.getLongitude()));
+            if (mParameter != null) {
+                mParameter.Latitude = String.valueOf(gpsTracker.getLatitude());
+                mParameter.Longitude = String.valueOf(gpsTracker.getLongitude());
+                try {
+                    float speed = Float.valueOf(String.format("%.2f", gpsTracker.getSpeed()));
+                    int speedInt = Math.round(speed);
+                    if (speedInt >= 0) {
+                        mParameter.Speed = speedInt;
+                        commandResult.put("speed", String.valueOf(mParameter.Speed));
+                    }
+                    LogUtil.d(TAG, "Vehicle speed with out adapter:" + speed);
+                    float distance = Float.valueOf(String.format("%.2f", gpsTracker.getDistance()));
+                    if (distance >= 0) {
+                        mParameter.Distance = distance;
+                        commandResult.put("Distance", String.valueOf(mParameter.Distance));
+                    }
+                } catch (Exception e) {
+                    LogUtil.d(TAG, "execption on calculation of speed");
+                }
+                LogUtil.d(TAG, "latitude " + mParameter.Latitude + " Longitude:" + mParameter.Longitude);
+            }
+        }
+        sendMessageToActivity(commandResult);
+    }
 
     @Override
     public void startService() throws IOException {
@@ -136,8 +169,7 @@ public class J1939DongleService extends AbstractGatewayService {
         if (SharePref.getInstance(this).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false)) {
             LogUtil.d(TAG, "return, send data without adapter");
             if (mIsSkipEnabled) {
-                handle = new Handler();
-                handle.post(runnable);
+                initDataSyncTimer();
             }
             return;
         }
@@ -188,8 +220,12 @@ public class J1939DongleService extends AbstractGatewayService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(
-                mSignOutReceiver);
+        try {
+            unregisterReceiver(
+                    mSignOutReceiver);
+        } catch (Exception ex) {
+            ex.getMessage();
+        }
     }
 
     /* Initialize J1939 adapter properties */

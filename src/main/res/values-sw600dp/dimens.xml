@@ -54,6 +54,7 @@
     <dimen name="dim_84">126dp</dimen>
     <dimen name="dim_100">150dp</dimen>
     <dimen name="dim_110">165dp</dimen>
+    <dimen name="dim_126">189dp</dimen>
     <dimen name="dim_160dp">240dp</dimen>
     <dimen name="dim_225">337.5dp</dimen>
     <dimen name="dim_250">375dp</dimen>

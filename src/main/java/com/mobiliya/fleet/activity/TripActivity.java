@@ -16,6 +16,7 @@ import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -92,6 +93,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     public Marker markerEnd;
     private GpsLocationReceiver gpsLocationReceiver = new GpsLocationReceiver();
     MapView mapView;
+    private ImageView mPauseIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,6 +135,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         LinearLayout mPause = (LinearLayout) findViewById(R.id.btn_pause);
         LinearLayout mStop = (LinearLayout) findViewById(R.id.btn_stop);
         mPause_tv = (TextView) findViewById(R.id.tv_pause);
+        mPauseIcon=(ImageView)findViewById(R.id.pause_icon);
         TextView mStop_tv = (TextView) findViewById(R.id.tv_stop);
 
         LinearLayout down_button = (LinearLayout) findViewById(R.id.down_button);
@@ -197,8 +200,9 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final ServiceConnection mServiceConn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder binder) {
-            LogUtil.i(TAG, "onServiceConnected");
+            LogUtil.d(TAG, "onServiceConnected");
             mService = ((AbstractGatewayService.AbstractGatewayServiceBinder) binder).getService();
+            mService.startTimer();
         }
 
         @Override
@@ -230,9 +234,12 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (trip.status == TripStatus.Pause.getValue()) {
                 TripManagementUtils.resumeTrip(getBaseContext());
                 mPause_tv.setText(getString(R.string.pause));
+                mPauseIcon.setImageDrawable(getDrawable(R.drawable.pause));
+
             } else {
                 TripManagementUtils.pauseTrip(TripActivity.this);
                 mPause_tv.setText(getString(R.string.paused));
+                mPauseIcon.setImageDrawable(getDrawable(R.drawable.play_icon));
                 //calculations of stops
                 int count = DatabaseProvider.getInstance(getBaseContext()).getStopsCount(mTrip.commonId);
                 mStops.setText(Integer.toString(count));
@@ -253,9 +260,11 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (mTrip != null) {
             if (mTrip.status == TripStatus.Pause.getValue()) {
                 mPause_tv.setText(getString(R.string.paused));
+                mPauseIcon.setImageDrawable(getDrawable(R.drawable.play_icon));
             }
-            if (mTrip.status != TripStatus.Stop.getValue()) {
+            else if (mTrip.status != TripStatus.Stop.getValue()) {
                 mTripDate.setText(mTrip.tripName);
+                mPauseIcon.setImageDrawable(getDrawable(R.drawable.pause));
             }
         }
     }
@@ -315,6 +324,9 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void redrawLine() {
+        if (mMap == null || mOptions == null) {
+            return;
+        }
         if (mOptions.getPoints().size() > 1) {
             List<LatLng> points_list = mOptions.getPoints();
             LatLng points = points_list.get(points_list.size() - 1);
@@ -418,7 +430,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (newTripList != null && newTripList.size() > 0) {
                     for (final Trip trips : newTripList) {
                         if (CommonUtil.isNetworkConnected(getBaseContext())) {
-                            TripManagementUtils.addTripOnServer(getBaseContext(), trips, new ApiCallBackListener() {
+                            TripManagementUtils.addTripOnServer(TripActivity.this, trips, new ApiCallBackListener() {
                                         @Override
                                         public void onSuccess(JSONObject object) {
                                             if (object != null) {
@@ -586,6 +598,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mTrip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
                 if (mTrip.status == TripStatus.Pause.getValue()) {
                     mPause_tv.setText(getString(R.string.paused));
+                    mPauseIcon.setImageDrawable(getDrawable(R.drawable.play_icon));
                     int count = DatabaseProvider.getInstance(getBaseContext()).getStopsCount(mTrip.commonId);
                     mStops.setText(Integer.toString(count));
                 }

@@ -281,6 +281,11 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
                 new Handler().postDelayed(new Runnable() {
                     public void run() {
                         showFloatingWindow();
+                        if(mTrip.status== TripStatus.Pause.getValue()) {
+                            sTv_btn_pause.setImageDrawable(getDrawable(R.drawable.play_icon));
+                        }else {
+                            sTv_btn_pause.setImageDrawable(getDrawable(R.drawable.pause));
+                        }
                     }
                 }, 100);
 
@@ -452,7 +457,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         // check if the request code is same as what is passed  here it is 2
-        if (requestCode == Constants.DASHBOARD_REQUEST_CODE && resultCode == Constants.SETTINGS_RESULT_CODE) {
+        if (requestCode == Constants.DASHBOARD_REQUEST_CODE && (resultCode == Constants.SETTINGS_RESULT_CODE || resultCode == Constants.SIGN_OUT_RESULT_CODE)) {
             finish();
         }
     }
@@ -504,7 +509,8 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         @Override
         public void onReceive(final Context context, Intent intent) {
 
-            if (startDate == null) {
+            showToast(DashboardActivity.this, context.getString(R.string.storage_message));
+            /*if (startDate == null) {
                 startDate = new Date();
                 showToast(DashboardActivity.this, "Your offline storage is full,Please go online.");
             } else {
@@ -514,7 +520,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
                 if (diffHours == 5) {
                     showToast(DashboardActivity.this, "Your offline storage is full,Please go online.");
                 }
-            }
+            }*/
         }
     };
 
@@ -657,7 +663,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         URL = URL + mTenantId + "/" + "driver?userId=" + mUserId;
         LogUtil.d(TAG, "getDriverScore() URL:" + URL);
         try {
-            VolleyCommunicationManager.getInstance().SendRequest(URL, Request.Method.GET, "", getApplicationContext(), new VolleyCallback() {
+            VolleyCommunicationManager.getInstance().SendRequest(URL, Request.Method.GET, "", this, new VolleyCallback() {
                 @Override
                 public void onSuccess(JSONObject result) {
                     if (result != null) {
@@ -794,9 +800,11 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
                 Trip trip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
                 if (trip != null) {
                     if (trip.status == TripStatus.Pause.getValue()) {
-                        showToast(DashboardActivity.this, getString(R.string.trip_is_already_paused));
+                        TripManagementUtils.resumeTrip(DashboardActivity.this);
+                        sTv_btn_pause.setImageDrawable(getDrawable(R.drawable.pause));
                     } else {
                         TripManagementUtils.pauseTrip(DashboardActivity.this);
+                        sTv_btn_pause.setImageDrawable(getDrawable(R.drawable.play_icon));
                     }
                 }
                 break;
@@ -804,8 +812,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
                 showStopDialog();
                 break;
             case R.id.lasttrip:
-                if (mWithoutlasttrip.getVisibility() == View.VISIBLE) {
-                    if (mLastSynctrip != null) {
+                if (mWithoutlasttrip.getVisibility() == View.VISIBLE) {if (mLastSynctrip != null) {
                         Intent startdetailsPage = new Intent(DashboardActivity.this, TripDetailsActivity.class);
                         startdetailsPage.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startdetailsPage.putExtra(Constants.TRIPID, mLastSynctrip.commonId);

@@ -29,6 +29,7 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
     private static final String TAG = "ForgotPasswordActivity";
     private EditText mInputEmail_edt;
     private TextView mEmailError_tv;
+    private String mEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +49,7 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
         switch (view.getId()) {
             case R.id.btn_done:
                 if (validate()) {
-                    resetPassword(mInputEmail_edt.getText().toString());
+                    resetPassword();
                 }
                 break;
             case R.id.btn_back:
@@ -61,12 +62,12 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
     public boolean validate() {
         boolean valid = true;
 
-        String email = mInputEmail_edt.getText().toString();
+        mEmail = mInputEmail_edt.getText().toString().trim();
 
-        if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (mEmail.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(mEmail).matches()) {
             mInputEmail_edt.setBackgroundResource(R.drawable.shadow_10_error);
             mEmailError_tv.setVisibility(View.VISIBLE);
-            mEmailError_tv.setText("Enter a valid email address");
+            mEmailError_tv.setText("Enter a valid mEmail address");
             valid = false;
         } else {
             mInputEmail_edt.setBackgroundResource(R.drawable.shadow_10);
@@ -81,7 +82,7 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
         overridePendingTransition(R.anim.left_to_right, R.anim.right_to_left);
     }
 
-    private void resetPassword(final String email) {
+    private void resetPassword() {
         {
             final ProgressDialog dialog = new ProgressDialog(this);
             dialog.setIndeterminate(true);
@@ -92,10 +93,10 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
             String FORGOT_PW_URL = Constants.getIdentityURLs(getApplicationContext(),Constants.FORGOT_PASSWORD_URL);
             JSONObject jsonBody = new JSONObject();
             try {
-                jsonBody.put("email", email);
+                jsonBody.put("mEmail", mEmail);
                 final String requestBody = CommonUtil.getPostDataString(jsonBody);
 
-                VolleyCommunicationManager.getInstance().SendRequest(FORGOT_PW_URL, Request.Method.POST, requestBody, getApplicationContext(), new VolleyCallback() {
+                VolleyCommunicationManager.getInstance().SendRequest(FORGOT_PW_URL, Request.Method.POST, requestBody, this, new VolleyCallback() {
                     @Override
                     public void onSuccess(JSONObject result) {
                         if (result != null) {

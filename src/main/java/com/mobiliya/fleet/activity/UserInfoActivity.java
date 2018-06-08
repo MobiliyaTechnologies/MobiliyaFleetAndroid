@@ -1,9 +1,11 @@
 package com.mobiliya.fleet.activity;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,14 +44,11 @@ public class UserInfoActivity extends AppCompatActivity {
     @Bind(R.id.fname)
     TextView mFirstName_tv;
 
-    @Bind(R.id.lname)
-    TextView mLastName_tv;
-
     @Bind(R.id.email)
     TextView mEmail_tv;
 
-    @Bind(R.id.password)
-    TextView mPassword_tv;
+    @Bind(R.id.btn_change)
+    Button mChangePassword;
 
     @Bind(R.id.back_button)
     LinearLayout mBack_btn;
@@ -67,6 +66,13 @@ public class UserInfoActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 finishCurrectActivity();
+            }
+        });
+
+        mChangePassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(UserInfoActivity.this,ChangePasswordActivity.class));
             }
         });
         if (CommonUtil.isNetworkConnected(getBaseContext())) {
@@ -108,7 +114,7 @@ public class UserInfoActivity extends AppCompatActivity {
         LogUtil.d(TAG, "Get User details for email:" + email);
         LogUtil.d(TAG, "Get User details for URL:" + USER_URL);
         try {
-            VolleyCommunicationManager.getInstance().SendRequest(USER_URL, Request.Method.GET, "", getApplicationContext(), new VolleyCallback() {
+            VolleyCommunicationManager.getInstance().SendRequest(USER_URL, Request.Method.GET, "", this, new VolleyCallback() {
                 @Override
                 public void onSuccess(JSONObject result) {
                     if (result != null) {
@@ -151,9 +157,7 @@ public class UserInfoActivity extends AppCompatActivity {
     public void setValues(User user) {
         mCompany_tv.setText(mSharePref.getItem(Constants.KEY_COMPANY_NAME, ""));
         mUserName_tv.setText("" + user.getFirstName() + " " + user.getLastName());
-        mFirstName_tv.setText(user.getFirstName());
-        mLastName_tv.setText(user.getLastName());
+        mFirstName_tv.setText("" + user.getFirstName() + " " + user.getLastName());
         mEmail_tv.setText(user.getEmail());
-        mPassword_tv.setText(user.getPassword());
     }
 }

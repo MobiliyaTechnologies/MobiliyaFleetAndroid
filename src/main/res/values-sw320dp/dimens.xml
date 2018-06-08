@@ -46,6 +46,7 @@
     <dimen name="dim_84">63.0dp</dimen>
     <dimen name="dim_100">68dp</dimen>
     <dimen name="dim_110">82.5dp</dimen>
+    <dimen name="dim_126">94.5dp</dimen>
     <dimen name="dim_160dp">120dp</dimen>
     <dimen name="dim_225">168.75dp</dimen>
     <dimen name="dim_250">187.5dp</dimen>

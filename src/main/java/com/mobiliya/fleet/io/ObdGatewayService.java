@@ -271,7 +271,8 @@ public class ObdGatewayService extends AbstractGatewayService {
         Intent intent = new Intent(Constants.DASHBOARD_RECEIVER_ACTION_NAME);
         // You can also include some extra data.
         intent.putExtra(Constants.DASHBOARD_RECEIVER_NAME, msg);
-        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+        mContext.sendBroadcast(intent);
+        //LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 
     /**
@@ -383,7 +384,8 @@ public class ObdGatewayService extends AbstractGatewayService {
         Intent intent = new Intent(Constants.LOCAL_RECEIVER_ACTION_NAME);
         // You can also include some extra data.
         intent.putExtra(Constants.LOCAL_RECEIVER_NAME, commandResult);
-        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+        mContext.sendBroadcast(intent);
+        //LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 
     private final Runnable runnable = new Runnable() {

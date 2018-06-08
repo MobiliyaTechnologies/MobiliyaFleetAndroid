@@ -139,7 +139,7 @@
     <string name="connected">Connected</string>
     <string name="telemetric_device">Telemetric Device</string>
     <string name="disconnected">Disconnected</string>
-    <string name="paused">Paused</string>
+    <string name="paused">Resume</string>
     <string name="trip_paused">Trip has been paused</string>
     <string name="trip_stopped">Trip has been stopped</string>
     <string name="trip_started">Trip has been started</string>
@@ -195,6 +195,7 @@
     <string name="click_pause">Click pause</string>
     <string name="please_connect_adapter" tools:ignore="UnusedResources">Please connect to adapter</string>
     <string name="incorrect_vehicle">Incorrect vehicle registration number</string>
+    <string name="no_device">No device assigned to vehicle</string>
     <string name="username_not_exist">This username do not exsist, try again.</string>
     <string name="company_name_empty">Company name should not be empty</string>
     <string name="vehicle_is_empty">Registration number should not be empty</string>
@@ -216,8 +217,7 @@
     <string name="omg">OMG!</string>
     <string name="title_activity_user_info" tools:ignore="UnusedResources">UserInfoActivity</string>
     <string name="user_info">User Info</string>
-    <string name="fname">First Name</string>
-    <string name="lname">Last Name</string>
+    <string name="fname">Name</string>
     <string name="emailid" tools:ignore="UnusedResources">Email Id</string>
     <string name="password_" tools:ignore="UnusedResources">Password</string>
     <string name="last_sync">Last sync :</string>
@@ -237,5 +237,14 @@
     <string name="missing_url">Please enter missing url</string>
     <string name="Please_configure_url">Please configure url first</string>
     <string name="reset">Reset</string>
+    <string name="storage_message">Your offline storage is full,\nPlease go online.</string>
+    <string name="changePassword">Change Password</string>
+    <string name="change">Change</string>
+    <string name="retype_password">Retype Password</string>
+    <string name="change_password_text">Create a new password for \nyour account</string>
+    <string name="password_invalid">Password should be minimum 8 character long and should contain any 3 of A-Z/a-z/0-9/Symbols.</string>
+    <string name="mimatch">Password not matching</string>
+    <string name="pass_change_succes">Password changed successfully.</string>
+    <string name="failed_to_change_password">Failed to reset password</string>
 
 </resources>

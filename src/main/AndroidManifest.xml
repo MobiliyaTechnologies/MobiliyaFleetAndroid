@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.mobiliya.fleet"
-    android:versionCode="17"
-    android:versionName="1.0.15">
+    android:versionCode="21"
+    android:versionName="1.0.19">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -90,6 +90,13 @@
             android:label="@string/title_activity_dashboard"
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme" />
+
+        <activity android:name=".activity.ChangePasswordActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppFullScreenTheme"
+            android:windowSoftInputMode="stateAlwaysHidden"
+            />
+
         <activity
             android:name=".activity.SettingsActivity"
             android:label="@string/settings"
@@ -116,12 +123,11 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme"
             android:windowSoftInputMode="stateAlwaysHidden" />
-
-        <activity android:name=".activity.ConfigureUrlActivity"
+        <activity
+            android:name=".activity.ConfigureUrlActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme"
-            android:windowSoftInputMode="stateAlwaysHidden"/>
-
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".activity.TripActivity"
             android:screenOrientation="portrait"
@@ -166,8 +172,5 @@
                 <action android:name="STOP" />
             </intent-filter>
         </receiver>
-
-
     </application>
-
 </manifest>

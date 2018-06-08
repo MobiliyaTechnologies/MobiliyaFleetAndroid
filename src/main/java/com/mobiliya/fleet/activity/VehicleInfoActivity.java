@@ -146,7 +146,7 @@ public class VehicleInfoActivity extends AppCompatActivity {
             LogUtil.d(TAG, "Get vehicle details:" + VEHICLE_URL);
             try {
 
-                VolleyCommunicationManager.getInstance().SendRequest(VEHICLE_URL, Request.Method.GET, "", getApplicationContext(), new VolleyCallback() {
+                VolleyCommunicationManager.getInstance().SendRequest(VEHICLE_URL, Request.Method.GET, "", this, new VolleyCallback() {
                     @Override
                     public void onSuccess(JSONObject result) {
                         if (result != null) {

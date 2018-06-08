@@ -5,64 +5,63 @@
     android:layout_height="fill_parent"
     android:fitsSystemWindows="true">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:paddingLeft="@dimen/dim_40"
-        android:paddingRight="@dimen/dim_40"
-        tools:ignore="UselessParent">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-            android:layout_marginTop="@dimen/dim_30"
-            tools:ignore="UselessParent">
-
-            <ImageButton
-                android:id="@+id/configure"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@null"
-                android:tint="@android:color/black"
-                android:src="@drawable/settings"/>
-        </LinearLayout>
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="@dimen/dim_35"
             android:orientation="vertical"
-            android:weightSum="10"
+            android:paddingLeft="@dimen/dim_40"
+            android:paddingRight="@dimen/dim_40"
             tools:ignore="UselessParent">
-
-            <com.mobiliya.fleet.customViews.CustomTextViewMedium
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginTop="@dimen/dim_40"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="@string/sign_in"
-                android:textColor="@color/heading_text_color"
-                android:textSize="@dimen/font_26sp" />
-
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_gravity="center"
-                android:layout_marginBottom="@dimen/dim_8"
-                android:layout_weight="6"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dim_30"
+                android:gravity="right"
+                tools:ignore="UselessParent">
 
+                <ImageButton
+                    android:id="@+id/configure"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:src="@drawable/settings"
+                    android:tint="@android:color/black" />
+            </LinearLayout>
 
-                <ScrollView
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="@dimen/dim_35"
+                android:orientation="vertical"
+                android:weightSum="10"
+                tools:ignore="UselessParent">
+
+                <com.mobiliya.fleet.customViews.CustomTextViewMedium
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:fillViewport="true"
-                    android:scrollbars="none">
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/sign_in"
+                    android:textColor="@color/heading_text_color"
+                    android:textSize="@dimen/font_26sp" />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="@dimen/dim_8"
+                    android:layout_weight="7"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -76,7 +75,6 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/dim_10"
                             android:orientation="vertical">
 
                             <com.mobiliya.fleet.customViews.CustomEditTextMedium
@@ -102,7 +100,7 @@
                                 android:text="@string/username_not_exist"
                                 android:textColor="@color/deep_carpen_pink"
                                 android:textSize="@dimen/font_12sp"
-                                android:visibility="gone"
+                                android:visibility="invisible"
                                 tools:ignore="RtlSymmetry" />
                         </LinearLayout>
 
@@ -135,7 +133,7 @@
                                 android:text="@string/company_name_empty"
                                 android:textColor="@color/deep_carpen_pink"
                                 android:textSize="@dimen/font_12sp"
-                                android:visibility="gone"
+                                android:visibility="invisible"
                                 tools:ignore="RtlSymmetry" />
                         </LinearLayout>
 
@@ -168,7 +166,7 @@
                                 android:text="@string/vehicle_is_empty"
                                 android:textColor="@color/deep_carpen_pink"
                                 android:textSize="@dimen/font_12sp"
-                                android:visibility="gone"
+                                android:visibility="invisible"
                                 tools:ignore="RtlSymmetry" />
                         </LinearLayout>
 
@@ -201,7 +199,7 @@
                                 android:text="@string/password_is_empty"
                                 android:textColor="@color/deep_carpen_pink"
                                 android:textSize="@dimen/font_12sp"
-                                android:visibility="gone"
+                                android:visibility="invisible"
                                 tools:ignore="RtlSymmetry" />
                         </LinearLayout>
 
@@ -228,44 +226,42 @@
                             tools:ignore="RtlSymmetry" />
 
                     </LinearLayout>
-                </ScrollView>
 
-            </LinearLayout>
+                </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_gravity="bottom"
-                android:layout_weight="3"
-                android:gravity="bottom"
-                android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="2"
+                    android:orientation="vertical">
 
-                <com.mobiliya.fleet.customViews.CustomButtonMedium
-                    android:id="@+id/btn_login"
-                    android:layout_width="fill_parent"
-                    android:layout_height="40dp"
-                    android:layout_gravity="bottom"
-                    android:layout_marginTop="@dimen/dim_24"
-                    android:background="@drawable/login_button_gradient"
-                    android:gravity="center"
-                    android:text="@string/sign_in"
-                    android:textAllCaps="false"
-                    android:textColor="@color/text_color_white"
-                    android:textSize="@dimen/font_14sp" />
+                    <com.mobiliya.fleet.customViews.CustomButtonMedium
+                        android:id="@+id/btn_login"
+                        android:layout_width="fill_parent"
+                        android:layout_height="40dp"
+                        android:layout_gravity="top"
+                        android:layout_marginTop="@dimen/dim_24"
+                        android:background="@drawable/login_button_gradient"
+                        android:gravity="center"
+                        android:text="@string/sign_in"
+                        android:textAllCaps="false"
+                        android:textColor="@color/text_color_white"
+                        android:textSize="@dimen/font_14sp" />
 
-                <com.mobiliya.fleet.customViews.CustomTextViewMedium
-                    android:id="@+id/link_tern_condition"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom"
-                    android:layout_marginBottom="@dimen/dim_24"
-                    android:layout_marginTop="@dimen/dim_18"
-                    android:gravity="center"
-                    android:text="@string/term_conditions"
-                    android:textColor="@color/text_color_forget_pw"
-                    android:textSize="@dimen/font_12sp"
-                    android:visibility="invisible" />
+                    <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                        android:id="@+id/link_tern_condition"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom"
+                        android:layout_marginBottom="@dimen/dim_24"
+                        android:layout_marginTop="@dimen/dim_18"
+                        android:gravity="center"
+                        android:text="@string/term_conditions"
+                        android:textColor="@color/text_color_forget_pw"
+                        android:textSize="@dimen/font_12sp"
+                        android:visibility="invisible" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </ScrollView>
 </LinearLayout>

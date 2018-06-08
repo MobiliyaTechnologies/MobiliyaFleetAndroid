@@ -120,12 +120,12 @@
                         tools:ignore="ContentDescription" />
                 </LinearLayout>
 
+
                 <com.mobiliya.fleet.customViews.CustomButtonMedium
                     android:id="@+id/btn_done"
-                    android:layout_width="@dimen/dim_260"
+                    android:layout_width="fill_parent"
                     android:layout_height="40dp"
                     android:layout_gravity="center"
-                    android:layout_marginTop="@dimen/dim_12"
                     android:background="@drawable/login_button_gradient"
                     android:gravity="center"
                     android:paddingLeft="@dimen/dim_18"
@@ -135,20 +135,22 @@
                     android:textColor="@color/text_color_white"
                     android:textSize="@dimen/font_14sp" />
 
-                <com.mobiliya.fleet.customViews.CustomButtonMedium
+                <com.mobiliya.fleet.customViews.CustomTextViewMedium
                     android:id="@+id/btn_skip"
-                    android:layout_width="@dimen/dim_260"
+                    android:layout_width="wrap_content"
                     android:layout_height="40dp"
                     android:layout_gravity="center"
-                    android:layout_marginTop="@dimen/dim_12"
-                    android:background="@drawable/login_button_gradient"
-                    android:gravity="center"
+                    android:layout_marginTop="@dimen/dim_30"
                     android:paddingLeft="@dimen/dim_18"
                     android:paddingRight="@dimen/dim_18"
                     android:text="@string/skip"
                     android:textAllCaps="false"
-                    android:textColor="@color/text_color_white"
+                    android:textColor="@color/text_color_back_button"
                     android:textSize="@dimen/font_14sp" />
+
+
+
+
 
                 <!--<com.mobiliya.accelerator.customViews.CustomTextViewMedium
                     android:id="@+id/btn_back"

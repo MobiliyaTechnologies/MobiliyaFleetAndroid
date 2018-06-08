@@ -1,5 +1,6 @@
 package com.mobiliya.fleet.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,6 +19,7 @@ import com.mobiliya.fleet.adapters.TripListAdapter;
 import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.services.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
+import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.TripManagementUtils;
 
 import org.json.JSONArray;
@@ -51,7 +53,7 @@ public class TripListActivity extends AppCompatActivity implements ApiCallBackLi
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mNotrips_ll = (LinearLayout) findViewById(R.id.notrips);
-        mAdapter = new TripListAdapter(getBaseContext(), mTriplist, null);
+        mAdapter = new TripListAdapter(this, mTriplist, null);
         mRecyclerView.setAdapter(mAdapter);
     }
 
@@ -148,5 +150,14 @@ public class TripListActivity extends AppCompatActivity implements ApiCallBackLi
             }
         }
         finish();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constants.DASHBOARD_REQUEST_CODE && (resultCode == Constants.SIGN_OUT_RESULT_CODE)) {
+            setResult(Constants.SIGN_OUT_RESULT_CODE);
+            finish();
+        }
     }
 }

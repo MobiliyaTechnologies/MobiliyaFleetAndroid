@@ -34,6 +34,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 
+import static com.mobiliya.fleet.utils.CommonUtil.trimCache;
 import static com.mobiliya.fleet.utils.Constants.GET_USER_URL;
 import static com.mobiliya.fleet.utils.Constants.LAST_SYNC_DATE;
 import static com.mobiliya.fleet.utils.Constants.SYNC_TIME;
@@ -150,7 +151,7 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
 
             JSONObject jsonBody = new JSONObject();
             try {
-                VolleyCommunicationManager.getInstance().SendRequest(USER_URL, Request.Method.GET, "", getApplicationContext(), new VolleyCallback() {
+                VolleyCommunicationManager.getInstance().SendRequest(USER_URL, Request.Method.GET, "", this, new VolleyCallback() {
                     @Override
                     public void onSuccess(JSONObject result) {
                         if (result != null) {
@@ -200,7 +201,7 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.userInfo:
-                startActivity(new Intent(SettingsActivity.this, UserInfoActivity.class));
+                startActivityForResult(new Intent(SettingsActivity.this, UserInfoActivity.class), Constants.DASHBOARD_REQUEST_CODE);
                 overridePendingTransition(R.anim.enter, R.anim.leave);
                 break;
             case R.id.aboutUs:
@@ -213,7 +214,7 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
                 mPref.clearPreferences();
 
                 try {
-                    trimCache();
+                    trimCache(getBaseContext());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -274,30 +275,7 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
         overridePendingTransition(R.anim.left_to_right, R.anim.right_to_left);
     }
 
-    public void trimCache() {
-        try {
-            File dir = getBaseContext().getCacheDir();
-            if (dir != null && dir.isDirectory()) {
-                deleteDir(dir);
-            }
-        } catch (Exception e) {
-            LogUtil.d(TAG, "Exception in trimCache");
-        }
-    }
 
-    public boolean deleteDir(File dir) {
-        if (dir != null && dir.isDirectory()) {
-            String[] children = dir.list();
-            for (int i = 0; i < children.length; i++) {
-                boolean success = deleteDir(new File(dir, children[i]));
-                if (!success) {
-                    return false;
-                }
-            }
-        }
-        // The directory is now empty so delete it
-        return dir.delete();
-    }
 
     private void setOfflineStorageOnViews(String size) {
         mOfflineStorage_tv.setText(size);
@@ -319,7 +297,8 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
         LogUtil.d(TAG, "broadcast sync time change message with delay " + mSyncTime);
         Intent intent = new Intent(Constants.LOCAL_SERVICE_RECEIVER_ACTION_NAME);
         intent.putExtra(Constants.MESSAGE, SYNC_TIME);
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        getApplicationContext().sendBroadcast(intent);
+        //LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
     private void startNextActivity(Activity activity) {
@@ -327,7 +306,16 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
         Intent intent;
         if (activity != null) {
             intent = new Intent(SettingsActivity.this, activity.getClass());
-            startActivity(intent);
+            startActivityForResult(intent, Constants.DASHBOARD_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constants.DASHBOARD_REQUEST_CODE && (resultCode == Constants.SIGN_OUT_RESULT_CODE)) {
+            setResult(Constants.SIGN_OUT_RESULT_CODE);
+            finish();
         }
     }
 }

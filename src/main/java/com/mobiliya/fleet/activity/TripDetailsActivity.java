@@ -108,7 +108,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
         String tenantId = user.getTenantId();
         try {
             String trip_details_url = String.format(Constants.getTripsURLs(getApplicationContext(),GET_TRIP_DETAIL_URL), tenantId, tripId);
-            VolleyCommunicationManager.getInstance().SendRequest(trip_details_url, Request.Method.GET, null, getApplicationContext(), new VolleyCallback() {
+            VolleyCommunicationManager.getInstance().SendRequest(trip_details_url, Request.Method.GET, null, this, new VolleyCallback() {
                 @Override
                 public void onSuccess(JSONObject result) {
                     if (result != null) {
@@ -163,7 +163,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
             MtDetail=tDetail;
             String start_address = "NA", start_longitude = null, start_latitude = null;
             String end_address = "NA", end_longitude = null, end_latitude = null;
-
+            LatLong startpoint=null,endpoint=null;
             if (TextUtils.isEmpty(tDetail.startTime) || "NA".equals(tDetail.startTime)) {
                 mTripName.setText("");
             } else {
@@ -185,11 +185,11 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
             }
 
             if (start_latitude != null && start_longitude != null) {
-                LatLong startpoint = new LatLong(start_latitude, start_longitude);
+                startpoint = new LatLong(start_latitude, start_longitude);
                 plotMarker("start", startpoint);
             }
             if (end_latitude != null && end_longitude != null) {
-                LatLong endpoint = new LatLong(end_latitude, end_longitude);
+                endpoint = new LatLong(end_latitude, end_longitude);
                 plotMarker("end", endpoint);
             }
             if (TextUtils.isEmpty(tDetail.startLocation) || "NA".equals(tDetail.startLocation)) {
@@ -218,7 +218,8 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
             if (tDetail.stops == 0) {
                 mStops.setText("0");
             } else {
-                mStops.setText(tDetail.stops);
+                String stops=String.valueOf(tDetail.stops);
+                mStops.setText(stops);
             }
             if (TextUtils.isEmpty(tDetail.milesDriven) || "-1".equals(tDetail.milesDriven)) {
                 mMilesDriven.setText("NA");
@@ -268,14 +269,23 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
             if (tDetail.locationDetails != null) {
                 if (tDetail.locationDetails != null && !tDetail.locationDetails.isEmpty() && tDetail.locationDetails.size() > 0) {
 
-                    mMap.clear();
-                    LatLong firstPoint = tDetail.locationDetails.get(0);
-                    plotMarker("start", firstPoint);
+                    if (start_latitude != null && start_longitude != null){
+                        startpoint = new LatLong(start_latitude, start_longitude);
+                        tDetail.locationDetails.add(0,startpoint);
+                    }else{
+                        startpoint = tDetail.locationDetails.get(0);
+                        plotMarker("start", startpoint);
+                    }
+                    if (end_latitude != null && end_longitude != null) {
+                        endpoint = new LatLong(end_latitude, end_longitude);
+                        tDetail.locationDetails.add(endpoint);
+                    }else {
+                        endpoint = tDetail.locationDetails.get(tDetail.locationDetails.size()-1);
+                        plotMarker("end", endpoint);
+                    }
 
-                    drawLine(tDetail.locationDetails);
+                     drawLine(tDetail.locationDetails);
 
-                    LatLong lastPoint = tDetail.locationDetails.get(tDetail.locationDetails.size() - 1);
-                    plotMarker("end", lastPoint);
                 }
             }
         }

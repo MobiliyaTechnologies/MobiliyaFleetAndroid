@@ -7,10 +7,7 @@
     tools:context="com.mobiliya.fleet.activity.DashboardActivity"
     tools:ignore="MergeRootFrame">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -40,7 +37,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="0.5"
-                    android:gravity="center"
+                    android:gravity="center|top"
+                    android:textColor="@color/outer_space"
                     android:text="@string/mh_12_xe_1234"
                     android:textSize="@dimen/font_14sp" />
 
@@ -190,12 +188,17 @@
                             tools:ignore="NestedWeights" />
                     </LinearLayout>
                 </LinearLayout>
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="5"
+                    android:fillViewport="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="5"
+
                     android:gravity="center"
                     android:orientation="vertical">
 
@@ -213,15 +216,18 @@
 
 
                 </LinearLayout>
+                </ScrollView>
+
             </LinearLayout>
         </LinearLayout>
-    </ScrollView>
+
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:gravity="center"
+        android:layout_marginTop="@dimen/dim_25"
         android:orientation="vertical"
         android:paddingBottom="@dimen/dim_25">
 
@@ -230,7 +236,7 @@
             android:layout_height="1dp"
             android:layout_marginLeft="@dimen/dim_30"
             android:layout_marginRight="@dimen/dim_30"
-            android:layout_marginTop="@dimen/dim_25"
+
             android:background="@color/text_color_separator" />
 
         <android.support.v7.widget.RecyclerView

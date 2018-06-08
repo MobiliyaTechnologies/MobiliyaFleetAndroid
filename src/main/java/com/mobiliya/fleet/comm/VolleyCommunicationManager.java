@@ -1,6 +1,8 @@
 package com.mobiliya.fleet.comm;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -13,6 +15,9 @@ import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.mobiliya.fleet.R;
+import com.mobiliya.fleet.activity.SettingsActivity;
+import com.mobiliya.fleet.activity.SignInActivity;
 import com.mobiliya.fleet.models.ResponseModel;
 import com.mobiliya.fleet.models.User;
 import com.mobiliya.fleet.utils.CommonUtil;
@@ -28,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.android.volley.VolleyLog.TAG;
+import static com.mobiliya.fleet.utils.CommonUtil.trimCache;
 
 
 @SuppressWarnings({"ALL", "unused"})
@@ -75,6 +81,14 @@ public class VolleyCommunicationManager {
                 public void onErrorResponse(VolleyError error) {
                     if (error != null) {
                         if (error.networkResponse != null && error.networkResponse.statusCode == 401) {
+                            final SharePref pref = SharePref.getInstance(context);
+                            User user = pref.getUser();
+                            if(TextUtils.isEmpty(user.getEmail()) ||
+                                    TextUtils.isEmpty(pref.getItem(Constants.PREF_PASSWORD, ""))) {
+                                isSessionExpired = false;
+                                callback.onError(error);
+                                return;
+                            }
                             isSessionExpired = true;
                             VolleyCommunicationManager.refreshToken(context, URL, method, requestBody, callback);
                         } else {
@@ -127,7 +141,7 @@ public class VolleyCommunicationManager {
     }
 
     public static void refreshToken(final Context cxt, final String URL, final int method, final String requestBody, final VolleyCallback callback) {
-        String LOGIN_URL = Constants.getIdentityURLs(cxt,Constants.LOGIN_URL);
+        String LOGIN_URL = Constants.getIdentityURLs(cxt, Constants.LOGIN_URL);
         JSONObject jsonBody = new JSONObject();
         try {
             final SharePref pref = SharePref.getInstance(cxt);
@@ -166,7 +180,35 @@ public class VolleyCommunicationManager {
                 }
 
                 @Override
-                public void onError(VolleyError result) {
+                public void onError(VolleyError error) {
+                    if (error != null) {
+                        if (error.networkResponse != null && error.networkResponse.statusCode == 400) {
+                            SharePref sharePref = SharePref.getInstance(cxt);
+                            if (sharePref.getBooleanItem(Constants.PREF_USER_LOGED_IN)) {
+                                try {
+
+                                    Intent intent = new Intent(Constants.SIGNOUT);
+                                    cxt.sendBroadcast(intent);
+                                    sharePref.clearPreferences();
+                                    trimCache(cxt);
+                                    Intent sign_in = new Intent(cxt, SignInActivity.class);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    cxt.startActivity(sign_in);
+                                    if (cxt instanceof Activity) {
+                                        ((Activity) cxt).setResult(Constants.SIGN_OUT_RESULT_CODE);
+                                        ((Activity) cxt).finish();
+                                    }
+
+
+                                } catch (Exception ex) {
+                                    ex.getMessage();
+                                }
+
+                            }
+
+                        }
+                    }
+
                 }
             });
         } catch (JSONException e) {

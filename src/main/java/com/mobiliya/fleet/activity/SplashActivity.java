@@ -10,12 +10,10 @@ import android.text.TextUtils;
 
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.utils.Constants;
-import com.mobiliya.fleet.utils.LogUtil;
 import com.mobiliya.fleet.utils.SharePref;
 
 import static com.mobiliya.fleet.utils.Constants.FLEETURL;
 import static com.mobiliya.fleet.utils.Constants.IDENTITYURL;
-import static com.mobiliya.fleet.utils.Constants.IOTURL;
 import static com.mobiliya.fleet.utils.Constants.TRIPURL;
 
 @SuppressWarnings({"ALL", "unused"})
@@ -24,7 +22,6 @@ public class SplashActivity extends AppCompatActivity {
     private final String mIdentityurl="https://mobiliya-identity-service.azurewebsites.net/";
     private final String mFleeturl="https://mobiliya-fleet-service.azurewebsites.net/";
     private final String mTripurl="https://mobiliya-trip-service.azurewebsites.net/";
-    private final String mIoturl="HostName=MobiliyaFleetIoTHub.azure-devices.net;DeviceId=Dongle;SharedAccessKey=xgkfI16GqzG4qguUGCK2j+slAejdjo5LOrcsdHhhUs8=";
 
     private static SharedPreferences mPreference;
     private static final String SHARED_PREF_NAME = "configpref";
@@ -36,7 +33,7 @@ public class SplashActivity extends AppCompatActivity {
         mPreference = getSharedInstance(getBaseContext());
         String identityurls = getIdentityUrl(getApplicationContext());
         if(TextUtils.isEmpty(identityurls)) {
-            setURLs(mIdentityurl, mFleeturl, mTripurl, mIoturl);
+            setURLs(mIdentityurl, mFleeturl, mTripurl);
         }
         if (SharePref.getInstance(getBaseContext()).getMemorySize() == 0) {
             SharePref.getInstance(getBaseContext()).setMemorySize(Constants.SET_DEFAULT_MEMORY_SIZE);
@@ -51,11 +48,10 @@ public class SplashActivity extends AppCompatActivity {
         }, 2000);
     }
 
-    public void setURLs(String identity, String fleeturl, String tripUrl, String ioturl) {
+    public void setURLs(String identity, String fleeturl, String tripUrl) {
         addItem(IDENTITYURL, identity);
         addItem(FLEETURL, fleeturl);
         addItem(TRIPURL, tripUrl);
-        addItem(IOTURL, ioturl);
     }
 
     /**

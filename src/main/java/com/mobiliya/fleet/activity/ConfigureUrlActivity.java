@@ -2,8 +2,8 @@ package com.mobiliya.fleet.activity;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -11,16 +11,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.mobiliya.fleet.R;
-import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
-import com.mobiliya.fleet.utils.SharePref;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
 import static com.mobiliya.fleet.utils.Constants.FLEETURL;
 import static com.mobiliya.fleet.utils.Constants.IDENTITYURL;
-import static com.mobiliya.fleet.utils.Constants.IOTURL;
 import static com.mobiliya.fleet.utils.Constants.TRIPURL;
 
 public class ConfigureUrlActivity extends AppCompatActivity {
@@ -44,12 +41,6 @@ public class ConfigureUrlActivity extends AppCompatActivity {
     @Bind(R.id.trip_error)
     TextView mTripUrlError_tv;
 
-    @Bind(R.id.input_iot)
-    EditText mIotUrl_edt;
-
-    @Bind(R.id.iot_error)
-    TextView mIotError_tv;
-
     @Bind(R.id.btn_save)
     Button mSave_btn;
 
@@ -59,7 +50,6 @@ public class ConfigureUrlActivity extends AppCompatActivity {
     String mIdentityurl;
     String mFleeturl;
     String mTripurl;
-    String mIoturl;
 
     private static SharedPreferences mPreference;
     private static final String SHARED_PREF_NAME = "configpref";
@@ -77,8 +67,6 @@ public class ConfigureUrlActivity extends AppCompatActivity {
         mFleetUrl_edt.setText(fleeturls);
         String tripurls = getTripServiceUrl(getApplicationContext());
         mTripUrl_edt.setText(tripurls);
-        String ioturls = getIotUrl(getApplicationContext());
-        mIotUrl_edt.setText(ioturls);
 
         mSave_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -95,19 +83,17 @@ public class ConfigureUrlActivity extends AppCompatActivity {
                 mIdentityUrl_edt.setText("");
                 mFleetUrl_edt.setText("");
                 mTripUrl_edt.setText("");
-                mIotUrl_edt.setText("");
 
                 mIdentityUrlError_tv.setVisibility(View.GONE);
                 mFleetUrlError_tv.setVisibility(View.GONE);
                 mTripUrlError_tv.setVisibility(View.GONE);
-                mIotError_tv.setVisibility(View.GONE);
 
             }
         });
     }
 
     private void saveToSharedPreference() {
-        setURLs(mIdentityurl, mFleeturl, mTripurl, mIoturl);
+        setURLs(mIdentityurl, mFleeturl, mTripurl);
         finish();
     }
 
@@ -115,7 +101,6 @@ public class ConfigureUrlActivity extends AppCompatActivity {
         mIdentityurl = mIdentityUrl_edt.getText().toString()+"/";
         mFleeturl = mFleetUrl_edt.getText().toString()+"/";
         mTripurl = mTripUrl_edt.getText().toString()+"/";
-        mIoturl = mIotUrl_edt.getText().toString();
 
         if (TextUtils.isEmpty(mIdentityurl)) {
             mIdentityUrlError_tv.setVisibility(View.VISIBLE);
@@ -138,20 +123,14 @@ public class ConfigureUrlActivity extends AppCompatActivity {
             mTripUrlError_tv.setVisibility(View.GONE);
         }
 
-        if (TextUtils.isEmpty(mIoturl)) {
-            mIotError_tv.setVisibility(View.VISIBLE);
-            return true;
-        } else {
-            mIotError_tv.setVisibility(View.GONE);
-        }
+
         return false;
     }
 
-    public void setURLs(String identity, String fleeturl, String tripUrl, String ioturl) {
+    public void setURLs(String identity, String fleeturl, String tripUrl) {
         addItem(IDENTITYURL, identity);
         addItem(FLEETURL, fleeturl);
         addItem(TRIPURL, tripUrl);
-        addItem(IOTURL, ioturl);
     }
 
 
@@ -188,11 +167,6 @@ public class ConfigureUrlActivity extends AppCompatActivity {
     public static String getTripServiceUrl(Context cxt) {
         return getItem(cxt, TRIPURL, "");
     }
-
-    public static String getIotUrl(Context cxt) {
-        return getItem(cxt, IOTURL, "");
-    }
-
     public static String getItem(Context cxt, String name, @SuppressWarnings("SameParameterValue") String defaultValue) {
         return getSharedInstance(cxt).getString(name, defaultValue);
     }

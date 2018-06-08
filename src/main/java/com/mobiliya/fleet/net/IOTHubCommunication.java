@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Date;
 
-import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getIotUrl;
+import static com.mobiliya.fleet.utils.Constants.IOTURL;
 import static com.mobiliya.fleet.utils.Constants.LAST_SYNC_DATE;
 
 @SuppressWarnings({"ALL", "unused"})
@@ -53,10 +53,12 @@ public class IOTHubCommunication {
 
     public void SendMessage(Parameter[] parameters) throws URISyntaxException, IOException {
 
-        LogUtil.i("SendMessage", "SendMessage called");
+        LogUtil.d("SendMessage", "SendMessage called");
         if (client == null) {
             try {
-                client = new DeviceClient(getIotUrl(mCtx), protocol);
+                String stringC = SharePref.getInstance(mCtx).getItem(IOTURL);
+                LogUtil.i("SendMessage", "SendMessage called string:" + stringC);
+                client = new DeviceClient(stringC, protocol);
             } catch (Exception e) {
                 e.printStackTrace();
                 return;

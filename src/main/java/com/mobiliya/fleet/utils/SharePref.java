@@ -270,7 +270,11 @@ public class SharePref {
             vehicle.setFuleType(responseData.getString("fuelType"));
             vehicle.setRegistrationNo(responseData.getString("registrationNumber"));
             vehicle.setYearOfManufacture(responseData.getString("yearOfManufacture"));
-            vehicle.setDeviceId(responseData.getString("deviceId"));
+            try {
+                vehicle.setDeviceId(responseData.getString("deviceId"));
+            }catch (Exception e){
+                e.printStackTrace();
+            }
             vehicle.setIsDeleted(responseData.getInt("isDeleted"));
             vehicle.setStatus(responseData.getString("status"));
             vehicle.setCreatedAt(responseData.getString("createdAt"));
@@ -828,7 +832,7 @@ public class SharePref {
             overSpeeding = overSpeeding / cnt;
             hardBraking = hardBraking / cnt;
             aggresiveAcc = aggresiveAcc / cnt;
-            vehicleStop = vehicleStop / cnt;
+            vehicleStop = vehicleStop ;
             driverScore = driverScore / cnt;
 
             Editor mPreferences = mSharedPrefs.edit();

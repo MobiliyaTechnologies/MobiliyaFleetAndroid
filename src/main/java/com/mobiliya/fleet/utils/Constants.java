@@ -88,6 +88,7 @@ public class Constants {
 
     public static final int DASHBOARD_REQUEST_CODE = 2;
     public static final int SETTINGS_RESULT_CODE = 3;
+    public static final int SIGN_OUT_RESULT_CODE = 5;
     public static final int FORGOT_REQUEST_CODE = 4;
     public static final int ACCESS_LOCATION = 1;
 
@@ -156,6 +157,7 @@ public class Constants {
     public static final String GET_TRIP_DETAIL_URL = "GET_TRIP_DETAIL_URL";
 
     public static final String LOGIN_URL = "LOGIN_URL";
+    public static final String RESET_PASSWORD_URL = "RESET_PASSWORD";
     public static final String FORGOT_PASSWORD_URL = "FORGOT_PASSWORD_URL";
     public static final String GET_USER_URL = "GET_USER_URL";
 
@@ -192,12 +194,16 @@ public class Constants {
                 return identitybaseurl + "/login";
             }
 
-            if ("FORGOT_PASSWORD_URL".equals(type)) {
+            else if ("FORGOT_PASSWORD_URL".equals(type)) {
                 return identitybaseurl + "/forgot-password";
             }
 
-            if ("GET_USER_URL".equals(type)) {
+            else if ("GET_USER_URL".equals(type)) {
                 return identitybaseurl + "/users";
+            }
+
+            else if("RESET_PASSWORD".equals(type)){
+                return identitybaseurl+"/reset-password";
             }
         }
 

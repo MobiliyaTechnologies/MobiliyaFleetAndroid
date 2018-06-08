@@ -58,7 +58,7 @@
                 android:layout_marginTop="@dimen/dim_53"
                 android:text="@string/overall_score"
                 android:textColor="@color/ash_tray"
-                android:textSize="@dimen/font_24sp" />
+                android:textSize="@dimen/font_16sp" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -104,13 +104,13 @@
                         android:textColor="@color/text_color_forget_pw"
                         android:textSize="@dimen/font_48sp" />
 
-                    <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                    <com.mobiliya.fleet.customViews.CustomTextViewMedium
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:text="@string/out_of_hundred"
                         android:textColor="@color/text_color_forget_pw"
-                        android:textSize="@dimen/font_12sp" />
+                        android:textSize="@dimen/font_16sp" />
                 </LinearLayout>
             </RelativeLayout>
 
@@ -169,6 +169,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/vehicle_stops"
+                                android:textColor="@color/outer_space"
                                 android:textSize="@dimen/font_14sp" />
 
                         </LinearLayout>
@@ -210,6 +211,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/over_speeding"
+                                android:textColor="@color/outer_space"
                                 android:textSize="@dimen/font_14sp" />
 
                         </LinearLayout>
@@ -253,6 +255,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/hard_breaking"
+                                android:textColor="@color/outer_space"
                                 android:textSize="@dimen/font_14sp" />
 
                         </LinearLayout>
@@ -293,6 +296,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/aggresive_accelerator"
+                                android:textColor="@color/outer_space"
                                 android:textSize="@dimen/font_14sp" />
 
                         </LinearLayout>

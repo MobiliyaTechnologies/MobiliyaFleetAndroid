@@ -71,7 +71,7 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
     private AbstractGatewayService mService;
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 1001;
     public static final int MAX_ITEM_CLICK_COUNT = 3;
-    private Button mBtnSkip;
+    private TextView mBtnSkip;
     private TextView mConnectDevice_tv;
     private int mItemClickCount = 0;
     private LinearLayout mRetryLayout;
@@ -84,7 +84,7 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
         mListViewNewDevices = (ListView) findViewById(R.id.lvNewDevices);
         mBTDevices = new ArrayList<>();
         mBtnDone = (Button) findViewById(R.id.btn_done);
-        mBtnSkip = (Button) findViewById(R.id.btn_skip);
+        mBtnSkip = (TextView) findViewById(R.id.btn_skip);
         mRetryLayout = (LinearLayout) findViewById(R.id.retryImg);
         mConnectDevice_tv = (TextView) findViewById(R.id.connect_device_text);
         mConnectDevice_tv.setOnClickListener(this);
@@ -142,13 +142,21 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
                 reScanDevices();
                 break;
             case R.id.btn_skip:
-                String jsonStringLocal = Environment.getExternalStorageDirectory().getPath() + "/" + Constants.LOCAL_PATH;
-                File file = new File(jsonStringLocal);
+                stopScan();
                 mPref.addItem(Constants.PREF_ADAPTER_PROTOCOL, Constants.J1939);
                 mPref.addItem(Constants.PREF_BT_DEVICE_NAME, "BlueFire");
                 mPref.addItem(Constants.SEND_IOT_DATA_FORCEFULLY, true);
                 gotoDahsboard(Constants.J1939);
                 break;
+        }
+    }
+
+    private void stopScan() {
+        if (mBluetoothAdapter != null && mBluetoothAdapter.isDiscovering()) {
+            mBluetoothAdapter.cancelDiscovery();
+        }
+        if (mBluetoothAdapter != null && mLeScanCallback != null) {
+            mBluetoothAdapter.stopLeScan(mLeScanCallback);
         }
     }
 
@@ -675,6 +683,7 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
         permissionCheck += this.checkSelfPermission("android.permission-group.CONTACTS");
         permissionCheck += this.checkSelfPermission("android.permission.WRITE_CONTACTS");
         permissionCheck += this.checkSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE");
+        permissionCheck += this.checkSelfPermission("android.permission.READ_EXTERNAL_STORAGE");
         if (permissionCheck != 0) {
             this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.WRITE_CONTACTS, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission_group.CONTACTS, Manifest.permission.BLUETOOTH_PRIVILEGED}, MY_PERMISSIONS_REQUEST_LOCATION); //Any number

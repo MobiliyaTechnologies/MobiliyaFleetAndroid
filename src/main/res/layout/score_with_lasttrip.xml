@@ -132,7 +132,7 @@
             android:layout_marginBottom="@dimen/dim_15"
             android:layout_marginLeft="@dimen/dim_30"
             android:layout_marginRight="@dimen/dim_30"
-            android:layout_marginTop="@dimen/dim_53"
+            android:layout_marginTop="@dimen/dim_47"
             android:background="@color/text_color_separator" />
 
         <ScrollView

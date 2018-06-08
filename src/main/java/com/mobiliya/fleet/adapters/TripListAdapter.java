@@ -1,5 +1,6 @@
 package com.mobiliya.fleet.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
@@ -128,7 +129,8 @@ public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHo
             Intent startdetailsPage = new Intent(mCxt, TripDetailsActivity.class);
             startdetailsPage.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startdetailsPage.putExtra(Constants.TRIPID, id);
-            mCxt.startActivity(startdetailsPage);
+            Activity activity = (Activity) mCxt;
+            activity.startActivityForResult(startdetailsPage, Constants.DASHBOARD_REQUEST_CODE);
         }
     }
 
