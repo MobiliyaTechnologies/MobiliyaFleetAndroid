@@ -111,6 +111,7 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
         mListViewNewDevices.setOnItemClickListener(this);
         mBtnDone.setOnClickListener(this);
         mReScanButton_imv.setOnClickListener(this);
+        mPref.addItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
     }
 
 

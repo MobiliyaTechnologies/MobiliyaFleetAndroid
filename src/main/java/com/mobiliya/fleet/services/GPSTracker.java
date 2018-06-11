@@ -2,6 +2,7 @@ package com.mobiliya.fleet.services;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -12,11 +13,14 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.mobiliya.fleet.models.LatLong;
+import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
+import com.mobiliya.fleet.utils.SharePref;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -67,6 +71,7 @@ public class GPSTracker extends android.app.Service implements LocationListener 
 
     @SuppressLint("StaticFieldLeak")
     private static GPSTracker mGPSTrackerInstance;
+    private boolean canGetLocation=false;
 
     public GPSTracker(Context context) {
         this.mContext = context;
@@ -151,6 +156,8 @@ public class GPSTracker extends android.app.Service implements LocationListener 
         }
     }
 
+
+
     /**
      * Update GPSTracker latitude and longitude
      */
@@ -158,6 +165,10 @@ public class GPSTracker extends android.app.Service implements LocationListener 
         if (location != null) {
             latitude = location.getLatitude();
             longitude = location.getLongitude();
+
+            SharePref.getInstance(mContext).addItem(Constants.LATITUDE, String.valueOf(latitude));
+            SharePref.getInstance(mContext).addItem(Constants.LONGITUDE, String.valueOf(longitude));
+
         }
     }
 
@@ -398,8 +409,11 @@ public class GPSTracker extends android.app.Service implements LocationListener 
                 LogUtil.d(TAG, "exception while calculation speed or distance");
                 e.printStackTrace();
             }
+            updateGPSCoordinates();
         }
-        updateGPSCoordinates();
+
+
+
     }
 
 

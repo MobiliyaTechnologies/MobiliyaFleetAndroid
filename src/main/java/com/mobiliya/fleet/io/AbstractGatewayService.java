@@ -65,11 +65,11 @@ public abstract class AbstractGatewayService extends RoboService {
     private final Thread t = new Thread(new Runnable() {
         @Override
         public void run() {
-            try {
+            /*try {
                 executeQueue();
             } catch (InterruptedException e) {
                 t.interrupt();
-            }
+            }*/
         }
     });
 
@@ -199,14 +199,14 @@ public abstract class AbstractGatewayService extends RoboService {
             String value = i.getExtras().get(Constants.MESSAGE).toString();
 
             if (value.equalsIgnoreCase(Constants.SYNC_TIME)) {
-                int delay = SharePref.getInstance(ctx).getItem(Constants.KEY_SYNC_DATA_TIME, Constants.SYNC_DATA_TIME);
+                float delay = SharePref.getInstance(ctx).getItem(Constants.KEY_SYNC_DATA_TIME, Constants.SYNC_DATA_TIME);
                 initDataSyncTimer(delay);
             }
         }
     };
 
     /*method to initialize timer task to upload vehicle information to iotHub*/
-    private void initDataSyncTimer(final int delay) {
+    protected void initDataSyncTimer(final float delay) {
         if (!SharePref.getInstance(this).getBooleanItem(Constants.PREF_MOVED_TO_DASHBOARD, false)) {
             LogUtil.d(TAG, "Return since acitivity is not moved to dashboard");
             return;
@@ -222,10 +222,12 @@ public abstract class AbstractGatewayService extends RoboService {
         }
 
         int delayTime = 1;
-        if (delay == 30) {
-            delayTime = delay;
+        if (delay == 0.5f) {
+            delayTime =  30;
+        } else if (delay == 30) {
+            delayTime = Math.round(delay);
         } else {
-            delayTime = delay * 60;
+            delayTime = Math.round(delay * 60);
         }
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override

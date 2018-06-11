@@ -48,7 +48,7 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
     private TextView mCompanyName_tv;
     private TextView mOfflineStorage_tv;
     private TextView mDataSyncTime_tv;
-    private volatile int mSyncTime;
+    private volatile float mSyncTime;
     private TextView mAboutUs_tv;
     private TextView mUserInfo_tv;
     private TextView mVehicleInfo_tv;
@@ -145,7 +145,7 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
             String email = mPref.getItem(Constants.PREF_EMAIL);
             String access_token = mPref.getItem(Constants.PREF_ACCESS_TOKEN);
 
-            String USER_URL = Constants.getIdentityURLs(getApplicationContext(),GET_USER_URL) + "?email=" + email;
+            String USER_URL = Constants.getIdentityURLs(getApplicationContext(), GET_USER_URL) + "?email=" + email;
             LogUtil.d(TAG, "Get User details for email:" + email);
             LogUtil.d(TAG, "Get User details for URL:" + USER_URL);
 
@@ -232,7 +232,11 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.data_sync_time_add:
                 if (mSyncTime <= 29) {
-                    mSyncTime++;
+                    if (mSyncTime == 0.5f) {
+                        mSyncTime = 1;
+                    } else {
+                        mSyncTime++;
+                    }
                     setSyncTimeOnViews();
                     broadcastToMessage();
                 } else {
@@ -240,8 +244,12 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
                 }
                 break;
             case R.id.data_sync_time_sub:
-                if (mSyncTime >= 2) {
-                    mSyncTime--;
+                if (mSyncTime >= 1) {
+                    if (mSyncTime == 1) {
+                        mSyncTime = 0.5f;
+                    } else {
+                        mSyncTime--;
+                    }
                     setSyncTimeOnViews();
                     broadcastToMessage();
                 } else {
@@ -276,7 +284,6 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
     }
 
 
-
     private void setOfflineStorageOnViews(String size) {
         mOfflineStorage_tv.setText(size);
         mPref.setMemorySize(mDefaultSize);
@@ -287,9 +294,13 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
     private void setSyncTimeOnViews() {
         mPref.addItem(Constants.KEY_SYNC_DATA_TIME, mSyncTime);
         if (mSyncTime <= 9) {
-            mDataSyncTime_tv.setText("0" + Integer.toString(mSyncTime) + " Min");
+            if (mSyncTime == 0.5f) {
+                mDataSyncTime_tv.setText("30 Sec");
+            } else {
+                mDataSyncTime_tv.setText("0" + Math.round(mSyncTime) + " Min");
+            }
         } else {
-            mDataSyncTime_tv.setText(Integer.toString(mSyncTime) + " Min");
+            mDataSyncTime_tv.setText(Math.round(mSyncTime) + " Min");
         }
     }
 

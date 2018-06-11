@@ -153,7 +153,7 @@ public class VehicleHealthAcitivity extends BaseActivity implements ObdProgressL
             if (mService != null && mService.isRunning() && mService.queueEmpty()) {
                 queueCommands();
 
-                double lat = 0;
+                /*double lat = 0;
                 double lon = 0;
                 double alt = 0;
                 final int posLen = 7;
@@ -186,7 +186,7 @@ public class VehicleHealthAcitivity extends BaseActivity implements ObdProgressL
                     temp.putAll(mCommandResult);
                     ObdReading reading = new ObdReading(lat, lon, alt, System.currentTimeMillis(), vin, temp);
                     myCSVWriter.writeLineCSV(reading);
-                }
+                }*/
                 mCommandResult.clear();
             } else {
                 LogUtil.d(TAG, "mQueueCommands Service:null or service is not running or service queue is not empty");
@@ -290,7 +290,6 @@ public class VehicleHealthAcitivity extends BaseActivity implements ObdProgressL
             registerReceiver(
                     mParameterReceiver, new IntentFilter(Constants.LOCAL_RECEIVER_ACTION_NAME));
             CommonUtil.registerGpsReceiver(getBaseContext(), gpsLocationReceiver);
-
         } catch (Exception e) {
             Log.i("", "broadcastReceiver is already unregistered");
         }

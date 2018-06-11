@@ -291,14 +291,18 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
 
             } else {
                 if (sPopupWindow != null) {
-                    if (sPopupWindow.isShowing())
+                    if (sPopupWindow.isShowing()) {
+                        sPopupWindow.setFocusable(true);
                         sPopupWindow.dismiss();
+                    }
                 }
             }
         } else {
             if (sPopupWindow != null) {
-                if (sPopupWindow.isShowing())
+                if (sPopupWindow.isShowing()) {
+                    sPopupWindow.setFocusable(true);
                     sPopupWindow.dismiss();
+                }
             }
         }
         getLastTrip();
@@ -840,7 +844,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         alert.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(final DialogInterface dialog, int which) {
-                TripManagementUtils.stopTrip(DashboardActivity.this);
+                if (TripManagementUtils.stopTrip(DashboardActivity.this)> 0) {
                 if (sPopupWindow != null) {
                     try {
                         sPopupWindow.dismiss();
@@ -850,6 +854,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
                 }
                 getLastTrip();
                 NotificationManagerUtil.getInstance().dismissNotification(getBaseContext());
+            }
 
             }
         });
@@ -867,6 +872,21 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
                     try {
                         sPopupWindow.dismiss();
                         getLastTrip();
+                    } catch (Exception ex) {
+                        LogUtil.d(TAG, ex.getMessage());
+                    }
+                }
+            }
+
+            if (intent.getAction().equals(Constants.NOTIFICATION_PAUSE_BROADCAST)) {
+                if (sPopupWindow != null) {
+                    try {
+                        Trip trip=DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
+                        if (TripStatus.Pause.getValue()==trip.status) {
+                            sTv_btn_pause.setImageDrawable(getDrawable(R.drawable.play_icon));
+                        } else {
+                            sTv_btn_pause.setImageDrawable(getDrawable(R.drawable.pause));
+                        }
                     } catch (Exception ex) {
                         LogUtil.d(TAG, ex.getMessage());
                     }

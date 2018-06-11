@@ -105,7 +105,7 @@ public class Constants {
 
     @SuppressLint("SdCardPath")
     public static final String LOCAL_PATH = "mobiliya_fleet_sample.txt";
-    public static final int SYNC_DATA_TIME = 1;
+    public static final float SYNC_DATA_TIME = 0.5f;//1
     public static final String KEY_SYNC_DATA_TIME = "syncDataOnIOT";
     public static final String MESSAGE = "message";
     public static final String SYNC_TIME = "synctime";
@@ -160,6 +160,8 @@ public class Constants {
     public static final String RESET_PASSWORD_URL = "RESET_PASSWORD";
     public static final String FORGOT_PASSWORD_URL = "FORGOT_PASSWORD_URL";
     public static final String GET_USER_URL = "GET_USER_URL";
+    public static final String LATITUDE = "Latititude";
+    public static final String LONGITUDE = "Longitude";
 
 
     public static  String getTripsURLs(Context cxt,String type){

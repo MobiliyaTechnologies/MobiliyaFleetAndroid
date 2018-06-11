@@ -548,6 +548,7 @@ public class J1939DongleService extends AbstractGatewayService {
     /*Request data from the adapter. */
     public void getVehicleData() {
         LogUtil.d(TAG, "getVehicleData()");
+        initDataSyncTimer(Constants.SYNC_DATA_TIME);
         if (j1939 == null) {
             LogUtil.d(TAG, "getVehicleData() return j1939 object is null");
             connectToAdapter();

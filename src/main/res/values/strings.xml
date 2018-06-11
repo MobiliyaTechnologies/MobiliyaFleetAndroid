@@ -184,7 +184,6 @@
     <string name="_97_0">97–0</string>
     <string name="active">Active</string>
     <string name="trip_is_paused" tools:ignore="UnusedResources">Trip is paused</string>
-    <string name="trip_is_already_paused">Trip is already paused</string>
     <string name="no_internet_connection">Please check your internet connection</string>
     <string name="request">Request</string>
     <string name="last_trip">Last Trip</string>
@@ -246,5 +245,6 @@
     <string name="mimatch">Password not matching</string>
     <string name="pass_change_succes">Password changed successfully.</string>
     <string name="failed_to_change_password">Failed to reset password</string>
+    <string name="failed_to_start_trip_nogps">Error in fetching location.Please try again</string>
 
 </resources>

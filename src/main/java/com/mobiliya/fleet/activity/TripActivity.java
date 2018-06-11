@@ -1,5 +1,6 @@
 package com.mobiliya.fleet.activity;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -8,11 +9,20 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -21,7 +31,17 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.volley.VolleyError;
-
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mapbox.mapboxsdk.Mapbox;
@@ -44,6 +64,8 @@ import com.mobiliya.fleet.db.DatabaseProvider;
 import com.mobiliya.fleet.io.AbstractGatewayService;
 import com.mobiliya.fleet.io.J1939DongleService;
 import com.mobiliya.fleet.io.ObdGatewayService;
+import com.mobiliya.fleet.location.LocationInfo;
+import com.mobiliya.fleet.location.LocationTracker;
 import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.services.GPSTracker;
@@ -69,7 +91,7 @@ import java.util.Locale;
 import static com.mobiliya.fleet.utils.CommonUtil.showToast;
 
 @SuppressWarnings({"ALL", "unused"})
-public class TripActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class TripActivity extends AppCompatActivity implements OnMapReadyCallback ,LocationListener,GoogleApiClient.ConnectionCallbacks ,GoogleApiClient.OnConnectionFailedListener{
     private static final String TAG = TripActivity.class.getName();
     private MapboxMap mMap;
     private Trip mTrip;
@@ -78,7 +100,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     private TextView mTripTime;
     private TextView mFuelUsed;
     private TextView mStops;
-    private TextView mPause_tv;
+    public static TextView mPause_tv;
     private TextView mStop_tv;
     public TextView mSpeeding, mHardBraking;
     private LinearLayout mPause, mStop;
@@ -93,7 +115,15 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     public Marker markerEnd;
     private GpsLocationReceiver gpsLocationReceiver = new GpsLocationReceiver();
     MapView mapView;
-    private ImageView mPauseIcon;
+    public static ImageView mPauseIcon;
+    private Geocoder mGeocoder;
+    private List<Address> mAddresses;
+    private Location mylocation;
+    private GoogleApiClient googleApiClient;
+    private final static int REQUEST_CHECK_SETTINGS_GPS = 0x1;
+    private final static int REQUEST_ID_MULTIPLE_PERMISSIONS = 0x2;
+    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 1001;
+    LatLng mLatLong;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +131,8 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_trip);
         bindViews();
         mPref = SharePref.getInstance(this);
+        setUpGClient();
+        mGeocoder = new Geocoder(this, Locale.getDefault());
         mProtocol = mPref.getItem(Constants.PREF_ADAPTER_PROTOCOL);
         connectToAdapetrService();
         mOptions = new PolylineOptions().width(5).color(getColor(R.color.accent_black));
@@ -270,20 +302,43 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void startTrip() {
-        String tripId = TripManagementUtils.startTrip(this);
-        NotificationManagerUtil.getInstance().createNotification(getBaseContext());
-        if (tripId != null) {
-            mMap.clear();
-            Double lat = GPSTracker.getInstance(getBaseContext()).getLatitude();
-            Double lon = GPSTracker.getInstance(getBaseContext()).getLongitude();
-            LatLong latlong = new LatLong();
-            latlong.latitude = String.valueOf(lat);
-            latlong.longitude = String.valueOf(lon);
-            mTrip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
-            mTripDate.setText(mTrip.tripName);
-            DatabaseProvider.getInstance(getBaseContext()).addLatLong(mTrip.commonId, new LatLong(String.valueOf(lat), String.valueOf(lon)));
-            plotMarker("start", new LatLong(String.valueOf(lat), String.valueOf(lon)));
-            showToast(this, getString(R.string.trip_started));
+        GPSTracker gps=GPSTracker.getInstance(getBaseContext());
+
+
+         if(gps.getLatitude()==0.0d||gps.getLongitude()==0.0d) {
+            /* starts trip after location found inside getMylocation*/
+                checkPermissions();
+                getMyLocation();
+
+        }else {
+             LatLng  latlongitude= new LatLng(gps.getLatitude(),gps.getLongitude());
+             saveStartTrip(latlongitude);
+        }
+
+
+
+    }
+
+
+    public void saveStartTrip( LatLng latlongitude){
+        if(latlongitude!=null){
+            String tripId = TripManagementUtils.startTrip(this, latlongitude);
+            NotificationManagerUtil.getInstance().createNotification(getBaseContext());
+            if (tripId != null) {
+                mMap.clear();
+                Double lat = GPSTracker.getInstance(getBaseContext()).getLatitude();
+                Double lon = GPSTracker.getInstance(getBaseContext()).getLongitude();
+                LatLong latlong = new LatLong();
+                latlong.latitude = String.valueOf(lat);
+                latlong.longitude = String.valueOf(lon);
+                mTrip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
+                mTripDate.setText(mTrip.tripName);
+                DatabaseProvider.getInstance(getBaseContext()).addLatLong(mTrip.commonId, new LatLong(String.valueOf(lat), String.valueOf(lon)));
+                plotMarker("start", new LatLong(String.valueOf(lat), String.valueOf(lon)));
+                showToast(this, getString(R.string.trip_started));
+            }
+        }else{
+            showToast(this, getString(R.string.failed_to_start_trip_nogps));
         }
     }
 
@@ -425,61 +480,66 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 Trip trip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
                 long record_affected = TripManagementUtils.stopTrip(TripActivity.this);
-                NotificationManagerUtil.getInstance().dismissNotification(getBaseContext());
-                List<Trip> newTripList = DatabaseProvider.getInstance(getBaseContext()).getLastUnSyncedTrip();
-                if (newTripList != null && newTripList.size() > 0) {
-                    for (final Trip trips : newTripList) {
-                        if (CommonUtil.isNetworkConnected(getBaseContext())) {
-                            TripManagementUtils.addTripOnServer(TripActivity.this, trips, new ApiCallBackListener() {
-                                        @Override
-                                        public void onSuccess(JSONObject object) {
-                                            if (object != null) {
-                                                try {
-                                                    if (object.getString("message").equals("Success")) {
-                                                        LogUtil.d(TAG, "addTripOnServer() sucess");
-                                                        String data = object.getString("data");
-                                                        Type type = new TypeToken<Trip>() {
-                                                        }.getType();
-                                                        Gson gson = new Gson();
-                                                        Trip trip_result = null;
+                if(record_affected>0) {
+                    NotificationManagerUtil.getInstance().dismissNotification(getBaseContext());
+                    List<Trip> newTripList = DatabaseProvider.getInstance(getBaseContext()).getLastUnSyncedTrip();
+                    if (newTripList != null && newTripList.size() > 0) {
+                        for (final Trip trips : newTripList) {
+                            if (CommonUtil.isNetworkConnected(getBaseContext())) {
+                                TripManagementUtils.addTripOnServer(TripActivity.this, trips, new ApiCallBackListener() {
+                                            @Override
+                                            public void onSuccess(JSONObject object) {
+                                                if (object != null) {
+                                                    try {
+                                                        if (object.getString("message").equals("Success")) {
+                                                            LogUtil.d(TAG, "addTripOnServer() sucess");
+                                                            String data = object.getString("data");
+                                                            Type type = new TypeToken<Trip>() {
+                                                            }.getType();
+                                                            Gson gson = new Gson();
+                                                            Trip trip_result = null;
 
-                                                        try {
-                                                            trip_result = gson.fromJson(data, type);
-                                                        } catch (Exception ex) {
-                                                            ex.getMessage();
+                                                            try {
+                                                                trip_result = gson.fromJson(data, type);
+                                                            } catch (Exception ex) {
+                                                                ex.getMessage();
+                                                            }
+
+                                                            String commonId = trip_result.commonId;
+                                                            Intent intent = new Intent(TripActivity.this, TripDetailsActivity.class);
+                                                            intent.putExtra(Constants.TRIPID, commonId);
+                                                            startActivity(intent);
+                                                            finish();
                                                         }
-
-                                                        String commonId = trip_result.commonId;
-                                                        Intent intent = new Intent(TripActivity.this, TripDetailsActivity.class);
-                                                        intent.putExtra(Constants.TRIPID, commonId);
-                                                        startActivity(intent);
-                                                        finish();
+                                                    } catch (Exception ex) {
                                                     }
-                                                } catch (Exception ex) {
                                                 }
+                                                dialogProgress.dismiss();
                                             }
-                                            dialogProgress.dismiss();
-                                        }
 
-                                        @Override
-                                        public void onError(VolleyError result) {
-                                            if (result.networkResponse != null && result.networkResponse.statusCode == 401) {
-                                                showToast(TripActivity.this, getString(R.string.aunthentication_error));
-                                            } else {
-                                                showToast(TripActivity.this, getString(R.string.error_occured));
+                                            @Override
+                                            public void onError(VolleyError result) {
+                                                if (result.networkResponse != null && result.networkResponse.statusCode == 401) {
+                                                    showToast(TripActivity.this, getString(R.string.aunthentication_error));
+                                                } else {
+                                                    showToast(TripActivity.this, getString(R.string.error_occured));
+                                                }
+                                                finish();
+                                                dialogProgress.dismiss();
+
                                             }
-                                            finish();
-                                            dialogProgress.dismiss();
-
                                         }
-                                    }
-                            );
-                        } else {
-                            finish();
-                            dialogProgress.dismiss();
+                                );
+                            } else {
+                                finish();
+                                dialogProgress.dismiss();
+                            }
                         }
+                    } else {
+                        dialogProgress.dismiss();
+                        finish();
                     }
-                } else {
+                }else {
                     dialogProgress.dismiss();
                     finish();
                 }
@@ -609,6 +669,188 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     };
 
+
+    private synchronized void setUpGClient() {
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, 0, this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+        googleApiClient.connect();
+    }
+
+
+
+    private void getMyLocation() {
+        if (googleApiClient != null) {
+            if (googleApiClient.isConnected()) {
+                int permissionLocation = ContextCompat.checkSelfPermission(TripActivity.this,
+                        Manifest.permission.ACCESS_FINE_LOCATION);
+                if (permissionLocation == PackageManager.PERMISSION_GRANTED) {
+                    mylocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+                    LocationRequest locationRequest = new LocationRequest();
+                    locationRequest.setInterval(3000);
+                    locationRequest.setFastestInterval(3000);
+                    locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                    LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                            .addLocationRequest(locationRequest);
+                    builder.setAlwaysShow(true);
+                    LocationServices.FusedLocationApi
+                            .requestLocationUpdates(googleApiClient, locationRequest, this);
+                    PendingResult<LocationSettingsResult> result =
+                            LocationServices.SettingsApi
+                                    .checkLocationSettings(googleApiClient, builder.build());
+                    result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
+
+                        @Override
+                        public void onResult(LocationSettingsResult result) {
+                            final Status status = result.getStatus();
+                            switch (status.getStatusCode()) {
+                                case LocationSettingsStatusCodes.SUCCESS:
+                                    // All location settings are satisfied.
+                                    // You can initialize location requests here.
+                                    getLocation();
+                                    break;
+                                case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                                    // Location settings are not satisfied.
+                                    // But could be fixed by showing the user a dialog.
+                                    try {
+                                        // Show the dialog by calling startResolutionForResult(),
+                                        // and check the result in onActivityResult().
+                                        // Ask to turn on GPS automatically
+                                        status.startResolutionForResult(TripActivity.this,
+                                                REQUEST_CHECK_SETTINGS_GPS);
+                                    } catch (IntentSender.SendIntentException e) {
+                                        // Ignore the error.
+                                    }
+                                    break;
+                                case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                                    break;
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * This API returns the current location requested.
+     */
+    public void getLocation() {
+        LogUtil.d(TAG, "Into getLocation() method");
+    final ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setIndeterminate(true);
+        dialog.setMessage("Starting trip, please wait....");
+        dialog.setCancelable(false);
+        dialog.show();
+
+        (new Thread() {
+            public void run() {
+                Looper.prepare();
+                try {
+                    final Handler mHandler = new Handler() {
+                        @Override
+                        public void handleMessage(final Message msg) {
+                            LogUtil.d(TAG, "Into handleMessage()");
+                            if (msg != null && msg.what == 0) {
+                                final HashMap<String, Object> hMap = new HashMap<>();
+
+                                final LocationInfo location = (LocationInfo) msg.obj;
+                                if (location != null) {
+                                    try {
+                                        LogUtil.d(TAG, "location object ");
+
+                                        if(location.getLatitude()!=0.0d && location.getLongitude()!=0.0d){
+                                            mLatLong=new LatLng(location.getLatitude(),location.getLongitude());
+                                        }
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    } finally {
+
+                                    }
+                                }
+                                TripActivity.this.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        saveStartTrip(mLatLong);
+                                        dialog.dismiss();
+                                    }
+                                });
+
+                            }
+                        }
+                    };
+
+                    // Get the device location.
+                    LocationTracker.getInstance(TripActivity.this).getLocation(mHandler);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Looper.loop();
+            }
+        }).start();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // location-related task you need to do.
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        LogUtil.d(TAG, "location permission granted");
+                        //getMyLocation();
+                    }
+
+                } else {
+                    LogUtil.d(TAG, "permission denied");
+                }
+            }
+        }
+    }
+
+    private void checkPermissions() {
+        LogUtil.d(TAG, "checkPermissions()");
+        int permissionCheck = this.checkSelfPermission("Manifest.permission.ACCESS_FINE_LOCATION");
+        permissionCheck += this.checkSelfPermission("Manifest.permission.ACCESS_COARSE_LOCATION");
+        permissionCheck += this.checkSelfPermission("android.permission-group.CONTACTS");
+        permissionCheck += this.checkSelfPermission("android.permission.WRITE_CONTACTS");
+        permissionCheck += this.checkSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE");
+        if (permissionCheck != 0) {
+            this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.WRITE_CONTACTS, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission_group.CONTACTS, Manifest.permission.BLUETOOTH_PRIVILEGED}, MY_PERMISSIONS_REQUEST_LOCATION); //Any number
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
 }
 
 

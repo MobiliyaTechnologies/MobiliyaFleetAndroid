@@ -227,9 +227,11 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
             mVehicleReg_edt.setBackgroundResource(R.drawable.shadow_10_error);
             mVehicleReg_edt.setTextColor(R.color.deep_carpen_pink);
             valid = false;
-        } else {
+        } else  {
             mVehicleError_tv.setVisibility(View.INVISIBLE);
+            vehicleRegistrationNumber=vehicleRegistrationNumber.replaceAll("[^a-zA-Z0-9]", "");
         }
+
 
         if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             mEmailError_tv.setVisibility(View.VISIBLE);
