@@ -105,12 +105,10 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
         boolean isMovedToDashBoard = mSharePref.getBooleanItem(Constants.PREF_MOVED_TO_DASHBOARD, false);
         boolean isMovedToBtScreen = mSharePref.getBooleanItem(Constants.KEY_MOVE_TO_BT_SCREEN, false);
         if (isUSerLoggedIn && isMovedToDashBoard) {
-            DashboardActivity mActivity = new DashboardActivity();
-            startNextActivity(mActivity);
+            startNextActivity(DashboardActivity.class);
             return;
         } else if (isUSerLoggedIn && isMovedToBtScreen) {
-            BluetoothConnectionActivity mActivity = new BluetoothConnectionActivity();
-            startNextActivity(mActivity);
+            startNextActivity(BluetoothConnectionActivity.class);
             return;
         } else if (isUSerLoggedIn) {
             startNextActivity(null);
@@ -323,11 +321,11 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
 
     }
 
-    private void startNextActivity(Activity activity) {
+    private void startNextActivity(Class<? extends Activity> activity) {
         LogUtil.d(TAG, "startNextActivity");
         Intent intent;
         if (activity != null) {
-            intent = new Intent(SignInActivity.this, activity.getClass());
+            intent = new Intent(SignInActivity.this, activity);
         } else {
             intent = new Intent(SignInActivity.this, LocationSettingActivity.class);
         }
@@ -422,9 +420,8 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
                                     mSharePref.setVehicleID(vehicle.getId());
                                     mSharePref.setVehicleData(vehicle);
                                     mSharePref.addItem(Constants.PREF_USER_LOGED_IN, true);
-                                    LocationSettingActivity mActivity = new LocationSettingActivity();
                                     mDialog.dismiss();
-                                    startNextActivity(mActivity);
+                                    startNextActivity(LocationSettingActivity.class);
                                 } else {
                                     mDialog.dismiss();
                                     Toast.makeText(SignInActivity.this, getString(R.string.incorrect_vehicle),

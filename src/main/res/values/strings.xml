@@ -96,6 +96,7 @@
     <string name="settings">Settings</string>
     <string name="sign_out">Sign Out</string>
     <string name="try_again">"Please try again later."</string>
+    <string name="error_reset">"Error in resetting password."</string>
     <string name="new_password_send">new password send</string>
     <string name="vehicle_health">Health</string>
     <string name="vehicle_health_text">Vehicle Health</string>
@@ -219,7 +220,7 @@
     <string name="fname">Name</string>
     <string name="emailid" tools:ignore="UnusedResources">Email Id</string>
     <string name="password_" tools:ignore="UnusedResources">Password</string>
-    <string name="last_sync">Last sync :</string>
+    <string name="last_sync">Last sync: </string>
     <string name="adapter">Adapter</string>
     <string name="failed_to_get_userInfo">Failed to get updated user information.</string>
     <string name="failed_to_get_vehicleInfo">Failed to get updated vehicle information</string>

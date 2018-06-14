@@ -28,35 +28,35 @@ public class LogUtil {
     public static void d(String tag, String msg) {
         if (DEBUG) { // && Log.isLoggable(tag, Log.DEBUG)) {
             Log.d(TAG, tag + " : " + msg);
-            //appendToFile(tag, msg);
+            appendToFile(tag, msg);
         }
     }
 
     public static void i(String tag, String msg) {
         if (DEBUG) { // && Log.isLoggable(tag, Log.INFO)) {
             Log.i(TAG, tag + " : " + msg);
-            //appendToFile(tag, msg);
+            appendToFile(tag, msg);
         }
     }
 
     public static void e(String tag, String msg) {
         if (DEBUG) { // && Log.isLoggable(tag, Log.ERROR)) {
             Log.e(TAG, tag + " : " + msg);
-            //appendToFile(tag, msg);
+            appendToFile(tag, msg);
         }
     }
 
     public static void v(String tag, String msg) {
         if (DEBUG) { // && Log.isLoggable(tag, Log.VERBOSE)) {
             Log.v(TAG, tag + " : " + msg);
-            //appendToFile(tag, msg);
+            appendToFile(tag, msg);
         }
     }
 
     public static void w(String tag, String msg) {
         if (DEBUG) {// && Log.isLoggable(tag, Log.WARN)) {
             Log.w(TAG, tag + " : " + msg);
-            //appendToFile(tag, msg);
+            appendToFile(tag, msg);
         }
     }
 
@@ -78,7 +78,7 @@ public class LogUtil {
         }
         catch (IOException e)
         {
-            Log.e("com.cindypotvin.Logger", "Unable to log exception to file.");
+            LogUtil.e(TAG, "Unable to log exception to file.");
         }*/
     }
 

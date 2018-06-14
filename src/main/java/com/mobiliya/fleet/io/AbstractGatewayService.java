@@ -109,7 +109,7 @@ public abstract class AbstractGatewayService extends RoboService {
         LogUtil.d(TAG, "Service destroyed.");
         super.onDestroy();
         try {
-            timer.cancel();
+            //timer.cancel();
             unregisterReceiver(
                     mMessageReceiver);
             wakeLock.release();
@@ -199,18 +199,18 @@ public abstract class AbstractGatewayService extends RoboService {
             String value = i.getExtras().get(Constants.MESSAGE).toString();
 
             if (value.equalsIgnoreCase(Constants.SYNC_TIME)) {
-                float delay = SharePref.getInstance(ctx).getItem(Constants.KEY_SYNC_DATA_TIME, Constants.SYNC_DATA_TIME);
+                int delay = SharePref.getInstance(ctx).getItem(Constants.KEY_SYNC_DATA_TIME, Constants.SYNC_DATA_TIME);
                 initDataSyncTimer(delay);
             }
         }
     };
 
     /*method to initialize timer task to upload vehicle information to iotHub*/
-    protected void initDataSyncTimer(final float delay) {
-        if (!SharePref.getInstance(this).getBooleanItem(Constants.PREF_MOVED_TO_DASHBOARD, false)) {
+    protected void initDataSyncTimer(final int delay) {
+        /*if (!SharePref.getInstance(this).getBooleanItem(Constants.PREF_MOVED_TO_DASHBOARD, false)) {
             LogUtil.d(TAG, "Return since acitivity is not moved to dashboard");
             return;
-        }
+        }*/
 
         LogUtil.d(TAG, "initDataSyncTimer called with delay:" + delay);
         if (timer != null) {
@@ -221,18 +221,11 @@ public abstract class AbstractGatewayService extends RoboService {
             timer = new Timer();
         }
 
-        int delayTime = 1;
-        if (delay == 0.5f) {
-            delayTime =  30;
-        } else if (delay == 30) {
-            delayTime = Math.round(delay);
-        } else {
-            delayTime = Math.round(delay * 60);
-        }
+        int delayTime = delay;
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                LogUtil.i("AbstractGatewayService Timer", "1 min timer callback callled ->" + delay);
+                LogUtil.i("AbstractGatewayService Timer", "timer callback callled ->" + delay+" Sec");
                 processData();
             }
         }, 0, (delayTime * 1000));
@@ -270,6 +263,7 @@ public abstract class AbstractGatewayService extends RoboService {
             Trip trip = DatabaseProvider.getInstance(getApplicationContext()).getCurrentTrip();
             if (trip != null) {
                 mParameter.TripId = trip.commonId;
+                CommonUtil.milesDriven(getApplicationContext(), String.valueOf(mParameter.Distance));
             } else {
                 mParameter.TripId = "NA";
             }
@@ -308,13 +302,14 @@ public abstract class AbstractGatewayService extends RoboService {
     }
 
     private void addParameterToDatabase(Parameter param) {
-        if (!CommonUtil.checkDbSizeExceeds(ctx)) {
+        DatabaseProvider.getInstance(ctx).addParameter(param);
+        /*if (!CommonUtil.checkDbSizeExceeds(ctx)) {
             DatabaseProvider.getInstance(ctx).addParameter(param);
         } else {
             Intent intent = new Intent(Constants.DATABASEFULL);
             ctx.sendBroadcast(intent);
             //LocalBroadcastManager.getInstance(ctx).sendBroadcast(intent);
-        }
+        }*/
     }
 
     public boolean isAdapterConnected() {

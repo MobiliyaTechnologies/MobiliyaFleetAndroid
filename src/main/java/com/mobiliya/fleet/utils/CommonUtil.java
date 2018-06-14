@@ -42,10 +42,16 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.db.DatabaseProvider;
+import com.mobiliya.fleet.db.tables.FaultTable;
+import com.mobiliya.fleet.db.tables.LatLongTable;
+import com.mobiliya.fleet.db.tables.ParameterTable;
+import com.mobiliya.fleet.db.tables.TripTable;
+import com.mobiliya.fleet.db.tables.UserTable;
 import com.mobiliya.fleet.models.FaultModel;
 import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.models.OBDFaultCode;
 import com.mobiliya.fleet.models.Parameter;
+import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.services.GPSTracker;
 import com.mobiliya.fleet.services.GpsLocationReceiver;
 
@@ -631,6 +637,15 @@ public class CommonUtil {
         }
     }
 
+    public static String getTimeDiff(Context cxt,Trip trip) {
+        String diff="0.0";
+
+        Date start = DateUtils.getDateFromString(trip.startTime);
+        diff = DateUtils.getTimeDifference(start);
+        SharePref.getInstance(cxt).addItem(Constants.TIME_ONGOING, diff);
+        return diff;
+    }
+
     public static boolean deleteDirectory(File dir) {
         if (dir != null && dir.isDirectory()) {
             String[] children = dir.list();
@@ -645,5 +660,56 @@ public class CommonUtil {
         return dir.delete();
     }
 
+    public static float milesDriven(Context context,String distance){
+        if (!TextUtils.isEmpty(distance)) {
+            LogUtil.d(TAG, "distance:" + distance);
+            if (!"NA".equalsIgnoreCase(distance)) {
+                float distanceValue = Float.parseFloat(distance);
+                if (distanceValue < 0) {
+                    LogUtil.d(TAG, "distance value is less then 0");
+                    return 0.0f;
+                }
+            }
+            //calculation for miles driven
+            float firstmilage = SharePref.getInstance(context).getItem(Constants.TOTAL_MILES_ONGOING,0.0f);
+            LogUtil.d(TAG, "firstmilage:" + firstmilage);
+            if (firstmilage <= 0) {
+                if (!"NA".equalsIgnoreCase(distance)) {
+                    firstmilage = Float.parseFloat(distance);
+                    LogUtil.d(TAG, "First milage reading :" + firstmilage);
+                    SharePref.getInstance(context).addItem(Constants.TOTAL_MILES_ONGOING, firstmilage);
+                }
+            } else {
+                if (!"NA".equalsIgnoreCase(distance)) {
+                    float milesdriven = 0.0f;
+                    milesdriven = Float.parseFloat(distance) - firstmilage;
+                    if (milesdriven <= 0) {
+                        LogUtil.d(TAG, "Miles driven less then 0");
+                        SharePref.getInstance(context).addItem(Constants.MILES_ONGOING, 0.0f);
+                        return 0;
+                    }
+                    LogUtil.d(TAG, "Distance travel :" + milesdriven);
+                    SharePref.getInstance(context).addItem(Constants.MILES_ONGOING, milesdriven);
+                    return milesdriven;
+                } else {
+                    float miles = SharePref.getInstance(context).getItem(Constants.MILES_ONGOING, 0.0f);
+                    LogUtil.d(TAG, "Distance travel :" + miles);
+                    return miles;
+                }
+            }
+        }
+        return 0;
+    }
+    public static void deletAllDatabaseTables(Context cxt){
+        try {
+            DatabaseProvider.getInstance(cxt).deleteAllTableData(new UserTable());
+            DatabaseProvider.getInstance(cxt).deleteAllTableData(new ParameterTable());
+            DatabaseProvider.getInstance(cxt).deleteAllTableData(new TripTable());
+            DatabaseProvider.getInstance(cxt).deleteAllTableData(new FaultTable());
+            DatabaseProvider.getInstance(cxt).deleteAllTableData(new LatLongTable());
+        }catch (Exception ex){
+            LogUtil.d(TAG,"Failed while deleting db");
+        }
+    }
 
 }

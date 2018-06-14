@@ -27,6 +27,7 @@ import com.mobiliya.fleet.comm.VolleyCallback;
 import com.mobiliya.fleet.comm.VolleyCommunicationManager;
 import com.mobiliya.fleet.db.DatabaseProvider;
 import com.mobiliya.fleet.models.LatLong;
+import com.mobiliya.fleet.models.Parameter;
 import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.services.GPSTracker;
 
@@ -67,32 +68,55 @@ public class TripManagementUtils {
         String formattedDate = df.format(new Date());
         String vehicle = SharePref.getInstance(activity).getVehicleID();
 
-        GPSTracker gpsTracker = GPSTracker.getInstance(activity);
-        Double latitude = latlong.getLatitude();
-        Double longitude = latlong.getLongitude();
-        String address = gpsTracker.getAddressFromLatLong(activity.getBaseContext(), new LatLong(String.valueOf(latitude), String.valueOf(longitude)));
-
-
-        Trip newTrip = new Trip();
-        UUID uuid = UUID.randomUUID();
-        String randomUUIDString = uuid.toString();
-        newTrip.commonId = randomUUIDString;
-        newTrip.tripName = "New Trip";
-        newTrip.description = newTrip.tripName;
-        newTrip.startTime = getLocalTimeString();
-        newTrip.StartDate = getLocalTimeString();
-        newTrip.startLocation = latitude + "," + longitude + "#" + address;
-        newTrip.endLocation = "NA";
-        newTrip.vehicleId = vehicle;
-        newTrip.status = TripStatus.Start.getValue();
-        newTrip.IsSynced = false;
-
-        if (TextUtils.isEmpty(newTrip.vehicleId)) {
-            dialog.dismiss();
-            showToast(activity, "Please add your vehicle number");
-            return null;
+        String address = null;
+        LatLong locations = null;
+        Double latitude = 0.0;
+        Double longitude = 0.0;
+        SharePref pref = SharePref.getInstance(activity.getBaseContext());
+        GPSTracker gps = GPSTracker.getInstance(activity.getBaseContext());
+        gps.setDistance(0.0);
+        if (latlong != null) {
+            latitude = latlong.getLatitude();
+            longitude = latlong.getLongitude();
+            try {
+                GPSTracker gpsTracker = GPSTracker.getInstance(activity);
+                locations = new LatLong(String.valueOf(latitude), String.valueOf(longitude));
+                address = gpsTracker.getAddressFromLatLong(activity.getBaseContext(), locations);
+                //address = pref.getItem(Constants.LAST_ADDRESS,"");
+            } catch (Exception ex) {
+                Log.d(TAG, "Failed to get address");
+            }
         }
-        tripId = DatabaseProvider.getInstance(activity).addTrip(newTrip);
+
+        if (latitude != 0.0 && longitude != 0.0 && address != null && locations != null) {
+
+
+            Trip newTrip = new Trip();
+            UUID uuid = UUID.randomUUID();
+            String randomUUIDString = uuid.toString();
+            newTrip.commonId = randomUUIDString;
+            newTrip.tripName = "New Trip";
+            newTrip.description = newTrip.tripName;
+            newTrip.startTime = getLocalTimeString();
+            newTrip.StartDate = getLocalTimeString();
+            newTrip.startLocation = latitude + "," + longitude + "#" + address;
+            newTrip.endLocation = "NA";
+            newTrip.vehicleId = vehicle;
+            newTrip.status = TripStatus.Start.getValue();
+            newTrip.IsSynced = false;
+
+            if (TextUtils.isEmpty(newTrip.vehicleId)) {
+                dialog.dismiss();
+                showToast(activity, "Please add your vehicle number");
+                return null;
+            }
+            tripId = DatabaseProvider.getInstance(activity).addTrip(newTrip);
+            updateLoactionToList(activity, newTrip, locations);
+        }
+        if (tripId == null) {
+            Toast.makeText(activity, activity.getString(R.string.failed_to_start_trip_nogps), Toast.LENGTH_LONG).show();
+        }
+
         dialog.dismiss();
         return tripId;
     }
@@ -159,16 +183,24 @@ public class TripManagementUtils {
         dialog.setCancelable(false);
         dialog.show();
         long recordAffected = -1;
+        String address = null;
+        LatLong locations = null;
 
-        GPSTracker gpsTracker = GPSTracker.getInstance(activity);
         Double latitude = Double.valueOf(SharePref.getInstance(activity.getBaseContext()).getItem(LATITUDE));
         Double longitude = Double.valueOf(SharePref.getInstance(activity.getBaseContext()).getItem(LONGITUDE));
+        SharePref pref = SharePref.getInstance(activity.getApplication());
+        GPSTracker gps = GPSTracker.getInstance(activity.getBaseContext());
+        gps.setDistance(0.0);
+        try {
+            GPSTracker gpsTracker = GPSTracker.getInstance(activity);
+            locations = new LatLong(String.valueOf(latitude), String.valueOf(longitude));
+            //address = gpsTracker.getAddressFromLatLong(activity.getBaseContext(), locations);
+            address = pref.getItem(Constants.LAST_ADDRESS,"");
+        } catch (Exception ex) {
+            Log.d(TAG, "Failed to get address");
+        }
 
-        if(latitude!=0.0 &&longitude!=0.0 ) {
-            String address = gpsTracker.getAddressFromLatLong(activity.getBaseContext(), new LatLong(String.valueOf(latitude), String.valueOf(longitude)));
-
-            SharePref pref = SharePref.getInstance(activity.getApplication());
-
+        if (latitude != 0.0 && longitude != 0.0 && address != null && locations != null) {
             try {
                 Trip newTrip = DatabaseProvider.getInstance(activity).getCurrentTrip();
                 if (newTrip == null) {
@@ -181,6 +213,8 @@ public class TripManagementUtils {
                 newTrip.EndDate = getLocalTimeString();
                 newTrip.status = TripStatus.Stop.getValue();
                 newTrip.stops = DatabaseProvider.getInstance(activity).getStopsCount(newTrip.commonId);
+                float miles = SharePref.getInstance(activity.getBaseContext()).getItem(Constants.MILES_ONGOING, 0.0f);
+                newTrip.milesDriven = String.format("%.2f", miles);
                 newTrip.IsSynced = false;
 
                 pref.addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
@@ -191,6 +225,7 @@ public class TripManagementUtils {
                 recordAffected = DatabaseProvider.getInstance(activity.getApplicationContext()).updateTrip(newTrip);
 
                 if (recordAffected > 0) {
+                    updateLoactionToList(activity, newTrip, locations);
                     DatabaseProvider.getInstance(activity.getBaseContext()).deleteLatLong(newTrip.commonId);
                     showToast(activity, activity.getString(R.string.trip_stopped));
 
@@ -208,22 +243,49 @@ public class TripManagementUtils {
                 dialog.dismiss();
             }
         }
-        if(recordAffected==-1){
+      /*  if (recordAffected == -1) {
             Toast.makeText(activity, activity.getString(R.string.failed_to_start_trip_nogps), Toast.LENGTH_LONG).show();
             dialog.dismiss();
-        }
+        }*/
         return recordAffected;
     }
 
+    public static void updateLoactionToList(Context cxt, Trip trp, LatLong latLong) {
+        if (trp != null) {
+            DatabaseProvider.getInstance(cxt).addLatLong(trp.commonId, latLong);
+        }
+    }
+
+    public static void updateLocations(Context cxt, Parameter parameter) {
+        try {
+            Trip trip = DatabaseProvider.getInstance(cxt).getCurrentTrip();
+            if (trip != null) {
+                TripManagementUtils.updateLoactionToList(cxt, trip, new LatLong(parameter.Latitude, parameter.Longitude));
+            }
+        } catch (Exception ex) {
+            ex.getMessage();
+        }
+    }
 
     public static long stopTripFromNotification(Context context) {
         long recordAffected = -1;
-        GPSTracker tracer = GPSTracker.getInstance(context);
+        String address = null;
+        LatLong locations = null;
+        SharePref pref = SharePref.getInstance(context);
+
         Double latitude = Double.valueOf(SharePref.getInstance(context).getItem(LATITUDE));
         Double longitude = Double.valueOf(SharePref.getInstance(context).getItem(LONGITUDE));
 
-        if(latitude!=0.0 &&longitude!=0.0 ) {
-            String address = tracer.getAddressFromLatLong(context, new LatLong(String.valueOf(latitude), String.valueOf(longitude)));
+        try {
+            GPSTracker gpsTracker = GPSTracker.getInstance(context);
+            locations = new LatLong(String.valueOf(latitude), String.valueOf(longitude));
+            //address = gpsTracker.getAddressFromLatLong(context, locations);
+            address = pref.getItem(Constants.LAST_ADDRESS,"");
+        } catch (Exception ex) {
+            Log.d(TAG, "Failed to get address");
+        }
+
+        if (latitude != 0.0 && longitude != 0.0 && address != null && locations != null) {
 
             try {
                 Trip newTrip = DatabaseProvider.getInstance(context).getCurrentTrip();
@@ -242,6 +304,7 @@ public class TripManagementUtils {
                 recordAffected = DatabaseProvider.getInstance(context).updateTrip(newTrip);
 
                 if (recordAffected > 0) {
+                    updateLoactionToList(context, newTrip, locations);
                     DatabaseProvider.getInstance(context).deleteLatLong(newTrip.commonId);
                     Toast.makeText(context, context.getString(R.string.trip_stopped), Toast.LENGTH_LONG).show();
                     SharePref.getInstance(context).addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
@@ -255,7 +318,7 @@ public class TripManagementUtils {
             }
         }
 
-        if(recordAffected==-1){
+        if (recordAffected == -1) {
             Toast.makeText(context, context.getString(R.string.failed_to_start_trip_nogps), Toast.LENGTH_LONG).show();
         }
 
@@ -299,6 +362,7 @@ public class TripManagementUtils {
             jsonBody.put("description", trip.description);
             jsonBody.put("stops", trip.stops);
             jsonBody.put("status", trip.status);
+            jsonBody.put("milesDriven", trip.milesDriven);
             newTripRequestData = CommonUtil.getPostDataString(jsonBody);
             LogUtil.d(TAG, "addTripOnServer() with Json:" + newTripRequestData);
         } catch (JSONException e) {
@@ -517,7 +581,7 @@ public class TripManagementUtils {
                                 count = 0;
                                 alertDialog.dismiss();
 
-                                if(TripManagementUtils.stopTrip(activity)>0) {
+                                if (TripManagementUtils.stopTrip(activity) > 0) {
 
                                     NotificationManagerUtil.getInstance().dismissNotification(activity.getBaseContext());
                                     if ((activity instanceof TripActivity)) {

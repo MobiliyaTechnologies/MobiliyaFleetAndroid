@@ -70,6 +70,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
     private GpsLocationReceiver gpsLocationReceiver = new GpsLocationReceiver();
     MapView mapView;
     TripDetailModel MtDetail;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,7 +108,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
         User user = SharePref.getInstance(getApplicationContext()).getUser();
         String tenantId = user.getTenantId();
         try {
-            String trip_details_url = String.format(Constants.getTripsURLs(getApplicationContext(),GET_TRIP_DETAIL_URL), tenantId, tripId);
+            String trip_details_url = String.format(Constants.getTripsURLs(getApplicationContext(), GET_TRIP_DETAIL_URL), tenantId, tripId);
             VolleyCommunicationManager.getInstance().SendRequest(trip_details_url, Request.Method.GET, null, this, new VolleyCallback() {
                 @Override
                 public void onSuccess(JSONObject result) {
@@ -160,10 +161,10 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
     @SuppressLint("SetTextI18n")
     private void assignValues(TripDetailModel tDetail) {
         if (tDetail != null) {
-            MtDetail=tDetail;
+            MtDetail = tDetail;
             String start_address = "NA", start_longitude = null, start_latitude = null;
             String end_address = "NA", end_longitude = null, end_latitude = null;
-            LatLong startpoint=null,endpoint=null;
+            LatLong startpoint = null, endpoint = null;
             if (TextUtils.isEmpty(tDetail.startTime) || "NA".equals(tDetail.startTime)) {
                 mTripName.setText("");
             } else {
@@ -171,10 +172,14 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
             }
             if (TextUtils.isEmpty(tDetail.startLocation) || "NA".equals(tDetail.startLocation)) {
             } else {
-                start_address = tDetail.startLocation.split("#")[1];
-                String latlong = tDetail.startLocation.split("#")[0];
-                start_latitude = latlong.split(",")[0];
-                start_longitude = latlong.split(",")[1];
+                try {
+                    start_address = tDetail.startLocation.split("#")[1];
+                    String latlong = tDetail.startLocation.split("#")[0];
+                    start_latitude = latlong.split(",")[0];
+                    start_longitude = latlong.split(",")[1];
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
             if (TextUtils.isEmpty(tDetail.endLocation) || "NA".equals(tDetail.endLocation)) {
             } else {
@@ -218,7 +223,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
             if (tDetail.stops == 0) {
                 mStops.setText("0");
             } else {
-                String stops=String.valueOf(tDetail.stops);
+                String stops = String.valueOf(tDetail.stops);
                 mStops.setText(stops);
             }
             if (TextUtils.isEmpty(tDetail.milesDriven) || "-1".equals(tDetail.milesDriven)) {
@@ -266,28 +271,41 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
             mAccelerator.setText("NA");
             mPhoneUsage.setText("NA");
 
-            if (tDetail.locationDetails != null) {
-                if (tDetail.locationDetails != null && !tDetail.locationDetails.isEmpty() && tDetail.locationDetails.size() > 0) {
 
-                    if (start_latitude != null && start_longitude != null){
-                        startpoint = new LatLong(start_latitude, start_longitude);
-                        tDetail.locationDetails.add(0,startpoint);
-                    }else{
-                        startpoint = tDetail.locationDetails.get(0);
-                        plotMarker("start", startpoint);
-                    }
-                    if (end_latitude != null && end_longitude != null) {
-                        endpoint = new LatLong(end_latitude, end_longitude);
-                        tDetail.locationDetails.add(endpoint);
-                    }else {
-                        endpoint = tDetail.locationDetails.get(tDetail.locationDetails.size()-1);
-                        plotMarker("end", endpoint);
-                    }
-
-                     drawLine(tDetail.locationDetails);
-
+            if (tDetail.locationDetails != null && !tDetail.locationDetails.isEmpty() && tDetail.locationDetails.size() > 0) {
+                if (start_latitude != null && start_longitude != null) {
+                    startpoint = new LatLong(start_latitude, start_longitude);
+                    tDetail.locationDetails.add(0, startpoint);
+                } else {
+                    startpoint = tDetail.locationDetails.get(0);
+                    plotMarker("start", startpoint);
                 }
+                if (end_latitude != null && end_longitude != null) {
+                    endpoint = new LatLong(end_latitude, end_longitude);
+                    tDetail.locationDetails.add(endpoint);
+                } else {
+                    endpoint = tDetail.locationDetails.get(tDetail.locationDetails.size() - 1);
+                    plotMarker("end", endpoint);
+                }
+
+                drawLine(tDetail.locationDetails);
+
+            } else {
+                if (tDetail.locationDetails == null) {
+                    tDetail.locationDetails = new ArrayList<LatLong>();
+                }
+                if (start_latitude != null && start_longitude != null && end_latitude != null && end_longitude != null) {
+                    startpoint = new LatLong(start_latitude, start_longitude);
+                    endpoint = new LatLong(end_latitude, end_longitude);
+
+                    tDetail.locationDetails.add(0, startpoint);
+                    tDetail.locationDetails.add(endpoint);
+                    drawLine(tDetail.locationDetails);
+                }
+
             }
+
+
         }
     }
 
@@ -372,7 +390,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
                 Marker marker = mMap.addMarker(new MarkerOptions().position(position).title(AddressStr).icon(icon_img));
                 mMarkerList.add(marker);
 
-                if(MtDetail.locationDetails == null|| MtDetail.locationDetails.size()==0) {
+                if (MtDetail.locationDetails == null || MtDetail.locationDetails.size() == 0) {
                     CameraUpdate cameraPosition = CameraUpdateFactory.newLatLngZoom(position, 15);
                     mMap.moveCamera(cameraPosition);
                 }
@@ -399,13 +417,16 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
             lineOptions.addAll(points);
             lineOptions.width(4);
             lineOptions.color(getColor(R.color.accent_black));
-
-            CameraUpdate cameraPosition = CameraUpdateFactory.newLatLngBounds(mBoundsBuilder.build(), 50);
-            mMap.moveCamera(cameraPosition);
-            mMap.easeCamera(cameraPosition, 5000);
+            if(points.size()>=2) {
+                CameraUpdate cameraPosition = CameraUpdateFactory.newLatLngBounds(mBoundsBuilder.build(), 50);
+                mMap.moveCamera(cameraPosition);
+                mMap.easeCamera(cameraPosition, 5000);
+            }
             // Drawing polyline in the Google Map for the i-th route
             mMap.addPolyline(lineOptions);
         } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }catch (Exception e) {
             e.printStackTrace();
         }
     }

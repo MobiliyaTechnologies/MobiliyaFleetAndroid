@@ -34,6 +34,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 
+import static com.mobiliya.fleet.utils.CommonUtil.deletAllDatabaseTables;
 import static com.mobiliya.fleet.utils.CommonUtil.trimCache;
 import static com.mobiliya.fleet.utils.Constants.GET_USER_URL;
 import static com.mobiliya.fleet.utils.Constants.LAST_SYNC_DATE;
@@ -48,7 +49,7 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
     private TextView mCompanyName_tv;
     private TextView mOfflineStorage_tv;
     private TextView mDataSyncTime_tv;
-    private volatile float mSyncTime;
+    private volatile int mSyncTime;
     private TextView mAboutUs_tv;
     private TextView mUserInfo_tv;
     private TextView mVehicleInfo_tv;
@@ -212,7 +213,7 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
                 Intent intent = new Intent(Constants.SIGNOUT);
                 sendBroadcast(intent);
                 mPref.clearPreferences();
-
+                deletAllDatabaseTables(getBaseContext());
                 try {
                     trimCache(getBaseContext());
                 } catch (Exception e) {
@@ -231,30 +232,42 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
                 finishCurrectActivity();
                 break;
             case R.id.data_sync_time_add:
-                if (mSyncTime <= 29) {
-                    if (mSyncTime == 0.5f) {
-                        mSyncTime = 1;
-                    } else {
-                        mSyncTime++;
+                if (mSyncTime < 120) {
+                    switch (mSyncTime) {
+                        case 20:
+                            mSyncTime = 30;
+                            break;
+                        case 30:
+                            mSyncTime = 60;
+                            break;
+                        case 60:
+                            mSyncTime = 120;
+                            break;
                     }
-                    setSyncTimeOnViews();
-                    broadcastToMessage();
                 } else {
                     LogUtil.d(TAG, "Sync time should not be greter then 30 min");
                 }
+                setSyncTimeOnViews();
+                broadcastToMessage();
                 break;
             case R.id.data_sync_time_sub:
-                if (mSyncTime >= 1) {
-                    if (mSyncTime == 1) {
-                        mSyncTime = 0.5f;
-                    } else {
-                        mSyncTime--;
+                if (mSyncTime > 20) {
+                    switch (mSyncTime) {
+                        case 120:
+                            mSyncTime = 60;
+                            break;
+                        case 60:
+                            mSyncTime = 30;
+                            break;
+                        case 30:
+                            mSyncTime = 20;
+                            break;
                     }
-                    setSyncTimeOnViews();
-                    broadcastToMessage();
                 } else {
-                    LogUtil.d(TAG, "Sync time should not be less then 1 min");
+                    LogUtil.d(TAG, "Sync time should not be greter then 30 min");
                 }
+                setSyncTimeOnViews();
+                broadcastToMessage();
                 break;
             case R.id.offline_storage_time_sub:
                 if (mDefaultSize > 10) {
@@ -276,6 +289,7 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
                 }
                 break;
         }
+
     }
 
     private void finishCurrectActivity() {
@@ -293,14 +307,10 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
     @SuppressLint("SetTextI18n")
     private void setSyncTimeOnViews() {
         mPref.addItem(Constants.KEY_SYNC_DATA_TIME, mSyncTime);
-        if (mSyncTime <= 9) {
-            if (mSyncTime == 0.5f) {
-                mDataSyncTime_tv.setText("30 Sec");
-            } else {
-                mDataSyncTime_tv.setText("0" + Math.round(mSyncTime) + " Min");
-            }
+        if (mSyncTime == Constants.SYNC_DATA_TIME || mSyncTime == 30) {
+            mDataSyncTime_tv.setText("" + mSyncTime + " Sec");
         } else {
-            mDataSyncTime_tv.setText(Math.round(mSyncTime) + " Min");
+            mDataSyncTime_tv.setText("0" + Math.round(mSyncTime/60) + " Min");
         }
     }
 

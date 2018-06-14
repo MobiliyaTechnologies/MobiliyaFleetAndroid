@@ -17,6 +17,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import com.google.android.gms.location.LocationRequest;
 import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
@@ -71,7 +72,7 @@ public class GPSTracker extends android.app.Service implements LocationListener 
 
     @SuppressLint("StaticFieldLeak")
     private static GPSTracker mGPSTrackerInstance;
-    private boolean canGetLocation=false;
+    private boolean canGetLocation = false;
 
     public GPSTracker(Context context) {
         this.mContext = context;
@@ -157,7 +158,6 @@ public class GPSTracker extends android.app.Service implements LocationListener 
     }
 
 
-
     /**
      * Update GPSTracker latitude and longitude
      */
@@ -165,10 +165,11 @@ public class GPSTracker extends android.app.Service implements LocationListener 
         if (location != null) {
             latitude = location.getLatitude();
             longitude = location.getLongitude();
-
             SharePref.getInstance(mContext).addItem(Constants.LATITUDE, String.valueOf(latitude));
             SharePref.getInstance(mContext).addItem(Constants.LONGITUDE, String.valueOf(longitude));
-
+            LatLong locations = new LatLong(String.valueOf(latitude), String.valueOf(longitude));
+            String address = getAddressFromLatLong(mContext, locations);
+            SharePref.getInstance(mContext).addItem(Constants.LAST_ADDRESS, address);
         }
     }
 
@@ -204,7 +205,7 @@ public class GPSTracker extends android.app.Service implements LocationListener 
      */
     public boolean getIsGPSTrackingEnabled() {
 
-        return this.isGPSTrackingEnabled;
+        return true;//this.isGPSTrackingEnabled;
     }
 
     /**
@@ -225,13 +226,14 @@ public class GPSTracker extends android.app.Service implements LocationListener 
     public List<Address> getGeocoderAddress(Context context) {
         if (location != null) {
 
-            Geocoder geocoder = new Geocoder(context, Locale.ENGLISH);
+
 
             try {
                 /**
                  * Geocoder.getFromLocation - Returns an array of Addresses
                  * that are known to describe the area immediately surrounding the given latitude and longitude.
                  */
+                Geocoder geocoder = new Geocoder(context, Locale.ENGLISH);
                 List<Address> addresses = geocoder.getFromLocation(latitude, longitude, this.geocoderMaxResults);
 
                 return addresses;
@@ -256,18 +258,13 @@ public class GPSTracker extends android.app.Service implements LocationListener 
             double latitude = Double.parseDouble(latLong.latitude);
             double longitude = Double.parseDouble(latLong.longitude);
 
-            Geocoder geocoder = new Geocoder(context, Locale.ENGLISH);
-
             try {
-                /**
-                 * Geocoder.getFromLocation - Returns an array of Addresses
-                 * that are known to describe the area immediately surrounding the given latitude and longitude.
-                 */
-                Address addresses = geocoder.getFromLocation(latitude, longitude, this.geocoderMaxResults).get(0);
-                String addressLine = addresses.getAddressLine(0);
+                Geocoder mGeocoder = new Geocoder(context, Locale.getDefault());
+                List<Address> mAddresses = mGeocoder.getFromLocation(latitude, longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+                String addressLine = mAddresses.get(0).getAddressLine(0);
                 return addressLine;
-            } catch (IOException e) {
-                //e.printStackTrace();
+            } catch (Exception e) {
+                e.getMessage();
                 LogUtil.e(TAG, "Impossible to connect to Geocoder");
             }
         }
@@ -367,6 +364,7 @@ public class GPSTracker extends android.app.Service implements LocationListener 
         }
         return 0;
     }
+
     public double setDistance(double distance) {
         if (location != null) {
             this.distance = distance;
@@ -413,7 +411,6 @@ public class GPSTracker extends android.app.Service implements LocationListener 
         }
 
 
-
     }
 
 
@@ -457,8 +454,9 @@ public class GPSTracker extends android.app.Service implements LocationListener 
         float distance = oldLocation.distanceTo(newLocation);//  in meters
         distance = distance / 1000; // in km
         double miles = distance * 0.621; //in miles
-        return round(miles,2);
+        return round(miles, 2);
     }
+
     public static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();
 

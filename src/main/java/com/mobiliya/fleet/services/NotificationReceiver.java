@@ -44,16 +44,18 @@ public class NotificationReceiver extends BroadcastReceiver {
             if (trip != null) {
                 if (trip.status == TripStatus.Stop.getValue()) {
                     Toast.makeText(context, context.getString(R.string.trip_is_already_stopped), Toast.LENGTH_LONG).show();
+                    NotificationManagerUtil.getInstance().dismissNotification(context);
                 } else {
                     if(TripManagementUtils.stopTripFromNotification(context)>0) {
                         Intent notificationintent = new Intent();
                         notificationintent.setAction(Constants.NOTIFICATION_STOP_BROADCAST);
                         context.sendBroadcast(notificationintent);
+                        NotificationManagerUtil.getInstance().dismissNotification(context);
                     }
                 }
             }
 
-            NotificationManagerUtil.getInstance().dismissNotification(context);
+
         }
     }
 }

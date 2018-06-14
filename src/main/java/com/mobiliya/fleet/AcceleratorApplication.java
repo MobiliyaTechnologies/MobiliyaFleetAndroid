@@ -26,11 +26,15 @@ public class AcceleratorApplication extends Application {
         SharePref mPref = SharePref.getInstance(this);
         String mAdapterProtocol = mPref.getItem(Constants.PREF_ADAPTER_PROTOCOL, "");
         try {
-            if (!mAdapterProtocol.isEmpty() && mAdapterProtocol.equals(Constants.J1939)) {
+            /*if (!mAdapterProtocol.isEmpty() && mAdapterProtocol.equals(Constants.J1939)) {
                 mServiceIntent = new Intent(this, J1939DongleService.class);
                 startService(mServiceIntent);
-            } else if (!mAdapterProtocol.isEmpty() && mAdapterProtocol.equals(Constants.OBD)) {
+            } else*/
+            if (mAdapterProtocol.equals(Constants.OBD)) {
                 mServiceIntent = new Intent(this, ObdGatewayService.class);
+                startService(mServiceIntent);
+            } else {
+                mServiceIntent = new Intent(this, J1939DongleService.class);
                 startService(mServiceIntent);
             }
         } catch (IllegalStateException e) {
@@ -43,7 +47,7 @@ public class AcceleratorApplication extends Application {
     @Override
     public void onTerminate() {
         LogUtil.d(TAG, "Application onTerminate");
-        stopService(mServiceIntent);
+        //stopService(mServiceIntent);
         super.onTerminate();
     }
 }

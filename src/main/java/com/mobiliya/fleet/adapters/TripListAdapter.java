@@ -46,12 +46,17 @@ public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Trip entry = (Trip) mData.get(position);
-
-        String start = entry.startLocation.split("#")[1];
-        String end = entry.endLocation;
-        if (!"NA".equals(end)) {
-            end = entry.endLocation.split("#")[1];
+        String start="", end="";
+        try {
+            start = entry.startLocation.split("#")[1];
+            end = entry.endLocation;
+            if (!"NA".equals(end)) {
+                end = entry.endLocation.split("#")[1];
+            }
+        } catch (Exception ex) {
+            ex.getMessage();
         }
+
 
         holder.mStartLocation.setText(start);
         holder.mEndLocation.setText(end);
@@ -60,9 +65,13 @@ public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHo
         holder.mEndTime.setText(DateUtils.tripDetailFormat(entry.endTime));
 
         float miles = Float.valueOf(entry.milesDriven);
-        int dist = (int) Math.ceil(miles);
+        //int dist = (int) Math.ceil(miles);
         if (!"NA".equals(entry.milesDriven)) {
-            holder.textViewMiles.setText("" + dist + " Miles");
+            if (miles < 0) {
+                holder.textViewMiles.setText("0.0 Miles");
+            } else {
+                holder.textViewMiles.setText(String.format("%.1f", miles) + " Miles");
+            }
         } else {
             holder.textViewMiles.setText("NA");
         }

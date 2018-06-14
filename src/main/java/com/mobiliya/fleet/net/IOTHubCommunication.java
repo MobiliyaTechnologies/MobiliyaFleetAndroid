@@ -2,6 +2,7 @@ package com.mobiliya.fleet.net;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.google.gson.Gson;
 import com.mobiliya.fleet.db.DatabaseProvider;
@@ -20,6 +21,7 @@ import com.microsoft.azure.sdk.iot.device.Message;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.HashMap;
 
 import static com.mobiliya.fleet.utils.Constants.IOTURL;
 import static com.mobiliya.fleet.utils.Constants.LAST_SYNC_DATE;
@@ -54,11 +56,17 @@ public class IOTHubCommunication {
     public void SendMessage(Parameter[] parameters) throws URISyntaxException, IOException {
 
         LogUtil.d("SendMessage", "SendMessage called");
-        if (client == null) {
+        if (client == null)
+        {
             try {
                 String stringC = SharePref.getInstance(mCtx).getItem(IOTURL);
-                LogUtil.i("SendMessage", "SendMessage called string:" + stringC);
-                client = new DeviceClient(stringC, protocol);
+                if(!TextUtils.isEmpty(stringC)) {
+                    client = new DeviceClient(stringC, protocol);
+                    LogUtil.i("SendMessage", "SendMessage called string: " + stringC);
+                }else {
+                    LogUtil.i("SendMessage", "SendMessage called string: null");
+                    return;
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 return;
@@ -74,9 +82,12 @@ public class IOTHubCommunication {
                 LogUtil.d(TAG, "Json Send IOTHub :" + jsonString);
                 Message msg = new Message(jsonString);
 
+                HashMap<String, String> hashMap = new HashMap<>();
+                hashMap.put("ID",String.valueOf(param.ID));
+                hashMap.put("DateTime",param.ParameterDateTime);
                 msg.setMessageId(java.util.UUID.randomUUID().toString());
                 EventCallback eventCallback = new EventCallback();
-                client.sendEventAsync(msg, eventCallback, param);
+                client.sendEventAsync(msg, eventCallback, hashMap);
 
                 LogUtil.d(TAG, new Date() + " : Message Sent over IoT : Parameter RPM: " + param.RPM);
                 LogUtil.d(TAG, "Parameter Speed: " + param.Speed);
@@ -88,17 +99,29 @@ public class IOTHubCommunication {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        client.close();
+        client.closeNow();
     }
 
     @SuppressWarnings("unused")
     protected static class EventCallback implements IotHubEventCallback {
         public void execute(IotHubStatusCode status, Object param) {
             try {
-                Parameter parameter = (Parameter) param;
+                /*Parameter parameter = (Parameter) param;
                 Long paramId = Long.parseLong(parameter.ID.toString());
                 LogUtil.d(TAG, "Sync date:" + parameter.ParameterDateTime);
                 SharePref.getInstance(mCtx).addItem(LAST_SYNC_DATE, parameter.ParameterDateTime);
+
+                if (paramId > 0) {
+                    LogUtil.d(TAG, "Succesfully send data on IOT & entry deleted :" + paramId);
+                    DatabaseProvider.getInstance(mCtx).deleteParameter(paramId);
+                }*/
+                HashMap<String, String> hashMap = (HashMap<String, String>)param;
+
+                String ID = hashMap.get("ID");
+                Long paramId = Long.valueOf(ID);
+
+                //LogUtil.d(TAG, "Sync date:" + parameter.ParameterDateTime);
+                SharePref.getInstance(mCtx).addItem(LAST_SYNC_DATE, hashMap.get("DateTime"));
 
                 if (paramId > 0) {
                     LogUtil.d(TAG, "Succesfully send data on IOT & entry deleted :" + paramId);

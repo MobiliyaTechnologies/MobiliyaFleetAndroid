@@ -13,6 +13,7 @@ public class TripTable extends DB_BASIC {
     public String VehicleID;
     public String StartLocation;
     public String EndLocation;
+    public String milesDriven;
     public int Status;
     public int Stops;
     public boolean IsSynced;

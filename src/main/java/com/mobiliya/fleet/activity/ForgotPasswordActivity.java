@@ -93,7 +93,7 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
             String FORGOT_PW_URL = Constants.getIdentityURLs(getApplicationContext(),Constants.FORGOT_PASSWORD_URL);
             JSONObject jsonBody = new JSONObject();
             try {
-                jsonBody.put("mEmail", mEmail);
+                jsonBody.put("email", mEmail);
                 final String requestBody = CommonUtil.getPostDataString(jsonBody);
 
                 VolleyCommunicationManager.getInstance().SendRequest(FORGOT_PW_URL, Request.Method.POST, requestBody, this, new VolleyCallback() {
@@ -126,7 +126,8 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
                     @Override
                     public void onError(VolleyError result) {
                         dialog.dismiss();
-                        startNewActivity();
+                        Toast.makeText(ForgotPasswordActivity.this, getString(R.string.error_reset),
+                                Toast.LENGTH_LONG).show();
                     }
                 });
             } catch (JSONException e) {

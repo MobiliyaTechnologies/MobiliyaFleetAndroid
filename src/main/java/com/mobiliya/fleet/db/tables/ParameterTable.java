@@ -5,6 +5,8 @@ public class ParameterTable extends DB_BASIC {
     public String TenantId;
     public String UserId;
     public String VehicleId;
+    public String milesDriven;
+    public boolean isConnected;
 
     public String VIN;
     public int RPM;

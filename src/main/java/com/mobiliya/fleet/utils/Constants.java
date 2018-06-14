@@ -105,7 +105,7 @@ public class Constants {
 
     @SuppressLint("SdCardPath")
     public static final String LOCAL_PATH = "mobiliya_fleet_sample.txt";
-    public static final float SYNC_DATA_TIME = 0.5f;//1
+    public static final int SYNC_DATA_TIME = 20;//0.5f;//1
     public static final String KEY_SYNC_DATA_TIME = "syncDataOnIOT";
     public static final String MESSAGE = "message";
     public static final String SYNC_TIME = "synctime";
@@ -162,6 +162,13 @@ public class Constants {
     public static final String GET_USER_URL = "GET_USER_URL";
     public static final String LATITUDE = "Latititude";
     public static final String LONGITUDE = "Longitude";
+    public static final String LAST_ADDRESS = "Last_Address";
+    public static final String TIMER_LATITUDE = "Timer_Lat";
+    public static final String TIMER_LONGITUDE = "Timer_Long";
+    public static final String TIMER_SPEED = "Timer_Speed";
+    public static final String TIMER_DISTANCE = "Timer_Distance";
+    public static final String SPEED_COUNT = "Speed_Count";
+    public static final String TIMER_FAULT_SPN = "Fault_SPN";
 
 
     public static  String getTripsURLs(Context cxt,String type){

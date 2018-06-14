@@ -87,11 +87,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import static com.mobiliya.fleet.utils.CommonUtil.getTimeDiff;
 import static com.mobiliya.fleet.utils.CommonUtil.showToast;
 
 @SuppressWarnings({"ALL", "unused"})
-public class TripActivity extends AppCompatActivity implements OnMapReadyCallback ,LocationListener,GoogleApiClient.ConnectionCallbacks ,GoogleApiClient.OnConnectionFailedListener{
+public class TripActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = TripActivity.class.getName();
     private MapboxMap mMap;
     private Trip mTrip;
@@ -142,18 +145,16 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
-
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.NOTIFICATION_PAUSE_BROADCAST);
         filter.addAction(Constants.NOTIFICATION_STOP_BROADCAST);
         registerReceiver(mNotificationReceiver, filter);
-
+        CustomIgnitionListenerTracker.showDialogOnIgnitionChange(TripActivity.this);
         try {
             registerReceiver(mParameterReceiver, new IntentFilter(Constants.LOCAL_RECEIVER_ACTION_NAME));
         } catch (Exception e) {
             LogUtil.i("", "broadcastReceiver is already unregistered");
         }
-
     }
 
     public void bindViews() {
@@ -167,7 +168,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         LinearLayout mPause = (LinearLayout) findViewById(R.id.btn_pause);
         LinearLayout mStop = (LinearLayout) findViewById(R.id.btn_stop);
         mPause_tv = (TextView) findViewById(R.id.tv_pause);
-        mPauseIcon=(ImageView)findViewById(R.id.pause_icon);
+        mPauseIcon = (ImageView) findViewById(R.id.pause_icon);
         TextView mStop_tv = (TextView) findViewById(R.id.tv_stop);
 
         LinearLayout down_button = (LinearLayout) findViewById(R.id.down_button);
@@ -226,6 +227,10 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onPause() {
         super.onPause();
+        /*if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
+        }*/
         CommonUtil.unRegisterGpsReceiver(getBaseContext(), gpsLocationReceiver);
     }
 
@@ -286,59 +291,115 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onResume();
         mIsTripStop = false;
         CommonUtil.checkLocationPermission(this);
-        CustomIgnitionListenerTracker.showDialogOnIgnitionChange(TripActivity.this);
         mTrip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
         CommonUtil.registerGpsReceiver(getBaseContext(), gpsLocationReceiver);
         if (mTrip != null) {
+            //initDataSyncTimer();
             if (mTrip.status == TripStatus.Pause.getValue()) {
                 mPause_tv.setText(getString(R.string.paused));
                 mPauseIcon.setImageDrawable(getDrawable(R.drawable.play_icon));
-            }
-            else if (mTrip.status != TripStatus.Stop.getValue()) {
+            } else if (mTrip.status != TripStatus.Stop.getValue()) {
                 mTripDate.setText(mTrip.tripName);
                 mPauseIcon.setImageDrawable(getDrawable(R.drawable.pause));
             }
         }
     }
 
-    private void startTrip() {
-        GPSTracker gps=GPSTracker.getInstance(getBaseContext());
+    private Timer mTimer;
 
-
-         if(gps.getLatitude()==0.0d||gps.getLongitude()==0.0d) {
-            /* starts trip after location found inside getMylocation*/
-                checkPermissions();
-                getMyLocation();
-
-        }else {
-             LatLng  latlongitude= new LatLng(gps.getLatitude(),gps.getLongitude());
-             saveStartTrip(latlongitude);
+    /*method to initialize timer task*/
+    private void initDataSyncTimer() {
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
+            mTimer = new Timer();
+        } else {
+            mTimer = new Timer();
         }
 
+        int delayTime = 1;
 
+        mTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                LogUtil.i(TAG, "10 sec timer callback callled ->" + 10);
+                performAction();
+            }
+        }, 0, (10 * 1000));
+    }
 
+    private void performAction() {
+        String TAG = "TripActivity";
+        LogUtil.d(TAG, "performAction parameter received");
+        if (mIsTripStop) {
+            LogUtil.d(TAG, "performAction() parameter received Return trip already stop dont update parameter");
+            return;
+        }
+        SharePref pref = SharePref.getInstance(this);
+
+        String totalHours = pref.getItem("TotalHours", "NA");
+        String fuelUsed = pref.getItem("FuelUsed", "NA");
+        String distance = pref.getItem(Constants.TIMER_DISTANCE, "NA");
+        String speed = pref.getItem(Constants.SPEED_COUNT, "0");
+        String latitude = pref.getItem(Constants.TIMER_LATITUDE);
+        String longitude = pref.getItem(Constants.TIMER_LONGITUDE);
+
+        final String totalH = "0".equalsIgnoreCase(totalHours) ? "NA" : totalHours;
+        final String fuelU = "0".equalsIgnoreCase(fuelUsed) ? "NA" : fuelUsed;
+        final String dist = "0".equalsIgnoreCase(distance) ? "NA" : distance;
+        final String vehicleSpeed = "0".equalsIgnoreCase(speed) ? "0" : speed;
+        final String lat = latitude;
+        final String lon = longitude;
+        runOnUiThread(new Thread(new Runnable() {
+            public void run() {
+                setParameterData(totalH, fuelU, dist, vehicleSpeed);
+                if (lat != null && lon != null) {
+                    LatLong latLong = new LatLong(lat, lon);
+                    Double lat = Double.valueOf(latLong.latitude);
+                    Double longi = Double.valueOf(latLong.longitude);
+
+                    if (mTrip != null && lat != 0.0d && longi != 0.0d) {
+                        LatLng point = new LatLng(Double.valueOf(latLong.latitude), Double.valueOf(latLong.longitude));
+                        mOptions.add(point);
+                    }
+                    redrawLine();
+                }
+            }
+        }));
+    }
+
+    private void startTrip() {
+        GPSTracker gps = GPSTracker.getInstance(getBaseContext());
+        if (gps.getLatitude() == 0.0d || gps.getLongitude() == 0.0d) {
+            checkPermissions();
+            getMyLocation();
+        } else {
+            LatLng latlongitude = new LatLng(gps.getLatitude(), gps.getLongitude());
+            saveStartTrip(latlongitude);
+        }
+        //initDataSyncTimer();
+        //LatLng latlongitude = new LatLng(gps.getLatitude(), gps.getLongitude());
+        //saveStartTrip(latlongitude);
     }
 
 
-    public void saveStartTrip( LatLng latlongitude){
-        if(latlongitude!=null){
-            String tripId = TripManagementUtils.startTrip(this, latlongitude);
+    public void saveStartTrip(LatLng latlongitude) {
+        String tripId = TripManagementUtils.startTrip(this, latlongitude);
+        if (tripId != null) {
             NotificationManagerUtil.getInstance().createNotification(getBaseContext());
-            if (tripId != null) {
-                mMap.clear();
-                Double lat = GPSTracker.getInstance(getBaseContext()).getLatitude();
-                Double lon = GPSTracker.getInstance(getBaseContext()).getLongitude();
-                LatLong latlong = new LatLong();
-                latlong.latitude = String.valueOf(lat);
-                latlong.longitude = String.valueOf(lon);
-                mTrip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
-                mTripDate.setText(mTrip.tripName);
-                DatabaseProvider.getInstance(getBaseContext()).addLatLong(mTrip.commonId, new LatLong(String.valueOf(lat), String.valueOf(lon)));
-                plotMarker("start", new LatLong(String.valueOf(lat), String.valueOf(lon)));
-                showToast(this, getString(R.string.trip_started));
-            }
-        }else{
-            showToast(this, getString(R.string.failed_to_start_trip_nogps));
+            mMap.clear();
+            Double lat = GPSTracker.getInstance(getBaseContext()).getLatitude();
+            Double lon = GPSTracker.getInstance(getBaseContext()).getLongitude();
+            LatLong latlong = new LatLong();
+            latlong.latitude = String.valueOf(lat);
+            latlong.longitude = String.valueOf(lon);
+            mTrip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
+            mTripDate.setText(mTrip.tripName);
+            DatabaseProvider.getInstance(getBaseContext()).addLatLong(mTrip.commonId, new LatLong(String.valueOf(lat), String.valueOf(lon)));
+            plotMarker("start", new LatLong(String.valueOf(lat), String.valueOf(lon)));
+            showToast(this, getString(R.string.trip_started));
+        } else {
+            TripActivity.this.finish();
         }
     }
 
@@ -357,22 +418,22 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                 int count = DatabaseProvider.getInstance(getBaseContext()).getStopsCount(mTrip.commonId);
                 mStops.setText(Integer.toString(count));
                 float milage = SharePref.getInstance(getApplicationContext()).getItem(Constants.MILES_ONGOING, 0.0f);
-                mMilesDriven.setText("" + milage + " miles");
+                mMilesDriven.setText("" + String.format("%.1f", milage) + " miles");
                 String diff = SharePref.getInstance(getBaseContext()).getItem(Constants.TIME_ONGOING, "0");
                 mTripTime.setText(diff);
                 mMap.clear();
                 LatLong latlong = DatabaseProvider.getInstance(getBaseContext()).getLatLongList(mTrip.commonId).get(0);
                 plotMarker("start", latlong);
                 List<LatLong> list = DatabaseProvider.getInstance(getBaseContext()).getLatLongList(mTrip.commonId);
-                if (list != null) {
+                if (list != null && list.size() > 0) {
                     if (mOptions == null) return;
                     mOptions.getPoints().clear();
-                    if (list.size() > 0) {
-                        for (LatLong point : list) {
-                            mOptions.add(new LatLng(Double.valueOf(point.latitude), Double.valueOf(point.longitude)));
-                        }
-                        redrawLine();
+
+                    for (LatLong point : list) {
+                        mOptions.add(new LatLng(Double.valueOf(point.latitude), Double.valueOf(point.longitude)));
                     }
+                    redrawLine();
+
                 }
             }
         }
@@ -394,6 +455,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void plotMarker(String icon, LatLong latLong) {
+        SharePref pref = SharePref.getInstance(this);
         try {
             if (Double.parseDouble(latLong.longitude) == 0 && Double.parseDouble(latLong.longitude) == 0) {
                 GPSTracker gpsTracker = GPSTracker.getInstance(getApplicationContext());
@@ -416,11 +478,11 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             if (latLong != null && latLong.latitude != null && latLong.longitude != null) {
 
-                addresses = geocoder.getFromLocation(Double.parseDouble(latLong.latitude), Double.parseDouble(latLong.longitude), 1);
+                /*addresses = geocoder.getFromLocation(Double.parseDouble(latLong.latitude), Double.parseDouble(latLong.longitude), 1);
                 if (addresses != null && addresses.size() > 0) {
                     Address address = addresses.get(0);
                     AddressStr = address.getAddressLine(0);
-                }
+                }*/
 
                 int customIcon = 0;
                 if ("end".equals(icon)) {
@@ -443,16 +505,11 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mMap.moveCamera(cameraPosition);
                 mMap.animateCamera(cameraPosition);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void updateLoactionToList(LatLong latLong) {
-        if (mTrip != null) {
-            DatabaseProvider.getInstance(getBaseContext()).addLatLong(mTrip.commonId, latLong);
-        }
-    }
 
     public void showStopDialog() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
@@ -480,7 +537,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 Trip trip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
                 long record_affected = TripManagementUtils.stopTrip(TripActivity.this);
-                if(record_affected>0) {
+                if (record_affected > 0) {
                     NotificationManagerUtil.getInstance().dismissNotification(getBaseContext());
                     List<Trip> newTripList = DatabaseProvider.getInstance(getBaseContext()).getLastUnSyncedTrip();
                     if (newTripList != null && newTripList.size() > 0) {
@@ -539,7 +596,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                         dialogProgress.dismiss();
                         finish();
                     }
-                }else {
+                } else {
                     dialogProgress.dismiss();
                     finish();
                 }
@@ -551,93 +608,56 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getColor(R.color.dashboard_header_start_color));
     }
 
-    private BroadcastReceiver mParameterReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String TAG = "TripActivity";
-            LogUtil.d(TAG, "onReceive() parameter received");
-            if (mIsTripStop) {
-                LogUtil.d(TAG, "onReceive() parameter received Return trip already stop dont update parameter");
-                return;
-            }
-            @SuppressWarnings("unchecked") HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra(Constants.LOCAL_RECEIVER_NAME);
 
-            String totalHours = hashMap.get("TotalHours");
-            String fuelUsed = hashMap.get("FuelUsed");
-            String distance = hashMap.get("Distance");
-            String speed = hashMap.get("Speedcount");
-            totalHours = "0".equalsIgnoreCase(totalHours) ? "NA" : totalHours;
-            fuelUsed = "0".equalsIgnoreCase(fuelUsed) ? "NA" : fuelUsed;
-            distance = "0".equalsIgnoreCase(distance) ? "NA" : distance;
-            speed = "0".equalsIgnoreCase(speed) ? "0" : speed;
-            setParameterData(totalHours, fuelUsed, distance, speed);
-            if (hashMap.get("latitude") != null && hashMap.get("longitude") != null) {
-                LatLong latLong = new LatLong(hashMap.get("latitude"), hashMap.get("longitude"));
-                updateLoactionToList(latLong);
-                LatLng point = new LatLng(Double.valueOf(latLong.latitude), Double.valueOf(latLong.longitude));
-                mOptions.add(point);
-                redrawLine();
+        private BroadcastReceiver mParameterReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String TAG = "TripActivity";
+                LogUtil.d(TAG, "onReceive() parameter received");
+                if (mIsTripStop) {
+                    LogUtil.d(TAG, "onReceive() parameter received Return trip already stop dont update parameter");
+                    return;
+                }
+                @SuppressWarnings("unchecked") HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra(Constants.LOCAL_RECEIVER_NAME);
+
+                String totalHours = hashMap.get("TotalHours");
+                String fuelUsed = hashMap.get("FuelUsed");
+                String distance = hashMap.get("Distance");
+                String speed = hashMap.get("Speedcount");
+                totalHours = "0".equalsIgnoreCase(totalHours) ? "NA" : totalHours;
+                fuelUsed = "0".equalsIgnoreCase(fuelUsed) ? "NA" : fuelUsed;
+                distance = "0".equalsIgnoreCase(distance) ? "NA" : distance;
+                speed = "0".equalsIgnoreCase(speed) ? "0" : speed;
+                setParameterData(totalHours, fuelUsed, distance, speed);
+
+
+                if (hashMap.get("latitude") != null && hashMap.get("longitude") != null) {
+                    LatLong latLong = new LatLong(hashMap.get("latitude"), hashMap.get("longitude"));
+                    Double lat=Double.valueOf(latLong.latitude);
+                    Double longi=Double.valueOf(latLong.longitude);
+
+                    if (mTrip != null&&lat!=0.0d&&longi!=0.0d) {
+                        LatLng point = new LatLng(Double.valueOf(latLong.latitude), Double.valueOf(latLong.longitude));
+                        mOptions.add(point);
+                    }
+                    redrawLine();
+                }
             }
-        }
-    };
+        };
 
     private void setParameterData(String totalHours, String fuelUsed, String distance, String speeding) {
         //calculation for trip time
         if (mTrip != null) {
-            Date start = DateUtils.getDateFromString(mTrip.startTime);
-            String diff = DateUtils.getTimeDifference(start);
-
-            SharePref.getInstance(getBaseContext()).addItem(Constants.TIME_ONGOING, diff);
+            String diff = getTimeDiff(getBaseContext(), mTrip);
             mTripTime.setText(diff);
-            NotificationManagerUtil.getInstance().upDateNotification(getBaseContext(), diff);
         }
 
-        if (!TextUtils.isEmpty(distance)) {
-            LogUtil.d(TAG, "distance:" + distance);
-            if (!"NA".equalsIgnoreCase(distance)) {
-                float distanceValue = Float.parseFloat(distance);
-                if (distanceValue <= 0) {
-                    LogUtil.d(TAG, "distance value is less then 0");
-                    return;
-                }
-            }
-            //calculation for miles driven
-            float firstmilage = SharePref.getInstance(getApplicationContext()).getItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
-            LogUtil.d(TAG, "firstmilage:" + firstmilage);
-            if (firstmilage == 0.0f) {
-                if (!"NA".equalsIgnoreCase(distance)) {
-                    firstmilage = Float.parseFloat(distance);
-                    LogUtil.d(TAG, "First milage reading :" + firstmilage);
-                    SharePref.getInstance(getApplicationContext()).addItem(Constants.TOTAL_MILES_ONGOING, firstmilage);
-                } else {
-                    if (mMilesDriven != null) {
-                        mMilesDriven.setText("0 miles");
-                    }
-                }
+        if (mMilesDriven != null && !TextUtils.isEmpty(distance)) {
+            float miles = CommonUtil.milesDriven(this, distance);
+            if (miles < 0) {
+                mMilesDriven.setText("0.0 miles");
             } else {
-                if (!"NA".equalsIgnoreCase(distance)) {
-                    float milesdriven = 0.0f;
-                    milesdriven = Float.parseFloat(distance) - firstmilage;
-                    if (milesdriven <= 0) {
-                        LogUtil.d(TAG, "Miles driven less then 0");
-                        if (mMilesDriven != null) {
-                            mMilesDriven.setText("0 miles");
-                        }
-                        return;
-                    }
-                    int dist = (int) Math.round(milesdriven);
-                    LogUtil.d(TAG, "Distance travel :" + dist);
-                    SharePref.getInstance(getApplicationContext()).addItem(Constants.MILES_ONGOING, dist);
-                    if (mMilesDriven != null) {
-                        mMilesDriven.setText(dist + " miles");
-                    }
-                } else {
-                    float miles = SharePref.getInstance(getApplicationContext()).getItem(Constants.MILES_ONGOING, 0.0f);
-                    LogUtil.d(TAG, "Distance travel :" + miles);
-                    if (mMilesDriven != null) {
-                        mMilesDriven.setText(miles + " miles");
-                    }
-                }
+                mMilesDriven.setText(String.format("%.1f", miles) + " miles");
             }
         }
         if (!TextUtils.isEmpty(fuelUsed)) {
@@ -664,7 +684,11 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
             if (intent.getAction().equals(Constants.NOTIFICATION_STOP_BROADCAST)) {
-                unregisterReceiver(mParameterReceiver);
+                try {
+                    unregisterReceiver(mParameterReceiver);
+                } catch (IllegalArgumentException iae) {
+                    iae.getMessage();
+                }
             }
         }
     };
@@ -679,7 +703,6 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .build();
         googleApiClient.connect();
     }
-
 
 
     private void getMyLocation() {
@@ -740,7 +763,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     public void getLocation() {
         LogUtil.d(TAG, "Into getLocation() method");
-    final ProgressDialog dialog = new ProgressDialog(this);
+        final ProgressDialog dialog = new ProgressDialog(this);
         dialog.setIndeterminate(true);
         dialog.setMessage("Starting trip, please wait....");
         dialog.setCancelable(false);
@@ -762,8 +785,8 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     try {
                                         LogUtil.d(TAG, "location object ");
 
-                                        if(location.getLatitude()!=0.0d && location.getLongitude()!=0.0d){
-                                            mLatLong=new LatLng(location.getLatitude(),location.getLongitude());
+                                        if (location.getLatitude() != 0.0d && location.getLongitude() != 0.0d) {
+                                            mLatLong = new LatLng(location.getLatitude(), location.getLongitude());
                                         }
 
                                     } catch (Exception e) {

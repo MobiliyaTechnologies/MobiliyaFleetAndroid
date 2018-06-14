@@ -162,6 +162,10 @@ public class DatabaseProvider {
         return id;
     }
 
+    public int deleteAllTableData(DB_BASIC object){
+        return  dbHandler.DeleteAllTableData(object);
+    }
+
     /**
      * Insert Trip data to TripTable
      *
@@ -208,6 +212,7 @@ public class DatabaseProvider {
             cv.put("Stops", trip.stops);
             cv.put("IsSynced", trip.IsSynced ? 1 : 0);
             cv.put("ServerId", trip._id);
+            cv.put("milesDriven", trip.milesDriven);
 
             return dbHandler.UpdateRow(TripTable.class, cv, "TripId='" + trip.commonId + "'");
         } catch (Exception ex) {
@@ -316,7 +321,8 @@ public class DatabaseProvider {
                 trip.vehicleId = table.VehicleID;
                 trip.stops = table.Stops;
                 trip.status = table.Status;
-                trip.stops=table.Stops;
+                trip.stops = table.Stops;
+                trip.milesDriven = table.milesDriven;
                 trip._id = table.ServerId;
                 tripslist.add(trip);
             }
@@ -468,6 +474,7 @@ public class DatabaseProvider {
         p.AccelPedal = param.AccelPedal;
         p.VehicleSpeed = param.VehicleSpeed;
         p.FaultDescription = param.FaultDescription;
+        p.isConnected = param.isConnected;
 
         return p;
     }
@@ -584,7 +591,7 @@ public class DatabaseProvider {
         p.PGNRawValue = param.PGNRawValue;
         p.VehicleSpeed = param.VehicleSpeed;
         p.FaultDescription = param.FaultDescription;
-
+        p.isConnected = param.isConnected;
         return p;
     }
 

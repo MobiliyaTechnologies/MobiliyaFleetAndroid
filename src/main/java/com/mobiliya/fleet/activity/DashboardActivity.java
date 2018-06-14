@@ -10,6 +10,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -33,6 +35,7 @@ import com.android.volley.VolleyError;
 import com.j1939.api.enums.ConnectionStates;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.adapters.ApiCallBackListener;
 import com.mobiliya.fleet.adapters.CustomIgnitionListenerTracker;
@@ -45,6 +48,7 @@ import com.mobiliya.fleet.io.J1939DongleService;
 import com.mobiliya.fleet.io.ObdGatewayService;
 import com.mobiliya.fleet.models.DriverScore;
 import com.mobiliya.fleet.models.LastTrip;
+import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.models.Vehicle;
 import com.mobiliya.fleet.services.GpsLocationReceiver;
@@ -65,8 +69,11 @@ import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getTripServiceUrl;
+import static com.mobiliya.fleet.utils.CommonUtil.getTimeDiff;
 import static com.mobiliya.fleet.utils.CommonUtil.showToast;
 
 @SuppressWarnings({"ALL", "unused"})
@@ -109,7 +116,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
     Trip mLastSynctrip = null;
     private View mWithlasttrip;
     private View mWithoutlasttrip;
-    private TextView mMilesDriven;
+    public  TextView mMilesDriven;
     private TextView mTripTime, mScore, mScoreLastTrip;
     private Boolean mIsSkipEnabled = false;
     private ProgressBar mProgressDriver, mProgressDriverLastTrip;
@@ -260,10 +267,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
 
             registerReceiver(
                     mParameterStatusReceiver, new IntentFilter(Constants.DASHBOARD_RECEIVER_ACTION_NAME));
-            registerReceiver(
-                    mParameterReceiver, new IntentFilter(Constants.LOCAL_RECEIVER_ACTION_NAME));
-            registerReceiver(
-                    mParameterReceiver, new IntentFilter(Constants.LOCAL_RECEIVER_ACTION_NAME));
+            registerReceiver(mParameterReceiver, new IntentFilter(Constants.LOCAL_RECEIVER_ACTION_NAME));
             IntentFilter filter = new IntentFilter();
             filter.addAction(Constants.NOTIFICATION_PAUSE_BROADCAST);
             filter.addAction(Constants.NOTIFICATION_STOP_BROADCAST);
@@ -277,6 +281,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         //Code to show popup dialog if trip is ongoing
         mTrip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
         if (mTrip != null) {
+            //initDataSyncTimer();
             if (mTrip.status != TripStatus.Stop.getValue()) {
                 new Handler().postDelayed(new Runnable() {
                     public void run() {
@@ -292,7 +297,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
             } else {
                 if (sPopupWindow != null) {
                     if (sPopupWindow.isShowing()) {
-                        sPopupWindow.setFocusable(true);
+
                         sPopupWindow.dismiss();
                     }
                 }
@@ -300,7 +305,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         } else {
             if (sPopupWindow != null) {
                 if (sPopupWindow.isShowing()) {
-                    sPopupWindow.setFocusable(true);
+
                     sPopupWindow.dismiss();
                 }
             }
@@ -323,13 +328,16 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
 
     @Override
     protected void onPause() {
+        /*if(mTimer != null){
+            mTimer.cancel();
+            mTimer = null;
+        }*/
         try {
             unregisterReceiver(
                     mDatabaseMessageReceiver);
             unregisterReceiver(
                     mParameterStatusReceiver);
-            unregisterReceiver(
-                    mParameterReceiver);
+            unregisterReceiver(mParameterReceiver);
             unregisterReceiver(mNotificationReceiver);
             CommonUtil.unRegisterGpsReceiver(getBaseContext(), gpsLocationReceiver);
         } catch (Exception e) {
@@ -489,6 +497,8 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         mFloatingMilesLayout = (LinearLayout) mPopupView.findViewById(R.id.floating_miles_layout);
         mFloatingTimeLayout = (LinearLayout) mPopupView.findViewById(R.id.floating_time_layout);
         mMilesDriven = (TextView) mPopupView.findViewById(R.id.miles_driven);
+        float milage = SharePref.getInstance(getApplicationContext()).getItem(Constants.MILES_ONGOING, 0.0f);
+        mMilesDriven.setText("" + String.format("%.1f", milage) + " miles");
         mTripTime = (TextView) mPopupView.findViewById(R.id.trip_time);
         setTime();
         mFloatingMilesLayout.setOnClickListener(this);
@@ -503,6 +513,8 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         mCurrentY = 20;
         try {
             sPopupWindow.showAtLocation(mRelLayout, Gravity.BOTTOM, mCurrentX, mCurrentY);
+            sPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            sPopupWindow.setFocusable(true);
         } catch (WindowManager.BadTokenException e) {
             LogUtil.d(TAG, "Bad token exception");
         }
@@ -577,17 +589,11 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         }
     };
 
-    private void setTime() {
-        //calculation for trip time
-        if (mTrip != null) {
-            Date start = DateUtils.getDateFromString(mTrip.startTime);
-            String diff = DateUtils.getTimeDifference(start);
 
-            SharePref.getInstance(getBaseContext()).addItem(Constants.TIME_ONGOING, diff);
-            if (mTripTime != null) {
-                mTripTime.setText(diff);
-                NotificationManagerUtil.getInstance().upDateNotification(getBaseContext(), diff);
-            }
+    private void setTime() {
+        if (mTrip != null && mTripTime!=null) {
+            String diff=getTimeDiff(getBaseContext(),mTrip);
+            mTripTime.setText(diff);
         }
     }
 
@@ -630,6 +636,8 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
 
                         }
                     } catch (JSONException e) {
+                        e.printStackTrace();
+                    }catch (Exception e){
                         e.printStackTrace();
                     }
                 } else {
@@ -734,50 +742,12 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
     public void setMiles(String distance) {
         LogUtil.d(TAG, "distance:" + distance);
         //calculation for miles driven
-        if (!"NA".equalsIgnoreCase(distance)) {
-            float distanceValue = Float.parseFloat(distance);
-            if (distanceValue <= 0) {
-                LogUtil.d(TAG, "distance value is less then 0");
-                return;
-            }
-        }
-        //calculation for miles driven
-        float firstmilage = SharePref.getInstance(getApplicationContext()).getItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
-        LogUtil.d(TAG, "firstmilage:" + firstmilage);
-        float milesdriven = 0.0f;
-        if (firstmilage == 0.0f) {
-            if (!"NA".equalsIgnoreCase(distance)) {
-                firstmilage = Float.parseFloat(distance);
-                SharePref.getInstance(getApplicationContext()).addItem(Constants.TOTAL_MILES_ONGOING, firstmilage);
-                LogUtil.d(TAG, "distance: first milage" + firstmilage);
-            } else {
-                if (mMilesDriven != null) {
-                    mMilesDriven.setText("0 miles");
-                }
-            }
-        } else {
-            if (!"NA".equalsIgnoreCase(distance)) {
-                milesdriven = Float.parseFloat(distance) - firstmilage;
-                if (milesdriven <= 0) {
-                    LogUtil.d(TAG, "Miles driven less then 0");
-                    if (mMilesDriven != null) {
-                        mMilesDriven.setText("0 miles");
-                    }
-                    return;
-                }
-
-                SharePref.getInstance(getApplicationContext()).addItem(Constants.MILES_ONGOING, milesdriven);
-                if (mMilesDriven != null) {
-                    int dist = (int) Math.round(milesdriven);
-                    mMilesDriven.setText("" + dist + " Miles");
-                    LogUtil.d(TAG, "distance: miles driver" + milesdriven);
-                }
-            } else {
-                float miles = SharePref.getInstance(getApplicationContext()).getItem(Constants.MILES_ONGOING, 0.0f);
-                LogUtil.d(TAG, "Distance travel :" + miles);
-                if (mMilesDriven != null) {
-                    mMilesDriven.setText(miles + " miles");
-                }
+        if (mMilesDriven != null && !TextUtils.isEmpty(distance)) {
+            float miles = CommonUtil.milesDriven(this, distance);
+            if (miles < 0) {
+                mMilesDriven.setText("0.0 miles");
+            }else {
+                mMilesDriven.setText(String.format("%.1f", miles) + " miles");
             }
         }
     }
@@ -894,5 +864,53 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
             }
         }
     };
+    private Timer mTimer;
 
+    /*method to initialize timer task*/
+    private void initDataSyncTimer() {
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
+            mTimer = new Timer();
+        } else {
+            mTimer = new Timer();
+        }
+
+        int delayTime = 1;
+
+        mTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                LogUtil.i(TAG, "10 sec timer callback callled ->" + 10);
+                performAction();
+            }
+        }, 0, (10 * 1000));
+    }
+
+    private void performAction() {
+        LogUtil.d(TAG, "performAction() parameter received");
+        // Get extra data included in the Intent
+        SharePref pref = SharePref.getInstance(this);
+
+        String distance = pref.getItem(Constants.TIMER_DISTANCE, "NA");
+        final String spn = pref.getItem(Constants.TIMER_FAULT_SPN, "NA");
+
+        distance = "-1.0".equalsIgnoreCase(distance) ? "NA" : distance;
+        final String dist = distance;
+        runOnUiThread (new Thread(new Runnable() {
+            public void run() {
+                setTime();
+                if (dist != null) {
+                    setMiles(dist);
+                }
+                if (spn != null && !spn.equalsIgnoreCase("")) {
+                    if (!oldSpn.equalsIgnoreCase(spn)) {
+                        setupBadge();
+                        oldSpn = spn;
+                    }
+                }
+            }
+        }));
+
+    }
 }

@@ -91,6 +91,7 @@
                 <com.mobiliya.fleet.customViews.CustomTextViewSemiBold
                     android:text="@string/last_sync"
                     android:layout_width="wrap_content"
+                    android:layout_marginRight="@dimen/dim_4"
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_color_white"
                     android:textSize="@dimen/font_16sp" />

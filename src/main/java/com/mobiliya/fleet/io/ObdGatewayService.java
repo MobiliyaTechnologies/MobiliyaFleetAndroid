@@ -34,10 +34,12 @@ import com.mobiliya.fleet.db.DatabaseProvider;
 import com.mobiliya.fleet.io.ObdCommandJob.ObdCommandJobState;
 import com.mobiliya.fleet.models.FaultModel;
 import com.mobiliya.fleet.models.Parameter;
+import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.services.GPSTracker;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
+import com.mobiliya.fleet.utils.NotificationManagerUtil;
 import com.mobiliya.fleet.utils.SharePref;
 
 import java.io.File;
@@ -46,6 +48,9 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static com.mobiliya.fleet.utils.CommonUtil.getTimeDiff;
+import static com.mobiliya.fleet.utils.TripManagementUtils.updateLocations;
 
 /**
  * This service is primarily responsible for establishing and maintaining a
@@ -102,10 +107,7 @@ public class ObdGatewayService extends AbstractGatewayService {
                     startObdConnection();
                     getVehicleData();
                     messageToActivityTimer();
-                    //handleTask.post(runnable);
                     initDataSyncTimer();
-                    //handle.removeCallbacks(mQueueCommands);
-                    //handle.post(mQueueCommands);
                 } catch (Exception e) {
                     LogUtil.e(
                             TAG,
@@ -278,13 +280,6 @@ public class ObdGatewayService extends AbstractGatewayService {
         for (ObdCommand Command : ObdConfig.getCommands()) {
             queueJob(new ObdCommandJob(Command));
         }
-        /*if (isRunning) {
-            for (ObdCommand Command : ObdConfig.getCommands()) {
-                queueJob(new ObdCommandJob(Command));
-            }
-        } else {
-            LogUtil.d(TAG, "service is not bound");
-        }*/
     }
 
     /**
@@ -373,16 +368,15 @@ public class ObdGatewayService extends AbstractGatewayService {
                     } else {
                         showDeviceStatus("Disconnected");
                         job.setState(ObdCommandJobState.EXECUTION_ERROR);
+                        jobsQueue.clear();
                         AbstractGatewayService.sIgnitionStatusCallback.onConnectionStatusChange(false);
                         LogUtil.e(TAG, "Can't run command on a closed socket.");
+                        break;
                     }
                 } else
                     // log not new job
                     LogUtil.e(TAG,
                             "Job state was not new, so it shouldn't be in queue. BUG ALERT!");
-            } catch (InterruptedException i) {
-                Thread.currentThread().interrupt();
-                //showDeviceStatus("Disconnected");
             } catch (UnsupportedCommandException u) {
                 if (job != null) {
                     job.setState(ObdCommandJobState.NOT_SUPPORTED);
@@ -437,11 +431,35 @@ public class ObdGatewayService extends AbstractGatewayService {
             commandResult.put("longitude", String.valueOf(gpsTracker.getLongitude()));
             mParameter.Latitude = String.valueOf(gpsTracker.getLatitude());
             mParameter.Longitude = String.valueOf(gpsTracker.getLongitude());
+            updateLocations(getBaseContext(),mParameter);
             LogUtil.d(TAG, "GPSTracker latitude: " + gpsTracker.getLatitude() + " longitude: " + gpsTracker.getLongitude());
         }
+        //saveToPref(commandResult);
     }
-
+    private void saveToPref(HashMap<String,String> commandResult) {
+        try {
+            SharePref pref = SharePref.getInstance(getBaseContext());
+            pref.addItem(Constants.TIMER_LATITUDE, commandResult.get("latitude"));
+            pref.addItem(Constants.TIMER_LONGITUDE, commandResult.get("longitude"));
+            pref.addItem(Constants.SPEED_COUNT, commandResult.get("Speedcount"));
+            pref.addItem(Constants.TIMER_DISTANCE, commandResult.get("Distance"));
+            pref.addItem(Constants.TIMER_FAULT_SPN,commandResult.get("FaultSPN"));
+            Trip ongoingtrip = DatabaseProvider.getInstance(getApplicationContext()).getCurrentTrip();
+            if(ongoingtrip!=null){
+                String diff=getTimeDiff(getBaseContext(),ongoingtrip);
+                NotificationManagerUtil.getInstance().upDateNotification(getBaseContext(), diff);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
     private void sendMessageToActivity() {
+        Trip ongoingtrip = DatabaseProvider.getInstance(getApplicationContext()).getCurrentTrip();
+        if(ongoingtrip!=null){
+            String diff=getTimeDiff(getBaseContext(),ongoingtrip);
+            NotificationManagerUtil.getInstance().upDateNotification(getBaseContext(), diff);
+        }
+
         if (commandResult != null && commandResult.size() <= 0) {
             LogUtil.d(TAG, "Command result is zero return");
             return;
@@ -453,16 +471,7 @@ public class ObdGatewayService extends AbstractGatewayService {
         //LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 
-    /*private final Runnable runnable = new Runnable() {
-        public void run() {
-            LogUtil.d(TAG, "called runnable after 10 sec");
-            sendMessageToActivity();
-            handleTask.postDelayed(runnable, 10000);//10 sec
-        }
-    };*/
-
     private Timer mMsgTimer;
-    /*method to initialize timer task*/
     private void messageToActivityTimer() {
         if (!SharePref.getInstance(this).getBooleanItem(Constants.PREF_MOVED_TO_DASHBOARD, false)) {
             LogUtil.d(TAG, "Return since acitivity is not moved to dashboard");
@@ -700,12 +709,7 @@ public class ObdGatewayService extends AbstractGatewayService {
      */
     public void stopService() {
         LogUtil.d(TAG, "Stopping service..");
-        try {
-            unregisterReceiver(
-                    mSignOutReceiver);
-        }catch (Exception e){
-            LogUtil.d(TAG,"Not register");
-        }
+
         notificationManager.cancel(NOTIFICATION_ID);
         jobsQueue.clear();
         isRunning = false;
@@ -720,13 +724,19 @@ public class ObdGatewayService extends AbstractGatewayService {
                 LogUtil.e(TAG, e.getMessage());
             }
         }
-        stopSelf();
-        onDestroy();
+//        stopSelf();
+//        onDestroy();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        try {
+            unregisterReceiver(
+                    mSignOutReceiver);
+        }catch (Exception e){
+            LogUtil.d(TAG,"Not register");
+        }
     }
 
     public boolean isRunning() {

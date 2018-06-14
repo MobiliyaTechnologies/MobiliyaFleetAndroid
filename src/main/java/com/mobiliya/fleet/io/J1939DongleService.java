@@ -22,11 +22,15 @@ import com.mobiliya.fleet.AcceleratorApplication;
 import com.mobiliya.fleet.activity.BaseActivity;
 import com.mobiliya.fleet.db.DatabaseProvider;
 import com.mobiliya.fleet.models.FaultModel;
+import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.models.Parameter;
+import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
+import com.mobiliya.fleet.utils.NotificationManagerUtil;
 import com.mobiliya.fleet.utils.SPNData;
 import com.mobiliya.fleet.utils.SharePref;
+import com.mobiliya.fleet.utils.TripManagementUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -35,6 +39,9 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static com.mobiliya.fleet.utils.CommonUtil.getTimeDiff;
+import static com.mobiliya.fleet.utils.TripManagementUtils.updateLocations;
 
 
 /**
@@ -66,15 +73,15 @@ public class J1939DongleService extends AbstractGatewayService {
     public void onCreate() {
         super.onCreate();
         LogUtil.d(TAG, "onCreate");
-        // Setup to receive API events
-        ReceiveEventsThreading ReceiveEventsThread = new ReceiveEventsThreading();
-        ReceiveEventsThread.start();
         serviceContext = this;
         mPref = SharePref.getInstance(this);
         mIsSkipEnabled = mPref.getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
         if (mIsSkipEnabled) {
             startTimer();
         } else {
+            // Setup to receive API events
+            ReceiveEventsThreading ReceiveEventsThread = new ReceiveEventsThreading();
+            ReceiveEventsThread.start();
             getVehicleData();
         }
         registerReceiver(
@@ -92,10 +99,10 @@ public class J1939DongleService extends AbstractGatewayService {
 
     /*method to initialize timer task*/
     private void initDataSyncTimer() {
-        if (!SharePref.getInstance(this).getBooleanItem(Constants.PREF_MOVED_TO_DASHBOARD, false)) {
+        /*if (!SharePref.getInstance(this).getBooleanItem(Constants.PREF_MOVED_TO_DASHBOARD, false)) {
             LogUtil.d(TAG, "Return since acitivity is not moved to dashboard");
             return;
-        }
+        }*/
 
         if (mTimer != null) {
             mTimer.cancel();
@@ -118,10 +125,10 @@ public class J1939DongleService extends AbstractGatewayService {
 
 
     private void performAction(){
-        if (!isRunning) {
+        /*if (!isRunning) {
             LogUtil.d(TAG, "service stop, no need to run timer task.");
             return;
-        }
+        }*/
         LogUtil.d(TAG, "called runnable");
         HashMap<String, String> commandResult = new HashMap<>();
         if (gpsTracker.getIsGPSTrackingEnabled()) {
@@ -131,12 +138,15 @@ public class J1939DongleService extends AbstractGatewayService {
             if (mParameter != null) {
                 mParameter.Latitude = String.valueOf(gpsTracker.getLatitude());
                 mParameter.Longitude = String.valueOf(gpsTracker.getLongitude());
+
+                updateLocations(getBaseContext(),mParameter);
                 try {
                     float speed = Float.valueOf(String.format("%.2f", gpsTracker.getSpeed()));
                     int speedInt = Math.round(speed);
                     if (speedInt >= 0) {
                         mParameter.Speed = speedInt;
                         commandResult.put("speed", String.valueOf(mParameter.Speed));
+                        commandResult.put("Speedcount", String.valueOf("0"));
                     }
                     LogUtil.d(TAG, "Vehicle speed with out adapter:" + speed);
                     float distance = Float.valueOf(String.format("%.2f", gpsTracker.getDistance()));
@@ -150,7 +160,26 @@ public class J1939DongleService extends AbstractGatewayService {
                 LogUtil.d(TAG, "latitude " + mParameter.Latitude + " Longitude:" + mParameter.Longitude);
             }
         }
+        //saveToPref(commandResult);
         sendMessageToActivity(commandResult);
+    }
+
+    private void saveToPref(HashMap<String,String> commandResult) {
+        try {
+            SharePref pref = SharePref.getInstance(getBaseContext());
+            pref.addItem(Constants.TIMER_LATITUDE, commandResult.get("latitude"));
+            pref.addItem(Constants.TIMER_LONGITUDE, commandResult.get("longitude"));
+            pref.addItem(Constants.SPEED_COUNT, commandResult.get("Speedcount"));
+            pref.addItem(Constants.TIMER_DISTANCE, commandResult.get("Distance"));
+            pref.addItem(Constants.TIMER_FAULT_SPN,commandResult.get("FaultSPN"));
+            Trip ongoingtrip = DatabaseProvider.getInstance(getApplicationContext()).getCurrentTrip();
+            if(ongoingtrip!=null){
+                String diff=getTimeDiff(getBaseContext(),ongoingtrip);
+                NotificationManagerUtil.getInstance().upDateNotification(getBaseContext(), diff);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -199,10 +228,10 @@ public class J1939DongleService extends AbstractGatewayService {
     public void stopService() {
         LogUtil.d(TAG, "stopService adapter will disconnect");
         disconnectAdapter();
-        isRunning = false;
+        //isRunning = false;
         // kill service
-        stopSelf();
-        onDestroy();
+        //stopSelf();
+        //onDestroy();
     }
 
     // j1939 Event Handler
@@ -220,6 +249,7 @@ public class J1939DongleService extends AbstractGatewayService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        LogUtil.d(TAG,"onDestroy");
         try {
             unregisterReceiver(
                     mSignOutReceiver);
@@ -697,6 +727,9 @@ public class J1939DongleService extends AbstractGatewayService {
             mParameter.Latitude = String.valueOf(gpsTracker.getLatitude());
             mParameter.Longitude = String.valueOf(gpsTracker.getLongitude());
             LogUtil.d(TAG, "GPSTracker latitude: " + gpsTracker.getLatitude() + " longitude: " + gpsTracker.getLongitude());
+
+            updateLocations(getBaseContext(),mParameter);
+
         }
 
         try {
@@ -706,8 +739,11 @@ public class J1939DongleService extends AbstractGatewayService {
         } catch (NumberFormatException e) {
             LogUtil.d(TAG, "error number format exception");
         }
+        //saveToPref(commandResult);
         sendMessageToActivity(commandResult);
     }
+
+
 
     private int getSpeedCount(String speed) {
         if (!TextUtils.isEmpty(speed)) {
@@ -735,7 +771,8 @@ public class J1939DongleService extends AbstractGatewayService {
         mParameter.PctLoad = Vehicle.PctLoad != -1 ? Vehicle.PctLoad : mParameter.PctLoad;
         mParameter.PctTorque = Vehicle.PctTorque != -1 ? Vehicle.PctTorque : mParameter.PctTorque;
         mParameter.DrvPctTorque = Vehicle.DrvPctTorque != -1 ? Vehicle.DrvPctTorque : mParameter.DrvPctTorque;
-        mParameter.TorqueMode = String.valueOf(Vehicle.TorqueMode).equalsIgnoreCase("NA") ? mParameter.TorqueMode : String.valueOf(Vehicle.TorqueMode);
+        //mParameter.TorqueMode = String.valueOf(Vehicle.TorqueMode).equalsIgnoreCase("NA") ? mParameter.TorqueMode : String.valueOf(Vehicle.TorqueMode);
+        mParameter.TorqueMode = TextUtils.isEmpty(String.valueOf(Vehicle.TorqueMode)) ? mParameter.TorqueMode : String.valueOf(Vehicle.TorqueMode);
 
         mParameter.HiResDistance = Vehicle.HiResDistance != -1 ? Vehicle.HiResDistance * Const.MetersToMiles : mParameter.HiResDistance;
         mParameter.LoResDistance = Vehicle.LoResDistance != -1 ? Vehicle.LoResDistance * Const.KmToMiles : mParameter.LoResDistance;
@@ -768,7 +805,7 @@ public class J1939DongleService extends AbstractGatewayService {
         mParameter.CoolantTemp = Vehicle.CoolantTemp != -1.0F ? celciusToFarenheit(Vehicle.CoolantTemp) : mParameter.CoolantTemp;
         mParameter.CoolantPressure = Vehicle.CoolantPressure != -1 ? Vehicle.CoolantPressure * Const.kPaToPSI : mParameter.CoolantPressure;
         mParameter.CoolantLevel = Vehicle.CoolantLevel != -1.0F ? Vehicle.CoolantLevel : mParameter.CoolantLevel;
-
+/*
         mParameter.BrakeSwitch = !String.valueOf(Vehicle.BrakeSwitch).equalsIgnoreCase("NA") ? String.valueOf(Vehicle.BrakeSwitch) : mParameter.BrakeSwitch;
         mParameter.ClutchSwitch = !String.valueOf(Vehicle.ClutchSwitch).equalsIgnoreCase("NA") ? String.valueOf(Vehicle.ClutchSwitch) : mParameter.ClutchSwitch;
         mParameter.ParkBrakeSwitch = !String.valueOf(Vehicle.ParkBrakeSwitch).equalsIgnoreCase("NA") ? String.valueOf(Vehicle.ParkBrakeSwitch) : mParameter.ParkBrakeSwitch;
@@ -779,6 +816,18 @@ public class J1939DongleService extends AbstractGatewayService {
         mParameter.CruiseAccel = !String.valueOf(Vehicle.CruiseAccel).equalsIgnoreCase("NA") ? String.valueOf(Vehicle.CruiseAccel) : mParameter.CruiseAccel;
         mParameter.CruiseActive = !String.valueOf(Vehicle.CruiseActive).equalsIgnoreCase("NA") ? String.valueOf(Vehicle.CruiseActive) : mParameter.CruiseActive;
         mParameter.CruiseState = !String.valueOf(Vehicle.CruiseState).equalsIgnoreCase("NA") ? String.valueOf(Vehicle.CruiseState) : mParameter.CruiseState;
+*/
+        mParameter.BrakeSwitch = !TextUtils.isEmpty(String.valueOf(Vehicle.BrakeSwitch)) ? String.valueOf(Vehicle.BrakeSwitch) : mParameter.BrakeSwitch;
+        mParameter.ClutchSwitch = !TextUtils.isEmpty(String.valueOf(Vehicle.ClutchSwitch)) ? String.valueOf(Vehicle.ClutchSwitch) : mParameter.ClutchSwitch;
+        mParameter.ParkBrakeSwitch = !TextUtils.isEmpty(String.valueOf(Vehicle.ParkBrakeSwitch)) ? String.valueOf(Vehicle.ParkBrakeSwitch) : mParameter.ParkBrakeSwitch;
+        mParameter.CruiseOnOff = !TextUtils.isEmpty(String.valueOf(Vehicle.CruiseOnOff)) ? String.valueOf(Vehicle.CruiseOnOff) : mParameter.CruiseOnOff;
+        mParameter.CruiseSet = !TextUtils.isEmpty(String.valueOf(Vehicle.CruiseSet)) ? String.valueOf(Vehicle.CruiseSet) : mParameter.CruiseSet;
+        mParameter.CruiseCoast = !TextUtils.isEmpty(String.valueOf(Vehicle.CruiseCoast)) ? String.valueOf(Vehicle.CruiseCoast) : mParameter.CruiseCoast;
+        mParameter.CruiseResume = !TextUtils.isEmpty(String.valueOf(Vehicle.CruiseResume)) ? String.valueOf(Vehicle.CruiseResume) : mParameter.CruiseResume;
+        mParameter.CruiseAccel = !TextUtils.isEmpty(String.valueOf(Vehicle.CruiseAccel)) ? String.valueOf(Vehicle.CruiseAccel) : mParameter.CruiseAccel;
+        mParameter.CruiseActive = !TextUtils.isEmpty(String.valueOf(Vehicle.CruiseActive)) ? String.valueOf(Vehicle.CruiseActive) : mParameter.CruiseActive;
+        mParameter.CruiseState = !TextUtils.isEmpty(String.valueOf(Vehicle.CruiseState)) ? String.valueOf(Vehicle.CruiseState) : mParameter.CruiseState;
+
         mParameter.CruiseSetSpeed = Vehicle.CruiseSetSpeed != -1 ? Vehicle.CruiseSetSpeed * Const.KphToMph : mParameter.CruiseSetSpeed;
         mParameter.HiResMaxSpeed = (Vehicle.HiResMaxSpeed > 0) ? Vehicle.HiResMaxSpeed : mParameter.HiResMaxSpeed;
 
@@ -866,10 +915,16 @@ public class J1939DongleService extends AbstractGatewayService {
 
         mParameter.MaxSpeed = Vehicle.MaxSpeed != -1 ? Vehicle.MaxSpeed : mParameter.MaxSpeed;
         mParameter.HiResMaxSpeed = Vehicle.HiResMaxSpeed != -1 ? Vehicle.HiResMaxSpeed : mParameter.HiResMaxSpeed;
-        mParameter.Make = !Vehicle.Make.equalsIgnoreCase("NA") ? Vehicle.Make : mParameter.Make;
+        /*mParameter.Make = !Vehicle.Make.equalsIgnoreCase("NA") ? Vehicle.Make : mParameter.Make;
         mParameter.Model = !Vehicle.Model.equalsIgnoreCase("NA") ? Vehicle.Model : mParameter.Model;
         mParameter.SerialNo = !Vehicle.SerialNo.equalsIgnoreCase("NA") ? Vehicle.SerialNo : mParameter.SerialNo;
         mParameter.UnitNo = !Vehicle.UnitNo.equalsIgnoreCase("NA") ? Vehicle.UnitNo : mParameter.UnitNo;
+*/
+        mParameter.Make = !TextUtils.isEmpty(Vehicle.Make) ? Vehicle.Make : mParameter.Make;
+        mParameter.Model = !TextUtils.isEmpty(Vehicle.Model) ? Vehicle.Model : mParameter.Model;
+        mParameter.SerialNo = !TextUtils.isEmpty(Vehicle.SerialNo) ? Vehicle.SerialNo : mParameter.SerialNo;
+        mParameter.UnitNo = !TextUtils.isEmpty(Vehicle.UnitNo) ? Vehicle.UnitNo : mParameter.UnitNo;
+
         mParameter.AdapterId = j1939.GetAdapterId();
         mParameter.FirmwareVersion = j1939.GetFirmwareVersion();
         mParameter.HardwareVersion = j1939.GetHardwareVersion();
@@ -880,7 +935,15 @@ public class J1939DongleService extends AbstractGatewayService {
 
     }
 
+
     private void sendMessageToActivity(HashMap<String, String> msg) {
+
+        Trip ongoingtrip = DatabaseProvider.getInstance(getApplicationContext()).getCurrentTrip();
+        if(ongoingtrip!=null){
+            String diff=getTimeDiff(getBaseContext(),ongoingtrip);
+            NotificationManagerUtil.getInstance().upDateNotification(getBaseContext(), diff);
+        }
+
         Intent intent = new Intent(Constants.LOCAL_RECEIVER_ACTION_NAME);
         // You can also include some extra data.
         intent.putExtra(Constants.LOCAL_RECEIVER_NAME, msg);

@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 
 import com.mobiliya.fleet.R;
+import com.mobiliya.fleet.services.GPSTracker;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.SharePref;
 
@@ -30,6 +31,7 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        GPSTracker tracker= new GPSTracker(getBaseContext());
         mPreference = getSharedInstance(getBaseContext());
         String identityurls = getIdentityUrl(getApplicationContext());
         if(TextUtils.isEmpty(identityurls)) {

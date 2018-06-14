@@ -52,13 +52,14 @@ public class NotificationManagerUtil {
         PendingIntent pintentPause = PendingIntent.getBroadcast(cxt, (int) System.currentTimeMillis(), intentPause, 0);
 
         // Build notification
-        String diff = SharePref.getInstance(cxt).getItem(Constants.TIME_ONGOING);
+        SharePref.getInstance(cxt).addItem(Constants.TIME_ONGOING,"0");
         mBuilder = new Notification.Builder(cxt)
                 .setContentTitle("Trip is Ongoing")
-                .setContentText("Trip time " + diff)
+                .setContentText("Trip time: " + "0")
                 .setSmallIcon(R.drawable.notificationwhite)
                 .setColor(cxt.getResources().getColor(R.color.dashboard_header_start_color))
                 .setAutoCancel(false)
+                .setOngoing(true)
                 .setContentIntent(pintentApp)
                 .addAction(R.drawable.ic_action_pause, "Pause", pintentPause)
                 .addAction(R.drawable.ic_action_stop, "Stop", pintentStop);
@@ -81,12 +82,27 @@ public class NotificationManagerUtil {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         manager.cancel(123458);
         notificationManager = null;
+        SharePref.getInstance(context).addItem(Constants.TIME_ONGOING, "0.0");
+    }
+
+    public void dismissNotificationFromUpdate(Context context) {
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.cancel(123458);
+        notificationManager = null;
     }
 
     public void upDateNotification(Context cxt, String diff) {
-        if (mBuilder != null && notificationManager != null) {
-            mBuilder.setContentText("Trip Time :" + diff);
-            notificationManager.notify(123458, mBuilder.build());
+        try {
+            if (mBuilder != null && notificationManager != null) {
+                mBuilder.setContentText("Trip time: " + diff);
+                notificationManager.notify(123458, mBuilder.build());
+            } else {
+                dismissNotificationFromUpdate(cxt);
+                createNotification(cxt);
+                upDateNotification(cxt, diff);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 }
