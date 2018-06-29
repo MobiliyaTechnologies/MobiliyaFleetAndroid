@@ -43,7 +43,7 @@ public class LogUtil {
     public static void e(String tag, String msg) {
         if (DEBUG) { // && Log.isLoggable(tag, Log.ERROR)) {
             Log.e(TAG, tag + " : " + msg);
-           // writeLog(tag+": "+msg);
+            //writeLog(tag+": "+msg);
         }
     }
 

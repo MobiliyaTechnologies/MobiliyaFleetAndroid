@@ -136,7 +136,7 @@ public class ApplicationSettingsActivity extends AppCompatActivity implements Vi
                 broadcastToMessage();
                 break;
             case R.id.data_sync_time_sub:
-                if (mSyncTime > 10) {
+                if (mSyncTime > 5) {
                     switch (mSyncTime) {
                         case 120:
                             mSyncTime = 60;

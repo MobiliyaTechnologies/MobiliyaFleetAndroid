@@ -107,8 +107,9 @@ public class UserInfoActivity extends AppCompatActivity {
     private void getUserDetails() {
         final ProgressDialog dialog = new ProgressDialog(this);
         dialog.setIndeterminate(true);
-        dialog.setMessage("Logging in, please wait....");
+        dialog.setMessage("Please wait....");
         dialog.setCancelable(false);
+        dialog.show();
         String email = mSharePref.getItem(Constants.PREF_EMAIL);
         String USER_URL = Constants.getIdentityURLs(getApplicationContext(),GET_USER_URL) + "?email=" + email;
         LogUtil.d(TAG, "Get User details for email:" + email);

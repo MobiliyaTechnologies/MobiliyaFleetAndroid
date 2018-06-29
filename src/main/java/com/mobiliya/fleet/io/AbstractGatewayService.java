@@ -262,6 +262,8 @@ public abstract class AbstractGatewayService extends RoboService{
                     LogUtil.d(TAG, "GPS_DISTANCE :" + distance);
                     mParameter.Distance = distance;
                 }
+            }else {
+                LogUtil.d(TAG, "Adapter distance from dongle Distance:" + mParameter.Distance);
             }
             CommonUtil.milesDriven(getApplicationContext(), mParameter.Distance);
             mParameter.TripId = trip.commonId;

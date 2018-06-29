@@ -308,6 +308,12 @@ public class GPSTracker extends AppCompatActivity implements GoogleApiClient.Con
         return 0;
     }
 
+    public void setSpeed(float s) {
+        if (location != null) {
+            this.speed = s;
+        }
+    }
+
     public float getDistance() {
         if (location != null) {
             return this.distance;

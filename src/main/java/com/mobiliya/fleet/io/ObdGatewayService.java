@@ -233,7 +233,7 @@ public class ObdGatewayService extends AbstractGatewayService {
             public void run() {
                 sendMessageToActivity();
             }
-        }, 0, (10 * 1000));
+        }, 0, (5 * 1000));
     }
 
     private void queueCommands() {

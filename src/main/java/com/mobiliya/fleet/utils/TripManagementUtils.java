@@ -75,6 +75,7 @@ public class TripManagementUtils {
         SharePref pref = SharePref.getInstance(activity.getBaseContext());
         GPSTracker gps = GPSTracker.getInstance(activity.getBaseContext());
         gps.setDistance(0.0f);
+        gps.setSpeed(0.0f);
         if (latlong != null) {
             latitude = latlong.latitude;
             longitude = latlong.longitude;
@@ -192,6 +193,7 @@ public class TripManagementUtils {
         SharePref pref = SharePref.getInstance(activity.getApplication());
         GPSTracker gps = GPSTracker.getInstance(activity.getBaseContext());
         gps.setDistance(0.0f);
+        gps.setSpeed(0.0f);
         Double latitude = 0.0;
         Double longitude = 0.0;
         try {

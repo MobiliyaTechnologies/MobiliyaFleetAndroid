@@ -696,7 +696,7 @@ public class CommonUtil {
                 LogUtil.d(TAG, "Miles driven less then previous cached miles");
                 return 0.0f;
             } else if (milesdriven > 100) {
-                LogUtil.d(TAG, "Miles driven great then 50 miles so we are ignoring");
+                LogUtil.d(TAG, "Miles driven great then 100 miles so we are ignoring");
                 return 0.0f;
             }
             LogUtil.d(TAG, "Distance travel :" + milesdriven);
