@@ -96,6 +96,7 @@
     <string name="settings">Settings</string>
     <string name="sign_out">Sign Out</string>
     <string name="try_again">"Please try again later."</string>
+    <string name="error_location">"Error in fetching location, try again later."</string>
     <string name="error_reset">"Error in resetting password."</string>
     <string name="new_password_send">new password send</string>
     <string name="vehicle_health">Health</string>
@@ -221,7 +222,7 @@
     <string name="emailid" tools:ignore="UnusedResources">Email Id</string>
     <string name="password_" tools:ignore="UnusedResources">Password</string>
     <string name="last_sync">Last sync: </string>
-    <string name="adapter">Adapter</string>
+    <string name="adapter">Dongle</string>
     <string name="failed_to_get_userInfo">Failed to get updated user information.</string>
     <string name="failed_to_get_vehicleInfo">Failed to get updated vehicle information</string>
     <string name="default_fault">MIL id OFF0 codes</string>
@@ -247,5 +248,16 @@
     <string name="pass_change_succes">Password changed successfully.</string>
     <string name="failed_to_change_password">Failed to reset password</string>
     <string name="failed_to_start_trip_nogps">Error in fetching location.Please try again</string>
+    <string name="application_settings">App Settings</string>
+    <string name="adapter_based_distance">Adapter based distance</string>
+    <string name="distance_tracking">Distance tracking</string>
+    <string name="data_save">Data saved</string>
+    <string name="app_setting_on_going_trip">Cannot change application settings while trip is on going</string>
+    <string name="gps_based_distance">GPS based distance</string>
+    <string name="help">Help</string>
+    <string name="engine_rpm">Engine RPM</string>
+    <string name="help_string">\u2022 OBD based distance tracking feature uses /"Distance from Code Clear/" parameter from OBD to measure the distance travelled by vehichle once user starts a trip. As this parameter can hold maxium value of 65535, the feature may not work proerply if your vehicle "DCC" parameter has already reached this value. This is an experimental feature and it is recommended to use GPS based distance tracking option for better results.\n \n \u2022
+GPS based distrace tracking system using device GPS locations to calculate the distance travelled by vehicle during the trip. As GPS has an inaccuracy of certain extent, the distance calculated will be an approximation only.
+    </string>
 
 </resources>

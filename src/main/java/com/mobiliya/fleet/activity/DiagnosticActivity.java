@@ -25,6 +25,7 @@ import com.mobiliya.fleet.utils.SharePref;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +37,7 @@ public class DiagnosticActivity extends Activity {
     private SharePref mPref;
     private List<FaultModel> mFaultslist = new ArrayList<>();
     private GpsLocationReceiver gpsLocationReceiver = new GpsLocationReceiver();
+    private HashMap<String, Integer> faultCount = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,10 +68,31 @@ public class DiagnosticActivity extends Activity {
         CommonUtil.registerGpsReceiver(getBaseContext(), gpsLocationReceiver);
         mPref.setFaultAlertCount(0);
         mFaultslist = DatabaseProvider.getInstance(getApplicationContext()).getFaultList();
+        try {
+            getFaultCount(mFaultslist);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         RecyclerView faultListView = (RecyclerView) findViewById(R.id.recycler_view);
         faultListView.setLayoutManager(new LinearLayoutManager(this));
         if (mFaultslist != null) {
-            faultListView.setAdapter(new EngineFaultAdapter(this, mFaultslist));
+            faultListView.setAdapter(new EngineFaultAdapter(this, mFaultslist,faultCount));
+        }
+    }
+
+    private void getFaultCount(List<FaultModel> list) {
+        if (list == null) {
+            return;
+        } else {
+            for (FaultModel model : list) {
+                Integer count = faultCount.get(model.description);
+                if (count == null) {
+                    faultCount.put(model.description, 1);
+                }else {
+                    count++;
+                    faultCount.put(model.description, count);
+                }
+            }
         }
     }
 

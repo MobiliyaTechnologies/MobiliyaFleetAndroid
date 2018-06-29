@@ -13,6 +13,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -29,6 +30,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.pires.obd.commands.protocol.EchoOffCommand;
 import com.j1939.api.enums.ConnectionStates;
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.adapters.CustomIgnitionListenerTracker;
@@ -175,7 +177,7 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
 
         if (mBTDevices.size() > 0) {
             //Found device in the mFaultslist
-            LogUtil.d(TAG, "Found device in the mFaultslist");
+            LogUtil.d(TAG, "Found device in the list");
         } else {
             if (flag) {
                 mListViewNewDevices.setVisibility(View.GONE);
@@ -228,10 +230,10 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
     @Override
     protected void onDestroy() {
         LogUtil.d(TAG, "onDestroy: called.");
-        if (mService != null && mDevicePaired) {
+        /*if (mService != null && mDevicePaired) {
             LogUtil.d(TAG, "onDestroy() service disconnected");
             unbindService(serviceConn);
-        }
+        }*/
         if (mBluetoothAdapter != null) {
             mBluetoothAdapter.cancelDiscovery();
         }
@@ -338,21 +340,26 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
             final String action = intent.getAction();
             LogUtil.d(TAG, "onReceive: ACTION FOUND.");
 
-            if (action.equals(BluetoothDevice.ACTION_FOUND)) {
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if (!TextUtils.isEmpty(device.getName()) && !checkDuplicate(device)) {
-                    BluetoothClass bluetoothClass = device.getBluetoothClass();
-                    LogUtil.d(TAG, "Device type: " + bluetoothClass.getDeviceClass());
-                    if (!isSkipDevices(bluetoothClass)) {
-                        mBTDevices.add(device);
+            try {
+                if (action.equals(BluetoothDevice.ACTION_FOUND)) {
+                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    if (!TextUtils.isEmpty(device.getName()) && !checkDuplicate(device)) {
+                        BluetoothClass bluetoothClass = device.getBluetoothClass();
+                        LogUtil.d(TAG, "Device type: " + bluetoothClass.getDeviceClass());
+                        if (!isSkipDevices(bluetoothClass)) {
+                            mBTDevices.add(device);
+                        }
+                    } else {
+                        LogUtil.d(TAG, "onReceive: Device Name is null, so returning");
+                        return;
                     }
-                } else {
-                    LogUtil.d(TAG, "onReceive: Device Name is null, so returning");
-                    return;
+                    LogUtil.d(TAG, "onReceive: " + device.getName() + ": " + device.getAddress());
+                    mDeviceListAdapter = new DeviceListAdapter(getBaseContext(), mBTDevices);
+                    mListViewNewDevices.setAdapter(mDeviceListAdapter);
                 }
-                LogUtil.d(TAG, "onReceive: " + device.getName() + ": " + device.getAddress());
-                mDeviceListAdapter = new DeviceListAdapter(getBaseContext(), mBTDevices);
-                mListViewNewDevices.setAdapter(mDeviceListAdapter);
+            }catch (Exception e){
+                LogUtil.d(TAG,"error mBroadcastReceiverListingDevice");
+                e.printStackTrace();
             }
         }
     };
@@ -388,35 +395,39 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
 
-            if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
-                BluetoothDevice mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if (mDevice.getBondState() == BluetoothDevice.BOND_BONDED) {
-                    mBtnDone.setText(getResources().getText(R.string.done));
-                    LogUtil.d(TAG, "BroadcastReceiver: BOND_BONDED. " + mDevice.getName());
-                    mListViewNewDevices.setEnabled(true);
-                    mBtnDone.setEnabled(true);
-                    mDeviceStatus_tv.setTextColor(Color.parseColor("#577cfc"));
-                    mDevicePaired = true;
-                    mPairedBTdevice = mDevice;
-                    mListViewNewDevices.setAdapter(mDeviceListAdapter);
-                    mPref.addItem(Constants.PREF_BT_DEVICE_ADDRESS, mDevice.getAddress());
-                    mPref.addItem(Constants.PREF_BT_DEVICE_NAME, mDevice.getName());
-                    connectToOBD();
+            try {
+                if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
+                    BluetoothDevice mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    if (mDevice.getBondState() == BluetoothDevice.BOND_BONDED) {
+                        mBtnDone.setText(getResources().getText(R.string.done));
+                        LogUtil.d(TAG, "BroadcastReceiver: BOND_BONDED. " + mDevice.getName());
+                        mListViewNewDevices.setEnabled(true);
+                        mBtnDone.setEnabled(true);
+                        mDeviceStatus_tv.setTextColor(Color.parseColor("#577cfc"));
+                        mDevicePaired = true;
+                        mPairedBTdevice = mDevice;
+                        mListViewNewDevices.setAdapter(mDeviceListAdapter);
+                        mPref.addItem(Constants.PREF_BT_DEVICE_ADDRESS, mDevice.getAddress());
+                        mPref.addItem(Constants.PREF_BT_DEVICE_NAME, mDevice.getName());
+                        //connectToOBD();
+                    }
+                    //case2: creating a bone
+                    if (mDevice.getBondState() == BluetoothDevice.BOND_BONDING) {
+                        mListViewNewDevices.setEnabled(false);
+                        mBtnDone.setEnabled(false);
+                        LogUtil.d(TAG, "BroadcastReceiver: BOND_BONDING.");
+                    }
+                    //case3: breaking a bond
+                    if (mDevice.getBondState() == BluetoothDevice.BOND_NONE) {
+                        LogUtil.d(TAG, "BroadcastReceiver: BOND_NONE.");
+                        mListViewNewDevices.setEnabled(true);
+                        mBtnDone.setEnabled(true);
+                        mListViewNewDevices.setAdapter(mDeviceListAdapter);
+                        btnDiscover();
+                    }
                 }
-                //case2: creating a bone
-                if (mDevice.getBondState() == BluetoothDevice.BOND_BONDING) {
-                    mListViewNewDevices.setEnabled(false);
-                    mBtnDone.setEnabled(false);
-                    LogUtil.d(TAG, "BroadcastReceiver: BOND_BONDING.");
-                }
-                //case3: breaking a bond
-                if (mDevice.getBondState() == BluetoothDevice.BOND_NONE) {
-                    LogUtil.d(TAG, "BroadcastReceiver: BOND_NONE.");
-                    mListViewNewDevices.setEnabled(true);
-                    mBtnDone.setEnabled(true);
-                    mListViewNewDevices.setAdapter(mDeviceListAdapter);
-                    btnDiscover();
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     };
@@ -465,7 +476,7 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
                 mDevicePaired = true;
                 mPairedBTdevice = mBTDevices.get(i);
                 mListViewNewDevices.setAdapter(mDeviceListAdapter);
-                connectToOBD();
+                //connectToOBD();
                 flag = true;
                 break;
             }
@@ -475,7 +486,6 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
             return;
         }
         //create the bond.
-        //NOTE: Requires API 17+? I think this is JellyBean
         try {
             LogUtil.d(TAG, "Trying to pair with " + deviceName);
             if (!mBLEdevice) {
@@ -486,7 +496,6 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
                     mService.connectToAdapter();
                 } else
                     connectTOJ1939();
-
             }
         } catch (Exception ex) {
             ex.getMessage();
@@ -596,11 +605,42 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
 
     public void gotoDahsboard(String protocol) {
         LogUtil.d(TAG, "Protocol Selected: " + protocol);
+        startIOTService(protocol);
         Intent intent = new Intent(BluetoothConnectionActivity.this, DashboardActivity.class);
         mPref.addItem(Constants.PREF_MOVED_TO_DASHBOARD, true);
         startActivity(intent);
         overridePendingTransition(R.anim.enter, R.anim.leave);
         finish();
+    }
+
+    private void startIOTService(String mAdapterProtocol) {
+        SharePref mPref = SharePref.getInstance(this);
+        Intent mServiceIntent;
+        try {
+            if (mAdapterProtocol.equalsIgnoreCase(Constants.OBD)) {
+                LogUtil.d(TAG, "startIOTService: OBD");
+                mServiceIntent = new Intent(this, ObdGatewayService.class);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(mServiceIntent);
+                } else {
+                    startService(mServiceIntent);
+                }
+            } else {
+                LogUtil.d(TAG, "startIOTService: J1939");
+                mServiceIntent = new Intent(this, J1939DongleService.class);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(mServiceIntent);
+                } else {
+                    startService(mServiceIntent);
+                }
+            }
+        } catch (IllegalStateException e) {
+            LogUtil.d(TAG, "IllegalStateException while create service from Bluetooth connection class");
+            e.printStackTrace();
+        } catch (Exception e) {
+            LogUtil.d(TAG, "Exception while create service from Bluetooth connection class");
+            e.printStackTrace();
+        }
     }
 
     /*method will try to connect to J1939 device*/
@@ -622,7 +662,6 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
             LogUtil.i(TAG, "ServiceConnection -> onServiceConnected");
             mService = ((AbstractGatewayService.AbstractGatewayServiceBinder) binder).getService();
             mService.setContext(BluetoothConnectionActivity.this);
-            LogUtil.d(TAG, "Starting live data");
             try {
                 if (mService.isAdapterConnected()) {
                     LogUtil.i(TAG, "service.isAdapterConnected() -> true");

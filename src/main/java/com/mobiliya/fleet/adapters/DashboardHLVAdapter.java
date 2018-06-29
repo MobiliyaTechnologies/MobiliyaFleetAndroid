@@ -12,7 +12,7 @@ import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.activity.SettingsActivity;
 import com.mobiliya.fleet.activity.TripActivity;
 import com.mobiliya.fleet.activity.TripListActivity;
-import com.mobiliya.fleet.activity.VehicleHealthAcitivity;
+import com.mobiliya.fleet.activity.VehicleHealthActivity;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
 
@@ -225,7 +225,7 @@ public class DashboardHLVAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     public void connect() {
         LogUtil.d(TAG, "Protocol Selected: " + mProtocol);
-        Intent intent = new Intent(mContext, VehicleHealthAcitivity.class);
+        Intent intent = new Intent(mContext, VehicleHealthActivity.class);
         intent.putExtra(Constants.PROTOCOL, mProtocol);
         mContext.startActivity(intent);
         Activity activity = (Activity) mContext;

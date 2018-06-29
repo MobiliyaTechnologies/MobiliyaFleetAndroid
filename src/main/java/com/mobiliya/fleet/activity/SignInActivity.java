@@ -1,9 +1,12 @@
 package com.mobiliya.fleet.activity;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.SpannableString;
@@ -24,6 +27,8 @@ import com.android.volley.VolleyError;
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.comm.VolleyCallback;
 import com.mobiliya.fleet.comm.VolleyCommunicationManager;
+import com.mobiliya.fleet.io.J1939DongleService;
+import com.mobiliya.fleet.io.ObdGatewayService;
 import com.mobiliya.fleet.models.ResponseModel;
 import com.mobiliya.fleet.models.User;
 import com.mobiliya.fleet.models.Vehicle;
@@ -143,7 +148,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
             @Override
             public void onClick(View view) {
                 mConfigureError.setVisibility(View.GONE);
-                startActivity(new Intent(SignInActivity.this,ConfigureUrlActivity.class));
+                startActivity(new Intent(SignInActivity.this, ConfigureUrlActivity.class));
             }
         });
     }
@@ -200,15 +205,15 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
         vehicleRegistrationNumber = mVehicleReg_edt.getText().toString().trim();
 
 
-        String identityurl=getIdentityUrl(getApplicationContext());
-        String fleeturl=getFleetUrl(getApplicationContext());
-        String tripurls=getTripServiceUrl(getApplicationContext());
+        String identityurl = getIdentityUrl(getApplicationContext());
+        String fleeturl = getFleetUrl(getApplicationContext());
+        String tripurls = getTripServiceUrl(getApplicationContext());
 
-        if(!TextUtils.isEmpty(identityurl) && !TextUtils.isEmpty(fleeturl) &&   !TextUtils.isEmpty(tripurls)){
+        if (!TextUtils.isEmpty(identityurl) && !TextUtils.isEmpty(fleeturl) && !TextUtils.isEmpty(tripurls)) {
             mConfigureError.setVisibility(View.INVISIBLE);
-        }else{
+        } else {
             mConfigureError.setVisibility(View.VISIBLE);
-            return valid=false;
+            return valid = false;
         }
 
         if (companyName.isEmpty()) {
@@ -225,9 +230,9 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
             mVehicleReg_edt.setBackgroundResource(R.drawable.shadow_10_error);
             mVehicleReg_edt.setTextColor(R.color.deep_carpen_pink);
             valid = false;
-        } else  {
+        } else {
             mVehicleError_tv.setVisibility(View.INVISIBLE);
-            vehicleRegistrationNumber=vehicleRegistrationNumber.replaceAll("[^a-zA-Z0-9]", "");
+            vehicleRegistrationNumber = vehicleRegistrationNumber.replaceAll("[^a-zA-Z0-9]", "");
         }
 
 
@@ -255,7 +260,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
 
     private void attempLogin() {
         mDialog.show();
-        String LOGIN_URL = Constants.getIdentityURLs(getApplicationContext(),Constants.LOGIN_URL);
+        String LOGIN_URL = Constants.getIdentityURLs(getApplicationContext(), Constants.LOGIN_URL);
         JSONObject jsonBody = new JSONObject();
         try {
             jsonBody.put("email", email);
@@ -324,6 +329,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
     private void startNextActivity(Class<? extends Activity> activity) {
         LogUtil.d(TAG, "startNextActivity");
         Intent intent;
+        //checkServiceRunning();
         if (activity != null) {
             intent = new Intent(SignInActivity.this, activity);
         } else {
@@ -334,10 +340,26 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
         finish();
     }
 
+   /* private void checkServiceRunning() {
+        LogUtil.d(TAG, "checkServiceRunning");
+        String mAdapterProtocol = SharePref.getInstance(this).getItem(Constants.PREF_ADAPTER_PROTOCOL, "");
+        Class T = null;
+        if (mAdapterProtocol.equals(Constants.OBD)) {
+            T = ObdGatewayService.class;
+        } else {
+            T = J1939DongleService.class;
+        }
+        if (!isServiceRunning(T)) {
+            startService(mAdapterProtocol);
+        }else {
+            LogUtil.d(TAG,"Service is already running");
+        }
+    }
+*/
     private void getUserDetails() {
         mDialog.setMessage("Please wait....");
         String email = mSharePref.getItem(Constants.PREF_EMAIL);
-        String USER_URL = Constants.getIdentityURLs(getApplicationContext(),GET_USER_URL) + "?email=" + email;
+        String USER_URL = Constants.getIdentityURLs(getApplicationContext(), GET_USER_URL) + "?email=" + email;
         LogUtil.d(TAG, "Get User details for email:" + email);
         LogUtil.d(TAG, "Get User details for URL:" + USER_URL);
 
@@ -383,7 +405,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
         String mTenantId = mSharePref.getUser().getTenantId();
         String mVehicleRegistrationNo = mSharePref.getItem(Constants.KEY_VEHICLE_REGISTRATION_NO, "");
         LogUtil.d(TAG, "Vehicle registration no is:" + mVehicleRegistrationNo);
-        String VEHICLE_URL =getFleetUrl(getApplicationContext())+
+        String VEHICLE_URL = getFleetUrl(getApplicationContext()) +
                 mTenantId + VEHICLES + REGISTRATION_NUMBER + mVehicleRegistrationNo;
         LogUtil.d(TAG, "Get vehicle details:" + VEHICLE_URL);
         try {
@@ -399,20 +421,20 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
                             if (responseArray.length() > 0) {
                                 JSONObject responseData = (JSONObject) responseArray.get(0);
                                 Vehicle vehicle = mSharePref.convertVehicleResponse(responseData);
-                                if(TextUtils.isEmpty(vehicle.getDeviceId())){
+                                if (TextUtils.isEmpty(vehicle.getDeviceId())) {
                                     mDialog.dismiss();
                                     Toast.makeText(SignInActivity.this, getString(R.string.no_device),
                                             Toast.LENGTH_LONG).show();
                                     return;
                                 }
-                                if(vehicle.getDeviceId().equalsIgnoreCase("null")){
+                                if (vehicle.getDeviceId().equalsIgnoreCase("null")) {
                                     mDialog.dismiss();
                                     Toast.makeText(SignInActivity.this, getString(R.string.no_device),
                                             Toast.LENGTH_LONG).show();
                                     return;
                                 }
                                 JSONObject deviceData = responseData.getJSONObject("Device");
-                                String iotConnectionString=deviceData.getString("connectionString");
+                                String iotConnectionString = deviceData.getString("connectionString");
                                 mSharePref.addItem(Constants.IOTURL, iotConnectionString);
                                 String mUserId = mSharePref.getItem(Constants.KEY_ID, "");
                                 LogUtil.d(TAG, "mUserId Id is:" + mUserId);
@@ -481,6 +503,44 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
                 mVehicleError_tv.setVisibility(View.INVISIBLE);
                 break;
         }
+    }
 
+    /*private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }*/
+
+    private void startService(String mAdapterProtocol) {
+        LogUtil.d(TAG, "startService called from signin");
+        SharePref mPref = SharePref.getInstance(this);
+        Intent mServiceIntent;
+        try {
+            if (mAdapterProtocol.equals(Constants.OBD)) {
+                mServiceIntent = new Intent(this, ObdGatewayService.class);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(mServiceIntent);
+                } else {
+                    startService(mServiceIntent);
+                }
+            } else {
+                mServiceIntent = new Intent(this, J1939DongleService.class);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(mServiceIntent);
+                } else {
+                    startService(mServiceIntent);
+                }
+            }
+        } catch (IllegalStateException e) {
+            LogUtil.d(TAG, "IllegalStateException while create service from application class");
+            e.printStackTrace();
+        } catch (Exception e) {
+            LogUtil.d(TAG, "Exception while create service from signin class");
+            e.printStackTrace();
+        }
     }
 }

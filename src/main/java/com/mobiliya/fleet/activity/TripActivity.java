@@ -1,6 +1,5 @@
 package com.mobiliya.fleet.activity;
 
-import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -9,20 +8,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.IntentSender;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -33,30 +26,22 @@ import android.widget.TextView;
 import com.android.volley.VolleyError;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResult;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.annotations.Icon;
-import com.mapbox.mapboxsdk.annotations.IconFactory;
-import com.mapbox.mapboxsdk.annotations.Marker;
-import com.mapbox.mapboxsdk.annotations.MarkerOptions;
-import com.mapbox.mapboxsdk.annotations.Polyline;
-import com.mapbox.mapboxsdk.annotations.PolylineOptions;
-import com.mapbox.mapboxsdk.camera.CameraUpdate;
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.maps.MapView;
-import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.adapters.ApiCallBackListener;
 import com.mobiliya.fleet.adapters.CustomIgnitionListenerTracker;
@@ -64,15 +49,12 @@ import com.mobiliya.fleet.db.DatabaseProvider;
 import com.mobiliya.fleet.io.AbstractGatewayService;
 import com.mobiliya.fleet.io.J1939DongleService;
 import com.mobiliya.fleet.io.ObdGatewayService;
-import com.mobiliya.fleet.location.LocationInfo;
-import com.mobiliya.fleet.location.LocationTracker;
 import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.services.GPSTracker;
 import com.mobiliya.fleet.services.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
-import com.mobiliya.fleet.utils.DateUtils;
 import com.mobiliya.fleet.utils.LogUtil;
 import com.mobiliya.fleet.utils.NotificationManagerUtil;
 import com.mobiliya.fleet.utils.SharePref;
@@ -81,22 +63,18 @@ import com.mobiliya.fleet.utils.TripStatus;
 
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import static com.mobiliya.fleet.utils.CommonUtil.getTimeDiff;
 import static com.mobiliya.fleet.utils.CommonUtil.showToast;
 
 @SuppressWarnings({"ALL", "unused"})
-public class TripActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class TripActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final String TAG = TripActivity.class.getName();
-    private MapboxMap mMap;
+    private GoogleMap mMap;
     private Trip mTrip;
     private TextView mTripDate;
     private TextView mMilesDriven;
@@ -105,7 +83,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     private TextView mStops;
     public static TextView mPause_tv;
     private TextView mStop_tv;
-    public TextView mSpeeding, mHardBraking;
+    public TextView mSpeeding, mEngineRPM;
     private LinearLayout mPause, mStop;
     private Trip mLasttrip;
     private SharePref mPref;
@@ -119,31 +97,22 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GpsLocationReceiver gpsLocationReceiver = new GpsLocationReceiver();
     MapView mapView;
     public static ImageView mPauseIcon;
-    private Geocoder mGeocoder;
-    private List<Address> mAddresses;
-    private Location mylocation;
-    private GoogleApiClient googleApiClient;
-    private final static int REQUEST_CHECK_SETTINGS_GPS = 0x1;
-    private final static int REQUEST_ID_MULTIPLE_PERMISSIONS = 0x2;
-    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 1001;
     LatLng mLatLong;
+    GPSTracker gps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trip);
+        gps = GPSTracker.getInstance(getBaseContext());
         bindViews();
         mPref = SharePref.getInstance(this);
-        setUpGClient();
-        mGeocoder = new Geocoder(this, Locale.getDefault());
         mProtocol = mPref.getItem(Constants.PREF_ADAPTER_PROTOCOL);
         connectToAdapetrService();
-        mOptions = new PolylineOptions().width(5).color(getColor(R.color.accent_black));
-        Mapbox.getInstance(getApplicationContext(), Constants.MAP_TOKEN);
 
-        mapView = (MapView) findViewById(R.id.map);
-        mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(this);
+        mOptions = new PolylineOptions().width(5).color(getColor(R.color.accent_black)).geodesic(true);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.NOTIFICATION_PAUSE_BROADCAST);
@@ -164,7 +133,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         mFuelUsed = (TextView) findViewById(R.id.tv_fuelused);
         mStops = (TextView) findViewById(R.id.tv_stops);
         mSpeeding = (TextView) findViewById(R.id.tv_speeding);
-        mHardBraking = (TextView) findViewById(R.id.tv_hardbraking);
+        mEngineRPM = (TextView) findViewById(R.id.tv_hardbraking);
         LinearLayout mPause = (LinearLayout) findViewById(R.id.btn_pause);
         LinearLayout mStop = (LinearLayout) findViewById(R.id.btn_stop);
         mPause_tv = (TextView) findViewById(R.id.tv_pause);
@@ -208,8 +177,10 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     protected void onDestroy() {
+        if (mapView != null)
+            mapView.onDestroy();
         if (mService != null) {
-            LogUtil.d(TAG, "onDestroy() service disconnected");
+            LogUtil.d(TAG, "onDestroy() called");
             unbindService(mServiceConn);
         }
         try {
@@ -227,11 +198,26 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onPause() {
         super.onPause();
-        /*if (mTimer != null) {
-            mTimer.cancel();
-            mTimer = null;
-        }*/
+        if (mapView != null) {
+            mapView.onPause();
+        }
         CommonUtil.unRegisterGpsReceiver(getBaseContext(), gpsLocationReceiver);
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        if (mapView != null)
+            mapView.onLowMemory();
+
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mapView != null)
+            mapView.onSaveInstanceState(outState);
     }
 
     private final ServiceConnection mServiceConn = new ServiceConnection() {
@@ -289,12 +275,14 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onResume() {
         super.onResume();
+        if (mapView != null) {
+            mapView.onResume();
+        }
         mIsTripStop = false;
         CommonUtil.checkLocationPermission(this);
         mTrip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
         CommonUtil.registerGpsReceiver(getBaseContext(), gpsLocationReceiver);
         if (mTrip != null) {
-            //initDataSyncTimer();
             if (mTrip.status == TripStatus.Pause.getValue()) {
                 mPause_tv.setText(getString(R.string.paused));
                 mPauseIcon.setImageDrawable(getDrawable(R.drawable.play_icon));
@@ -305,81 +293,15 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private Timer mTimer;
-
-    /*method to initialize timer task*/
-    private void initDataSyncTimer() {
-        if (mTimer != null) {
-            mTimer.cancel();
-            mTimer = null;
-            mTimer = new Timer();
-        } else {
-            mTimer = new Timer();
-        }
-
-        int delayTime = 1;
-
-        mTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                LogUtil.i(TAG, "10 sec timer callback callled ->" + 10);
-                performAction();
-            }
-        }, 0, (10 * 1000));
-    }
-
-    private void performAction() {
-        String TAG = "TripActivity";
-        LogUtil.d(TAG, "performAction parameter received");
-        if (mIsTripStop) {
-            LogUtil.d(TAG, "performAction() parameter received Return trip already stop dont update parameter");
-            return;
-        }
-        SharePref pref = SharePref.getInstance(this);
-
-        String totalHours = pref.getItem("TotalHours", "NA");
-        String fuelUsed = pref.getItem("FuelUsed", "NA");
-        String distance = pref.getItem(Constants.TIMER_DISTANCE, "NA");
-        String speed = pref.getItem(Constants.SPEED_COUNT, "0");
-        String latitude = pref.getItem(Constants.TIMER_LATITUDE);
-        String longitude = pref.getItem(Constants.TIMER_LONGITUDE);
-
-        final String totalH = "0".equalsIgnoreCase(totalHours) ? "NA" : totalHours;
-        final String fuelU = "0".equalsIgnoreCase(fuelUsed) ? "NA" : fuelUsed;
-        final String dist = "0".equalsIgnoreCase(distance) ? "NA" : distance;
-        final String vehicleSpeed = "0".equalsIgnoreCase(speed) ? "0" : speed;
-        final String lat = latitude;
-        final String lon = longitude;
-        runOnUiThread(new Thread(new Runnable() {
-            public void run() {
-                setParameterData(totalH, fuelU, dist, vehicleSpeed);
-                if (lat != null && lon != null) {
-                    LatLong latLong = new LatLong(lat, lon);
-                    Double lat = Double.valueOf(latLong.latitude);
-                    Double longi = Double.valueOf(latLong.longitude);
-
-                    if (mTrip != null && lat != 0.0d && longi != 0.0d) {
-                        LatLng point = new LatLng(Double.valueOf(latLong.latitude), Double.valueOf(latLong.longitude));
-                        mOptions.add(point);
-                    }
-                    redrawLine();
-                }
-            }
-        }));
-    }
-
     private void startTrip() {
-        GPSTracker gps = GPSTracker.getInstance(getBaseContext());
+        gps.getLocation();
         if (gps.getLatitude() == 0.0d || gps.getLongitude() == 0.0d) {
-            checkPermissions();
-            getMyLocation();
+            showToast(this, "Failed to get your location,Please try again");
+            TripActivity.this.finish();
         } else {
             LatLng latlongitude = new LatLng(gps.getLatitude(), gps.getLongitude());
             saveStartTrip(latlongitude);
         }
-        //initDataSyncTimer();
-        //LatLng latlongitude = new LatLng(gps.getLatitude(), gps.getLongitude());
-        //saveStartTrip(latlongitude);
     }
 
 
@@ -388,15 +310,12 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (tripId != null) {
             NotificationManagerUtil.getInstance().createNotification(getBaseContext());
             mMap.clear();
-            Double lat = GPSTracker.getInstance(getBaseContext()).getLatitude();
-            Double lon = GPSTracker.getInstance(getBaseContext()).getLongitude();
-            LatLong latlong = new LatLong();
-            latlong.latitude = String.valueOf(lat);
-            latlong.longitude = String.valueOf(lon);
             mTrip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
-            mTripDate.setText(mTrip.tripName);
-            DatabaseProvider.getInstance(getBaseContext()).addLatLong(mTrip.commonId, new LatLong(String.valueOf(lat), String.valueOf(lon)));
-            plotMarker("start", new LatLong(String.valueOf(lat), String.valueOf(lon)));
+            mTripDate.setText("Trip Name :" + mTrip.tripName);
+            if (latlongitude.latitude != 0.0 && latlongitude.longitude != 0.0) {
+                DatabaseProvider.getInstance(getBaseContext()).addLatLong(mTrip.commonId, new LatLong(String.valueOf(latlongitude.latitude), String.valueOf(latlongitude.longitude)));
+                plotMarker("start", new LatLong(String.valueOf(latlongitude.latitude), String.valueOf(latlongitude.longitude)));
+            }
             showToast(this, getString(R.string.trip_started));
         } else {
             TripActivity.this.finish();
@@ -404,20 +323,19 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onMapReady(MapboxMap googleMap) {
+    public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.getUiSettings().setAttributionEnabled(false);
-        mMap.getUiSettings().setLogoEnabled(false);
         Trip trip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
         if (trip == null) {
             startTrip();
         } else {
             if (trip.status != TripStatus.Stop.getValue()) {
+                mTripDate.setText("Trip Name :" + trip.tripName);
                 String fuel_used = SharePref.getInstance(getApplicationContext()).getItem(Constants.FUEL_ONGOING, "NA");
                 mFuelUsed.setText(fuel_used);
                 int count = DatabaseProvider.getInstance(getBaseContext()).getStopsCount(mTrip.commonId);
                 mStops.setText(Integer.toString(count));
-                float milage = SharePref.getInstance(getApplicationContext()).getItem(Constants.MILES_ONGOING, 0.0f);
+                float milage = SharePref.getInstance(getApplicationContext()).getItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
                 mMilesDriven.setText("" + String.format("%.1f", milage) + " miles");
                 String diff = SharePref.getInstance(getBaseContext()).getItem(Constants.TIME_ONGOING, "0");
                 mTripTime.setText(diff);
@@ -446,7 +364,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (mOptions.getPoints().size() > 1) {
             List<LatLng> points_list = mOptions.getPoints();
             LatLng points = points_list.get(points_list.size() - 1);
-            LatLong end_location = new LatLong(String.valueOf(points.getLatitude()), String.valueOf(points.getLongitude()));
+            LatLong end_location = new LatLong(String.valueOf(points.latitude), String.valueOf(points.longitude));
             if (end_location != null) {
                 plotMarker("end", end_location);
             }
@@ -458,15 +376,14 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         SharePref pref = SharePref.getInstance(this);
         try {
             if (Double.parseDouble(latLong.longitude) == 0 && Double.parseDouble(latLong.longitude) == 0) {
-                GPSTracker gpsTracker = GPSTracker.getInstance(getApplicationContext());
-                if (gpsTracker.getLatitude() != 0 && gpsTracker.getLongitude() != 0) {
-                    latLong.longitude = String.valueOf(gpsTracker.getLongitude());
-                    latLong.latitude = String.valueOf(gpsTracker.getLatitude());
+                if (gps.getLatitude() != 0 && gps.getLongitude() != 0) {
+                    latLong.longitude = String.valueOf(gps.getLongitude());
+                    latLong.latitude = String.valueOf(gps.getLatitude());
                 } else {
-                    gpsTracker.getLocation();
-                    if (gpsTracker.getLatitude() != 0 && gpsTracker.getLongitude() != 0) {
-                        latLong.longitude = String.valueOf(gpsTracker.getLongitude());
-                        latLong.latitude = String.valueOf(gpsTracker.getLatitude());
+                    gps.getLocation();
+                    if (gps.getLatitude() != 0 && gps.getLongitude() != 0) {
+                        latLong.longitude = String.valueOf(gps.getLongitude());
+                        latLong.latitude = String.valueOf(gps.getLatitude());
                     } else
                         return;
                 }
@@ -477,26 +394,17 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
             List<Address> addresses = null;
 
             if (latLong != null && latLong.latitude != null && latLong.longitude != null) {
-
-                /*addresses = geocoder.getFromLocation(Double.parseDouble(latLong.latitude), Double.parseDouble(latLong.longitude), 1);
-                if (addresses != null && addresses.size() > 0) {
-                    Address address = addresses.get(0);
-                    AddressStr = address.getAddressLine(0);
-                }*/
-
                 int customIcon = 0;
                 if ("end".equals(icon)) {
                     customIcon = R.drawable.stop_blue;
                     if (markerEnd != null) {
                         markerEnd.remove();
                     }
-                    Icon icon_img = IconFactory.getInstance(TripActivity.this).fromResource(customIcon);
-                    markerEnd = mMap.addMarker(new MarkerOptions().position(position).icon(icon_img).title(AddressStr));
+                    markerEnd = mMap.addMarker(new MarkerOptions().position(position).icon(BitmapDescriptorFactory.fromResource(customIcon)).title(AddressStr));
                     markerEnd.setPosition(position);
                 } else if ("start".equals(icon)) {
                     customIcon = R.drawable.startlocation;
-                    Icon icon_img = IconFactory.getInstance(TripActivity.this).fromResource(customIcon);
-                    mMarkerStart = mMap.addMarker(new MarkerOptions().position(position).icon(icon_img).title(AddressStr));
+                    mMarkerStart = mMap.addMarker(new MarkerOptions().position(position).icon(BitmapDescriptorFactory.fromResource(customIcon)).title(AddressStr));
                     mMarkerStart.setPosition(position);
                 }
 
@@ -583,7 +491,6 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                                                 }
                                                 finish();
                                                 dialogProgress.dismiss();
-
                                             }
                                         }
                                 );
@@ -609,57 +516,53 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-        private BroadcastReceiver mParameterReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String TAG = "TripActivity";
-                LogUtil.d(TAG, "onReceive() parameter received");
-                if (mIsTripStop) {
-                    LogUtil.d(TAG, "onReceive() parameter received Return trip already stop dont update parameter");
-                    return;
-                }
-                @SuppressWarnings("unchecked") HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra(Constants.LOCAL_RECEIVER_NAME);
-
-                String totalHours = hashMap.get("TotalHours");
-                String fuelUsed = hashMap.get("FuelUsed");
-                String distance = hashMap.get("Distance");
-                String speed = hashMap.get("Speedcount");
-                totalHours = "0".equalsIgnoreCase(totalHours) ? "NA" : totalHours;
-                fuelUsed = "0".equalsIgnoreCase(fuelUsed) ? "NA" : fuelUsed;
-                distance = "0".equalsIgnoreCase(distance) ? "NA" : distance;
-                speed = "0".equalsIgnoreCase(speed) ? "0" : speed;
-                setParameterData(totalHours, fuelUsed, distance, speed);
-
-
-                if (hashMap.get("latitude") != null && hashMap.get("longitude") != null) {
-                    LatLong latLong = new LatLong(hashMap.get("latitude"), hashMap.get("longitude"));
-                    Double lat=Double.valueOf(latLong.latitude);
-                    Double longi=Double.valueOf(latLong.longitude);
-
-                    if (mTrip != null&&lat!=0.0d&&longi!=0.0d) {
-                        LatLng point = new LatLng(Double.valueOf(latLong.latitude), Double.valueOf(latLong.longitude));
-                        mOptions.add(point);
-                    }
-                    redrawLine();
-                }
+    private BroadcastReceiver mParameterReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String TAG = "TripActivity";
+            LogUtil.d(TAG, "onReceive() parameter received");
+            if (mIsTripStop) {
+                LogUtil.d(TAG, "onReceive() parameter received Return trip already stop dont update parameter");
+                return;
             }
-        };
+            @SuppressWarnings("unchecked") HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra(Constants.LOCAL_RECEIVER_NAME);
 
-    private void setParameterData(String totalHours, String fuelUsed, String distance, String speeding) {
+            String totalHours = hashMap.get("TotalHours");
+            String fuelUsed = hashMap.get("FuelUsed");
+            String speed = hashMap.get("Speedcount");
+            String rpm = hashMap.get("RPM");
+            totalHours = "0".equalsIgnoreCase(totalHours) ? "NA" : totalHours;
+            fuelUsed = "0".equalsIgnoreCase(fuelUsed) ? "NA" : fuelUsed;
+            if (mEngineRPM != null) {
+                mEngineRPM.setText(rpm);
+            }
+            setParameterData(totalHours, fuelUsed, speed);
+            if (hashMap.get("latitude") != null && hashMap.get("longitude") != null) {
+                LatLong latLong = new LatLong(hashMap.get("latitude"), hashMap.get("longitude"));
+                Double lat = Double.valueOf(latLong.latitude);
+                Double longi = Double.valueOf(latLong.longitude);
+
+                if (mTrip != null && lat != 0.0d && longi != 0.0d) {
+                    LatLng point = new LatLng(Double.valueOf(latLong.latitude), Double.valueOf(latLong.longitude));
+                    mOptions.add(point);
+                }
+                redrawLine();
+            }
+        }
+    };
+
+    private void setParameterData(String totalHours, String fuelUsed, String speeding) {
         //calculation for trip time
         if (mTrip != null) {
             String diff = getTimeDiff(getBaseContext(), mTrip);
             mTripTime.setText(diff);
         }
 
-        if (mMilesDriven != null && !TextUtils.isEmpty(distance)) {
-            float miles = CommonUtil.milesDriven(this, distance);
-            if (miles < 0) {
-                mMilesDriven.setText("0.0 miles");
-            } else {
-                mMilesDriven.setText(String.format("%.1f", miles) + " miles");
-            }
+        if (mMilesDriven != null) {
+            float milage = SharePref.getInstance(getApplicationContext()).getItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
+            mMilesDriven.setText("" + String.format("%.1f", milage) + " miles");
         }
+
         if (!TextUtils.isEmpty(fuelUsed)) {
             if (mFuelUsed != null) {
                 mFuelUsed.setText(fuelUsed);
@@ -692,188 +595,6 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
     };
-
-
-    private synchronized void setUpGClient() {
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, 0, this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-        googleApiClient.connect();
-    }
-
-
-    private void getMyLocation() {
-        if (googleApiClient != null) {
-            if (googleApiClient.isConnected()) {
-                int permissionLocation = ContextCompat.checkSelfPermission(TripActivity.this,
-                        Manifest.permission.ACCESS_FINE_LOCATION);
-                if (permissionLocation == PackageManager.PERMISSION_GRANTED) {
-                    mylocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-                    LocationRequest locationRequest = new LocationRequest();
-                    locationRequest.setInterval(3000);
-                    locationRequest.setFastestInterval(3000);
-                    locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-                    LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                            .addLocationRequest(locationRequest);
-                    builder.setAlwaysShow(true);
-                    LocationServices.FusedLocationApi
-                            .requestLocationUpdates(googleApiClient, locationRequest, this);
-                    PendingResult<LocationSettingsResult> result =
-                            LocationServices.SettingsApi
-                                    .checkLocationSettings(googleApiClient, builder.build());
-                    result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
-
-                        @Override
-                        public void onResult(LocationSettingsResult result) {
-                            final Status status = result.getStatus();
-                            switch (status.getStatusCode()) {
-                                case LocationSettingsStatusCodes.SUCCESS:
-                                    // All location settings are satisfied.
-                                    // You can initialize location requests here.
-                                    getLocation();
-                                    break;
-                                case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                                    // Location settings are not satisfied.
-                                    // But could be fixed by showing the user a dialog.
-                                    try {
-                                        // Show the dialog by calling startResolutionForResult(),
-                                        // and check the result in onActivityResult().
-                                        // Ask to turn on GPS automatically
-                                        status.startResolutionForResult(TripActivity.this,
-                                                REQUEST_CHECK_SETTINGS_GPS);
-                                    } catch (IntentSender.SendIntentException e) {
-                                        // Ignore the error.
-                                    }
-                                    break;
-                                case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                                    break;
-                            }
-                        }
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * This API returns the current location requested.
-     */
-    public void getLocation() {
-        LogUtil.d(TAG, "Into getLocation() method");
-        final ProgressDialog dialog = new ProgressDialog(this);
-        dialog.setIndeterminate(true);
-        dialog.setMessage("Starting trip, please wait....");
-        dialog.setCancelable(false);
-        dialog.show();
-
-        (new Thread() {
-            public void run() {
-                Looper.prepare();
-                try {
-                    final Handler mHandler = new Handler() {
-                        @Override
-                        public void handleMessage(final Message msg) {
-                            LogUtil.d(TAG, "Into handleMessage()");
-                            if (msg != null && msg.what == 0) {
-                                final HashMap<String, Object> hMap = new HashMap<>();
-
-                                final LocationInfo location = (LocationInfo) msg.obj;
-                                if (location != null) {
-                                    try {
-                                        LogUtil.d(TAG, "location object ");
-
-                                        if (location.getLatitude() != 0.0d && location.getLongitude() != 0.0d) {
-                                            mLatLong = new LatLng(location.getLatitude(), location.getLongitude());
-                                        }
-
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    } finally {
-
-                                    }
-                                }
-                                TripActivity.this.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        saveStartTrip(mLatLong);
-                                        dialog.dismiss();
-                                    }
-                                });
-
-                            }
-                        }
-                    };
-
-                    // Get the device location.
-                    LocationTracker.getInstance(TripActivity.this).getLocation(mHandler);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                Looper.loop();
-            }
-        }).start();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    // permission was granted, yay! Do the
-                    // location-related task you need to do.
-                    if (ContextCompat.checkSelfPermission(this,
-                            Manifest.permission.ACCESS_FINE_LOCATION)
-                            == PackageManager.PERMISSION_GRANTED) {
-                        LogUtil.d(TAG, "location permission granted");
-                        //getMyLocation();
-                    }
-
-                } else {
-                    LogUtil.d(TAG, "permission denied");
-                }
-            }
-        }
-    }
-
-    private void checkPermissions() {
-        LogUtil.d(TAG, "checkPermissions()");
-        int permissionCheck = this.checkSelfPermission("Manifest.permission.ACCESS_FINE_LOCATION");
-        permissionCheck += this.checkSelfPermission("Manifest.permission.ACCESS_COARSE_LOCATION");
-        permissionCheck += this.checkSelfPermission("android.permission-group.CONTACTS");
-        permissionCheck += this.checkSelfPermission("android.permission.WRITE_CONTACTS");
-        permissionCheck += this.checkSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE");
-        if (permissionCheck != 0) {
-            this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.WRITE_CONTACTS, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission_group.CONTACTS, Manifest.permission.BLUETOOTH_PRIVILEGED}, MY_PERMISSIONS_REQUEST_LOCATION); //Any number
-        }
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
 }
 
 

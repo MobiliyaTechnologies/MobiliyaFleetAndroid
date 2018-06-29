@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -28,64 +29,66 @@ public class LogUtil {
     public static void d(String tag, String msg) {
         if (DEBUG) { // && Log.isLoggable(tag, Log.DEBUG)) {
             Log.d(TAG, tag + " : " + msg);
-            appendToFile(tag, msg);
+            //writeLog(tag+": "+msg);
         }
     }
 
     public static void i(String tag, String msg) {
         if (DEBUG) { // && Log.isLoggable(tag, Log.INFO)) {
             Log.i(TAG, tag + " : " + msg);
-            appendToFile(tag, msg);
+            //writeLog(tag+": "+msg);
         }
     }
 
     public static void e(String tag, String msg) {
         if (DEBUG) { // && Log.isLoggable(tag, Log.ERROR)) {
             Log.e(TAG, tag + " : " + msg);
-            appendToFile(tag, msg);
+           // writeLog(tag+": "+msg);
         }
     }
 
     public static void v(String tag, String msg) {
         if (DEBUG) { // && Log.isLoggable(tag, Log.VERBOSE)) {
             Log.v(TAG, tag + " : " + msg);
-            appendToFile(tag, msg);
+            //writeLog(tag+": "+msg);
         }
     }
 
     public static void w(String tag, String msg) {
         if (DEBUG) {// && Log.isLoggable(tag, Log.WARN)) {
             Log.w(TAG, tag + " : " + msg);
-            appendToFile(tag, msg);
+            //writeLog(tag+": "+ msg);
         }
     }
 
-    private static void appendToFile(String logMessageTag, String logMessage) {
-        /*try
-        {
-            // Gets the log file from the root of the primary storage. If it does
-            // not exist, the file is created.
-            File logFile = new File(Environment.getExternalStorageDirectory(),
-                    "TestApplicationLog.txt");
-            if (!logFile.exists())
-                logFile.createNewFile();
-            // Write the message to the log with a timestamp
-            BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, true));
-            writer.write(String.format("%1s [%2s]:%3s\r\n",
-                    getDateTimeStamp(), logMessageTag, logMessage));
-            writer.close();
-
+    private static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    public static void writeLog(String text) {
+        Date date = new Date();
+        BufferedWriter bw = null;
+        FileWriter fw = null;
+        final String FILENAME = "fleet_logs1.txt";
+        String path = Environment.getExternalStorageDirectory().getPath() + "/" + FILENAME;
+        try {
+            File file = new File(path);
+            // if file doesnt exists, then create it
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            // true = append file
+            fw = new FileWriter(file.getAbsoluteFile(), true);
+            bw = new BufferedWriter(fw);
+            bw.write(dateFormat.format(date) + ": " + text + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (bw != null)
+                    bw.close();
+                if (fw != null)
+                    fw.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
-        catch (IOException e)
-        {
-            LogUtil.e(TAG, "Unable to log exception to file.");
-        }*/
-    }
-
-    private static String getDateTimeStamp() {
-        Date dateNow = Calendar.getInstance().getTime();
-        // My locale, so all the log files have the same date and time format
-        return (DateFormat.getDateTimeInstance
-                (DateFormat.SHORT, DateFormat.SHORT, Locale.ENGLISH).format(dateNow));
     }
 }

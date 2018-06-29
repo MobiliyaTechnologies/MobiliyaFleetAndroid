@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:mapbox="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:weightSum="10">
 
@@ -68,16 +67,11 @@
             android:background="#ff0000"
             android:fadingEdge="vertical"
             tools:ignore="UselessParent">
-
-            <com.mapbox.mapboxsdk.maps.MapView
+            <fragment
                 android:id="@+id/map"
-
-                mapbox:mapbox_cameraZoom="10"
-                mapbox:mapbox_cameraBearing="34.33"
-
+                android:name="com.google.android.gms.maps.SupportMapFragment"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                mapbox:mapbox_styleUrl="@string/mapbox_style_mapbox_streets" />
+                android:layout_height="match_parent" />
 
         </RelativeLayout>
     </LinearLayout>
@@ -290,7 +284,7 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:lines="1"
-                    android:text="@string/hard_braking"
+                    android:text="@string/engine_rpm"
                     android:textAllCaps="true"
                     android:textColor="@color/manatee"
                     android:textSize="@dimen/font_10sp" />
@@ -300,13 +294,13 @@
                     android:layout_height="wrap_content">
 
                     <com.mobiliya.fleet.customViews.CustomTextViewMedium
-                        android:id="@+id/tv_hardbraking"
+                        android:id="@+id/tv_engine_rpm"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/dim_10"
                         android:ellipsize="end"
                         android:lines="1"
-                        android:text="@string/_00"
+                        android:text="@string/na"
                         android:textColor="@color/outer_space"
                         android:textSize="@dimen/font_16sp" />
                 </LinearLayout>

@@ -31,7 +31,7 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        GPSTracker tracker= new GPSTracker(getBaseContext());
+        //GPSTracker tracker = GPSTracker.getInstance(this);
         mPreference = getSharedInstance(getBaseContext());
         String identityurls = getIdentityUrl(getApplicationContext());
         if(TextUtils.isEmpty(identityurls)) {

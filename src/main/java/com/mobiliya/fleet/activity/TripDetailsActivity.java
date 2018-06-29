@@ -15,21 +15,21 @@ import android.widget.TextView;
 import com.android.volley.Request;
 import com.android.volley.VolleyError;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.annotations.Icon;
-import com.mapbox.mapboxsdk.annotations.IconFactory;
-import com.mapbox.mapboxsdk.annotations.Marker;
-import com.mapbox.mapboxsdk.annotations.MarkerOptions;
-import com.mapbox.mapboxsdk.annotations.PolylineOptions;
-import com.mapbox.mapboxsdk.camera.CameraUpdate;
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.geometry.LatLngBounds;
-import com.mapbox.mapboxsdk.maps.MapView;
-import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.adapters.CustomIgnitionListenerTracker;
 import com.mobiliya.fleet.comm.VolleyCallback;
@@ -61,7 +61,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
     TextView mStartLocation, mEndLocation, mStartTime, mEndTime;
     TextView mMilesDriven, mTriptime, mFuelused, mAveragespeed, mTopspeed, mMilage;
     TextView mStops, mSpeeding, mHardnraking, mEnginefaults, mAccelerator, mPhoneUsage;
-    private MapboxMap mMap;
+    private GoogleMap mMap;
     private List<Marker> mMarkerList = new ArrayList<>();
     String mTripId;
     private LinearLayout mBackButton;
@@ -75,11 +75,9 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trip_details);
-        Mapbox.getInstance(getApplicationContext(), Constants.MAP_TOKEN);
 
-        mapView = (MapView) findViewById(R.id.map);
-        mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(this);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
         mTripId = getIntent().getStringExtra(Constants.TRIPID);
     }
@@ -87,15 +85,41 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
     @Override
     protected void onResume() {
         super.onResume();
+        if(mapView!=null)
+            mapView.onResume();
+
         CustomIgnitionListenerTracker.showDialogOnIgnitionChange(this);
         CommonUtil.registerGpsReceiver(getBaseContext(), gpsLocationReceiver);
         bindViews();
     }
 
     @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        if(mapView!=null)
+            mapView.onLowMemory();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(mapView!=null)
+        mapView.onSaveInstanceState(outState);
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
+        if(mapView!=null)
+            mapView.onPause();
         CommonUtil.unRegisterGpsReceiver(getBaseContext(), gpsLocationReceiver);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(mapView!=null)
+            mapView.onDestroy();
     }
 
     private void getTripsDetailsById(String tripId) {
@@ -162,8 +186,8 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
     private void assignValues(TripDetailModel tDetail) {
         if (tDetail != null) {
             MtDetail = tDetail;
-            String start_address = "NA", start_longitude = null, start_latitude = null;
-            String end_address = "NA", end_longitude = null, end_latitude = null;
+            String start_address = "", start_longitude = null, start_latitude = null;
+            String end_address = "", end_longitude = null, end_latitude = null;
             LatLong startpoint = null, endpoint = null;
             if (TextUtils.isEmpty(tDetail.startTime) || "NA".equals(tDetail.startTime)) {
                 mTripName.setText("");
@@ -177,16 +201,21 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
                     String latlong = tDetail.startLocation.split("#")[0];
                     start_latitude = latlong.split(",")[0];
                     start_longitude = latlong.split(",")[1];
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
             if (TextUtils.isEmpty(tDetail.endLocation) || "NA".equals(tDetail.endLocation)) {
             } else {
-                end_address = tDetail.endLocation.split("#")[1];
-                String latlong = tDetail.endLocation.split("#")[0];
-                end_latitude = latlong.split(",")[0];
-                end_longitude = latlong.split(",")[1];
+                try {
+                    String latlong = tDetail.endLocation.split("#")[0];
+                    end_latitude = latlong.split(",")[0];
+                    end_longitude = latlong.split(",")[1];
+                    end_address = tDetail.endLocation.split("#")[1];
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             if (start_latitude != null && start_longitude != null) {
@@ -245,12 +274,14 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
             if (TextUtils.isEmpty(tDetail.avgSpeed) || "-1".equals(tDetail.avgSpeed)) {
                 mAveragespeed.setText("NA");
             } else {
+                //mAveragespeed.setText("" + String.format("%.2f", tDetail.avgSpeed) + " miles");
                 mAveragespeed.setText(tDetail.avgSpeed);
             }
 
             if (TextUtils.isEmpty(tDetail.topSpeed) || "-1".equals(tDetail.topSpeed)) {
                 mTopspeed.setText("NA");
             } else {
+                //mTopspeed.setText("" + String.format("%.2f", tDetail.topSpeed) + " miles");
                 mTopspeed.setText(tDetail.topSpeed);
             }
 
@@ -355,7 +386,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
                     latLong.longitude = String.valueOf(gpsTracker.getLongitude());
                     latLong.latitude = String.valueOf(gpsTracker.getLatitude());
                 } else {
-                    gpsTracker.getLocation();
+                    //gpsTracker.getLocation();
                     if (gpsTracker.getLatitude() != 0 && gpsTracker.getLongitude() != 0) {
                         latLong.longitude = String.valueOf(gpsTracker.getLongitude());
                         latLong.latitude = String.valueOf(gpsTracker.getLatitude());
@@ -386,8 +417,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
                 }
 
 
-                Icon icon_img = IconFactory.getInstance(TripDetailsActivity.this).fromResource(customIcon);
-                Marker marker = mMap.addMarker(new MarkerOptions().position(position).title(AddressStr).icon(icon_img));
+                Marker marker = mMap.addMarker(new MarkerOptions().position(position).title(AddressStr).icon(BitmapDescriptorFactory.fromResource(customIcon)));
                 mMarkerList.add(marker);
 
                 if (MtDetail.locationDetails == null || MtDetail.locationDetails.size() == 0) {
@@ -417,25 +447,22 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
             lineOptions.addAll(points);
             lineOptions.width(4);
             lineOptions.color(getColor(R.color.accent_black));
-            if(points.size()>=2) {
+            if (points.size() >= 2) {
                 CameraUpdate cameraPosition = CameraUpdateFactory.newLatLngBounds(mBoundsBuilder.build(), 50);
                 mMap.moveCamera(cameraPosition);
-                mMap.easeCamera(cameraPosition, 5000);
             }
             // Drawing polyline in the Google Map for the i-th route
             mMap.addPolyline(lineOptions);
         } catch (NumberFormatException e) {
             e.printStackTrace();
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public void onMapReady(MapboxMap googleMap) {
+    public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.getUiSettings().setAttributionEnabled(false);
-        mMap.getUiSettings().setLogoEnabled(false);
         getTripsDetailsById(mTripId);
     }
 

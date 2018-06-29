@@ -1,6 +1,7 @@
 package com.mobiliya.fleet.activity;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
@@ -22,7 +23,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
-
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
@@ -32,10 +32,9 @@ import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.VolleyError;
-import com.j1939.api.enums.ConnectionStates;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.j1939.api.enums.ConnectionStates;
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.adapters.ApiCallBackListener;
 import com.mobiliya.fleet.adapters.CustomIgnitionListenerTracker;
@@ -48,9 +47,9 @@ import com.mobiliya.fleet.io.J1939DongleService;
 import com.mobiliya.fleet.io.ObdGatewayService;
 import com.mobiliya.fleet.models.DriverScore;
 import com.mobiliya.fleet.models.LastTrip;
-import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.models.Vehicle;
+import com.mobiliya.fleet.services.GPSTracker;
 import com.mobiliya.fleet.services.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
@@ -69,8 +68,6 @@ import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getTripServiceUrl;
 import static com.mobiliya.fleet.utils.CommonUtil.getTimeDiff;
@@ -84,7 +81,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
     private RecyclerView.LayoutManager mLayoutManager;
     private RecyclerView.Adapter mAdapter;
     private String mProtocol = null;
-    private SharePref pref = null;
+    //private SharePref pref = null;
     private AbstractGatewayService mService;
     private TextView mAdapterNameTextView;
     private TextView mAdapterConnectionStateTextView;
@@ -116,7 +113,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
     Trip mLastSynctrip = null;
     private View mWithlasttrip;
     private View mWithoutlasttrip;
-    public  TextView mMilesDriven;
+    public TextView mMilesDriven;
     private TextView mTripTime, mScore, mScoreLastTrip;
     private Boolean mIsSkipEnabled = false;
     private ProgressBar mProgressDriver, mProgressDriverLastTrip;
@@ -131,8 +128,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         setContentView(R.layout.activity_dashboard);
         intiViews();
 
-        pref = SharePref.getInstance(this);
-        mIsSkipEnabled = pref.getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
+        mIsSkipEnabled = SharePref.getInstance(this).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (!mIsSkipEnabled) {
@@ -142,8 +138,8 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
             }
         }
         bindViews();
-        mProtocol = pref.getItem(Constants.PREF_ADAPTER_PROTOCOL);
-        String mAdapterName = pref.getItem(Constants.PREF_BT_DEVICE_NAME, "");
+        mProtocol = SharePref.getInstance(this).getItem(Constants.PREF_ADAPTER_PROTOCOL);
+        String mAdapterName = SharePref.getInstance(this).getItem(Constants.PREF_BT_DEVICE_NAME, "");
         LogUtil.d(TAG, "Protocol called: " + mProtocol);
         initAdapter();
         if (mIsSkipEnabled) {
@@ -161,6 +157,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         }
         connectToAdapetrService();
         setupBadge();
+        //GPSTracker.getInstance(this).getLocation();
     }
 
     private void intiViews() {
@@ -216,7 +213,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
     }
 
     private void bindViews() {
-        Vehicle vehicle = pref.getVehicleData();
+        Vehicle vehicle = SharePref.getInstance(this).getVehicleData();
         mRegistrationNotv.setText(vehicle.getRegistrationNo());
         mFueltv.setText(vehicle.getFuleType());
         mVehicleModeltv.setText(vehicle.getModel());
@@ -238,7 +235,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
     protected void onDestroy() {
         super.onDestroy();
         if (mIsServiceConnected) {
-            LogUtil.d(TAG, "onDestroy() service disconnected");
+            LogUtil.d(TAG, "onDestroy() called");
             unbindService(mServiceConn);
         }
         if (sPopupWindow != null) {
@@ -251,12 +248,13 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
     @Override
     protected void onRestart() {
         super.onRestart();
-        connectToAdapetrService();
+        //connectToAdapetrService();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        GPSTracker.getInstance(this).getLocation();
         setAdapterConnectionStatus();
         setScoreWithTripsView(null);
         CustomIgnitionListenerTracker.showDialogOnIgnitionChange(this);
@@ -286,9 +284,9 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
                 new Handler().postDelayed(new Runnable() {
                     public void run() {
                         showFloatingWindow();
-                        if(mTrip.status== TripStatus.Pause.getValue()) {
+                        if (mTrip.status == TripStatus.Pause.getValue()) {
                             sTv_btn_pause.setImageDrawable(getDrawable(R.drawable.play_icon));
-                        }else {
+                        } else {
                             sTv_btn_pause.setImageDrawable(getDrawable(R.drawable.pause));
                         }
                     }
@@ -333,6 +331,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
             mTimer = null;
         }*/
         try {
+
             unregisterReceiver(
                     mDatabaseMessageReceiver);
             unregisterReceiver(
@@ -366,7 +365,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
 
     /*method to bind to service based on selected adapter protocol type*/
     private void connectToAdapetrService() {
-        Intent mServiceIntent;
+        Intent mServiceIntent,mSerIntent;
         if (mProtocol.equals(Constants.J1939)) {
             mServiceIntent = new Intent(this, J1939DongleService.class);
         } else {
@@ -471,6 +470,16 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         // check if the request code is same as what is passed  here it is 2
         if (requestCode == Constants.DASHBOARD_REQUEST_CODE && (resultCode == Constants.SETTINGS_RESULT_CODE || resultCode == Constants.SIGN_OUT_RESULT_CODE)) {
             finish();
+            startNextActivity(new SignInActivity());
+        }
+    }
+
+    private void startNextActivity(Activity activity) {
+        LogUtil.d(TAG, "startNextActivity");
+        Intent intent;
+        if (activity != null) {
+            intent = new Intent(DashboardActivity.this, activity.getClass());
+            startActivityForResult(intent, Constants.DASHBOARD_REQUEST_CODE);
         }
     }
 
@@ -497,7 +506,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         mFloatingMilesLayout = (LinearLayout) mPopupView.findViewById(R.id.floating_miles_layout);
         mFloatingTimeLayout = (LinearLayout) mPopupView.findViewById(R.id.floating_time_layout);
         mMilesDriven = (TextView) mPopupView.findViewById(R.id.miles_driven);
-        float milage = SharePref.getInstance(getApplicationContext()).getItem(Constants.MILES_ONGOING, 0.0f);
+        float milage = SharePref.getInstance(getApplicationContext()).getItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
         mMilesDriven.setText("" + String.format("%.1f", milage) + " miles");
         mTripTime = (TextView) mPopupView.findViewById(R.id.trip_time);
         setTime();
@@ -541,7 +550,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
     };
 
     private void setupBadge() {
-        int faultAlertCount = pref.getFaultAlertCount();
+        int faultAlertCount = SharePref.getInstance(this).getFaultAlertCount();
 
         if (faultAlertCount > 0) {
             mFaultsLayout.setVisibility(View.VISIBLE);
@@ -568,17 +577,9 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
             //String fmi = hashMap.get("FaultFMI");
             String totalHours = hashMap.get("TotalHours");
             String fuelUsed = hashMap.get("FuelUsed");
-            String distance = hashMap.get("Distance");
-
-            totalHours = "-1.0".equalsIgnoreCase(totalHours) ? "NA" : totalHours;
-            fuelUsed = "-1.0".equalsIgnoreCase(fuelUsed) ? "NA" : fuelUsed;
-            distance = "-1.0".equalsIgnoreCase(distance) ? "NA" : distance;
-            String speeding = hashMap.get("Speed");
 
             setTime();
-            if (distance != null) {
-                setMiles(distance);
-            }
+            setMiles();
 
             if (spn != null && !spn.equalsIgnoreCase("")) {
                 if (!oldSpn.equalsIgnoreCase(spn)) {
@@ -591,14 +592,15 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
 
 
     private void setTime() {
-        if (mTrip != null && mTripTime!=null) {
-            String diff=getTimeDiff(getBaseContext(),mTrip);
+        if (mTrip != null && mTripTime != null) {
+            String diff = getTimeDiff(getBaseContext(), mTrip);
             mTripTime.setText(diff);
         }
     }
 
 
     public void getLastTrip() {
+        final SharePref pref = SharePref.getInstance(this);
         TripManagementUtils.getLastTrip(DashboardActivity.this, new ApiCallBackListener() {
             @Override
             public void onSuccess(JSONObject result) {
@@ -637,7 +639,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 } else {
@@ -669,7 +671,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
     }
 
     public void getDriverScore() {
-        String URL = getTripServiceUrl( getApplicationContext());
+        String URL = getTripServiceUrl(getApplicationContext());
         String mTenantId = SharePref.getInstance(this).getUser().getTenantId();
         String mUserId = SharePref.getInstance(this).getUser().getId();
         URL = URL + mTenantId + "/" + "driver?userId=" + mUserId;
@@ -716,7 +718,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
 
 
     private void setScoreWithTripsView(String flag) {
-        LastTrip lastTrip = pref.getLastTrip();
+        LastTrip lastTrip = SharePref.getInstance(this).getLastTrip();
         if (!("0".equalsIgnoreCase(lastTrip.miles) && "0".equalsIgnoreCase(lastTrip.startLocation) &&
                 "0".equalsIgnoreCase(lastTrip.endLocation) && "0".equalsIgnoreCase(lastTrip.startTime) &&
                 "0".equalsIgnoreCase(lastTrip.endTime) && "0".equalsIgnoreCase(lastTrip.tripDateTime))) {
@@ -739,16 +741,10 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         }
     }
 
-    public void setMiles(String distance) {
-        LogUtil.d(TAG, "distance:" + distance);
-        //calculation for miles driven
-        if (mMilesDriven != null && !TextUtils.isEmpty(distance)) {
-            float miles = CommonUtil.milesDriven(this, distance);
-            if (miles < 0) {
-                mMilesDriven.setText("0.0 miles");
-            }else {
-                mMilesDriven.setText(String.format("%.1f", miles) + " miles");
-            }
+    private void setMiles() {
+        if (mMilesDriven != null) {
+            float milage = SharePref.getInstance(getApplicationContext()).getItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
+            mMilesDriven.setText("" + String.format("%.1f", milage) + " miles");
         }
     }
 
@@ -786,7 +782,8 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
                 showStopDialog();
                 break;
             case R.id.lasttrip:
-                if (mWithoutlasttrip.getVisibility() == View.VISIBLE) {if (mLastSynctrip != null) {
+                if (mWithoutlasttrip.getVisibility() == View.VISIBLE) {
+                    if (mLastSynctrip != null) {
                         Intent startdetailsPage = new Intent(DashboardActivity.this, TripDetailsActivity.class);
                         startdetailsPage.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startdetailsPage.putExtra(Constants.TRIPID, mLastSynctrip.commonId);
@@ -814,17 +811,17 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         alert.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(final DialogInterface dialog, int which) {
-                if (TripManagementUtils.stopTrip(DashboardActivity.this)> 0) {
-                if (sPopupWindow != null) {
-                    try {
-                        sPopupWindow.dismiss();
-                    } catch (Exception ex) {
-                        LogUtil.d(TAG, ex.getMessage());
+                if (TripManagementUtils.stopTrip(DashboardActivity.this) > 0) {
+                    if (sPopupWindow != null) {
+                        try {
+                            sPopupWindow.dismiss();
+                        } catch (Exception ex) {
+                            LogUtil.d(TAG, ex.getMessage());
+                        }
                     }
+                    getLastTrip();
+                    NotificationManagerUtil.getInstance().dismissNotification(getBaseContext());
                 }
-                getLastTrip();
-                NotificationManagerUtil.getInstance().dismissNotification(getBaseContext());
-            }
 
             }
         });
@@ -851,8 +848,8 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
             if (intent.getAction().equals(Constants.NOTIFICATION_PAUSE_BROADCAST)) {
                 if (sPopupWindow != null) {
                     try {
-                        Trip trip=DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
-                        if (TripStatus.Pause.getValue()==trip.status) {
+                        Trip trip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
+                        if (TripStatus.Pause.getValue() == trip.status) {
                             sTv_btn_pause.setImageDrawable(getDrawable(R.drawable.play_icon));
                         } else {
                             sTv_btn_pause.setImageDrawable(getDrawable(R.drawable.pause));
@@ -864,53 +861,5 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
             }
         }
     };
-    private Timer mTimer;
 
-    /*method to initialize timer task*/
-    private void initDataSyncTimer() {
-        if (mTimer != null) {
-            mTimer.cancel();
-            mTimer = null;
-            mTimer = new Timer();
-        } else {
-            mTimer = new Timer();
-        }
-
-        int delayTime = 1;
-
-        mTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                LogUtil.i(TAG, "10 sec timer callback callled ->" + 10);
-                performAction();
-            }
-        }, 0, (10 * 1000));
-    }
-
-    private void performAction() {
-        LogUtil.d(TAG, "performAction() parameter received");
-        // Get extra data included in the Intent
-        SharePref pref = SharePref.getInstance(this);
-
-        String distance = pref.getItem(Constants.TIMER_DISTANCE, "NA");
-        final String spn = pref.getItem(Constants.TIMER_FAULT_SPN, "NA");
-
-        distance = "-1.0".equalsIgnoreCase(distance) ? "NA" : distance;
-        final String dist = distance;
-        runOnUiThread (new Thread(new Runnable() {
-            public void run() {
-                setTime();
-                if (dist != null) {
-                    setMiles(dist);
-                }
-                if (spn != null && !spn.equalsIgnoreCase("")) {
-                    if (!oldSpn.equalsIgnoreCase(spn)) {
-                        setupBadge();
-                        oldSpn = spn;
-                    }
-                }
-            }
-        }));
-
-    }
 }

@@ -105,11 +105,15 @@ public class Constants {
 
     @SuppressLint("SdCardPath")
     public static final String LOCAL_PATH = "mobiliya_fleet_sample.txt";
-    public static final int SYNC_DATA_TIME = 20;//0.5f;//1
+    public static final int SYNC_DATA_TIME = 5;//10;//0.5f;//1 Sec
+
     public static final String KEY_SYNC_DATA_TIME = "syncDataOnIOT";
     public static final String MESSAGE = "message";
     public static final String SYNC_TIME = "synctime";
     public static final int SET_DEFAULT_MEMORY_SIZE = 50;
+
+    public  static final String ADAPTER_NOTIFICATION = "Adapter_disconnect_notification";
+    public static final String ONGOINGTRIP_NOTIFICATION = "Ongoing_trip_notification";
 
     /**
      * Trip related apis
@@ -121,9 +125,9 @@ public class Constants {
 
     public static final String TIME_ONGOING = "Triptime";
     public static final String STOPS_ONGOING = "stops";
-    public static final String TOTAL_MILES_ONGOING = "totalmilage";
+    public static final String FIRST_MILES_ONGOING = "totalmilage";
     public static final String FUEL_ONGOING = "fuel";
-    public static final String MILES_ONGOING = "milage";
+    public static final String TOTAL_MILES_ONGOING = "milage";
 
     public static final String LAST_SYNC_DATE = "lastsync";
     public static final String KEY_MOVE_TO_BT_SCREEN = "moveToBtScreen";
@@ -169,6 +173,7 @@ public class Constants {
     public static final String TIMER_DISTANCE = "Timer_Distance";
     public static final String SPEED_COUNT = "Speed_Count";
     public static final String TIMER_FAULT_SPN = "Fault_SPN";
+    public static final String GPS_DISTANCE = "gps_distance";
 
 
     public static  String getTripsURLs(Context cxt,String type){

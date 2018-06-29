@@ -26,6 +26,7 @@ import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.DateUtils;
 import com.mobiliya.fleet.utils.LogUtil;
+import com.mobiliya.fleet.utils.NotificationManagerUtil;
 import com.mobiliya.fleet.utils.SharePref;
 
 import org.json.JSONArray;
@@ -47,15 +48,12 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
     private SharePref mPref;
     private TextView mUserName_tv;
     private TextView mCompanyName_tv;
-    private TextView mOfflineStorage_tv;
-    private TextView mDataSyncTime_tv;
-    private volatile int mSyncTime;
     private TextView mAboutUs_tv;
     private TextView mUserInfo_tv;
     private TextView mVehicleInfo_tv;
     private TextView mLastSync_tv;
-    private int mDefaultSize;
     private GpsLocationReceiver gpsLocationReceiver = new GpsLocationReceiver();
+    private TextView mAppSetting_tv;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -64,19 +62,12 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_settings);
         initViews();
         mPref = SharePref.getInstance(this);
-        mSyncTime = mPref.getItem(Constants.KEY_SYNC_DATA_TIME, Constants.SYNC_DATA_TIME);
-        if (SharePref.getInstance(getBaseContext()).getMemorySize() == 0) {
-            SharePref.getInstance(getBaseContext()).setMemorySize(Constants.SET_DEFAULT_MEMORY_SIZE);
-        }
-        mDefaultSize = mPref.getMemorySize();
-        mOfflineStorage_tv.setText(String.valueOf(mDefaultSize) + " MB");
-        setSyncTimeOnViews();
-
-        if (CommonUtil.isNetworkConnected(getBaseContext())) {
+        /*if (CommonUtil.isNetworkConnected(getBaseContext())) {
             getUserDetails();
         } else {
             setValues(mPref.getUser());
-        }
+        }*/
+        setValues(mPref.getUser());
     }
 
     @Override
@@ -97,22 +88,16 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
         mCompanyName_tv = (TextView) findViewById(R.id.company_name);
         mAboutUs_tv = (TextView) findViewById(R.id.aboutUs);
         mAboutUs_tv.setOnClickListener(this);
+
+        mAppSetting_tv = (TextView) findViewById(R.id.app_settings);
+        mAppSetting_tv.setOnClickListener(this);
+
+
         mUserInfo_tv = (TextView) findViewById(R.id.userInfo);
         mUserInfo_tv.setOnClickListener(this);
         mVehicleInfo_tv = (TextView) findViewById(R.id.vehicleInfo);
         mVehicleInfo_tv.setOnClickListener(this);
-        mOfflineStorage_tv = (TextView) findViewById(R.id.offline_storage);
         mLastSync_tv = (TextView) findViewById(R.id.last_sync);
-
-        mDataSyncTime_tv = (TextView) findViewById(R.id.data_sync_time);
-        ImageView ivOfflineStorageSub = (ImageView) findViewById(R.id.offline_storage_time_sub);
-        ivOfflineStorageSub.setOnClickListener(this);
-        ImageView ivOfflineStorageAdd = (ImageView) findViewById(R.id.offline_storage_time_add);
-        ivOfflineStorageAdd.setOnClickListener(this);
-        ImageView ivDataSyncTimeSub = (ImageView) findViewById(R.id.data_sync_time_sub);
-        ivDataSyncTimeSub.setOnClickListener(this);
-        ImageView ivDataSyncTimeAdd = (ImageView) findViewById(R.id.data_sync_time_add);
-        ivDataSyncTimeAdd.setOnClickListener(this);
         Button btSignOut = (Button) findViewById(R.id.btn_sign_out);
         btSignOut.setOnClickListener(this);
         LinearLayout ivBackButton = (LinearLayout) findViewById(R.id.back_button);
@@ -209,7 +194,12 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
                 startActivity(new Intent(SettingsActivity.this, AboutUsActivity.class));
                 overridePendingTransition(R.anim.enter, R.anim.leave);
                 break;
+            case R.id.app_settings:
+                startActivity(new Intent(SettingsActivity.this, ApplicationSettingsActivity.class));
+                overridePendingTransition(R.anim.enter, R.anim.leave);
+                break;
             case R.id.btn_sign_out:
+                NotificationManagerUtil.getInstance().dismissNotification(SettingsActivity.this);
                 Intent intent = new Intent(Constants.SIGNOUT);
                 sendBroadcast(intent);
                 mPref.clearPreferences();
@@ -220,7 +210,6 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
                     e.printStackTrace();
                 }
                 setResult(Constants.SETTINGS_RESULT_CODE);
-                startNextActivity(new SignInActivity());
                 finish();
                 overridePendingTransition(R.anim.left_to_right, R.anim.right_to_left);
                 break;
@@ -231,95 +220,12 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
             case R.id.back_button:
                 finishCurrectActivity();
                 break;
-            case R.id.data_sync_time_add:
-                if (mSyncTime < 120) {
-                    switch (mSyncTime) {
-                        case 20:
-                            mSyncTime = 30;
-                            break;
-                        case 30:
-                            mSyncTime = 60;
-                            break;
-                        case 60:
-                            mSyncTime = 120;
-                            break;
-                    }
-                } else {
-                    LogUtil.d(TAG, "Sync time should not be greter then 30 min");
-                }
-                setSyncTimeOnViews();
-                broadcastToMessage();
-                break;
-            case R.id.data_sync_time_sub:
-                if (mSyncTime > 20) {
-                    switch (mSyncTime) {
-                        case 120:
-                            mSyncTime = 60;
-                            break;
-                        case 60:
-                            mSyncTime = 30;
-                            break;
-                        case 30:
-                            mSyncTime = 20;
-                            break;
-                    }
-                } else {
-                    LogUtil.d(TAG, "Sync time should not be greter then 30 min");
-                }
-                setSyncTimeOnViews();
-                broadcastToMessage();
-                break;
-            case R.id.offline_storage_time_sub:
-                if (mDefaultSize > 10) {
-                    mDefaultSize--;
-                    String size_minus = String.valueOf(mDefaultSize) + " MB";
-                    setOfflineStorageOnViews(size_minus);
-
-                } else {
-                    LogUtil.d(TAG, "cannot set less then 10 MB storage");
-                }
-                break;
-            case R.id.offline_storage_time_add:
-                if (mDefaultSize < 100) {
-                    mDefaultSize++;
-                    String size_add = String.valueOf(mDefaultSize) + " MB";
-                    setOfflineStorageOnViews(size_add);
-                } else {
-                    LogUtil.d(TAG, "cannot set more then 99 MB storage");
-                }
-                break;
         }
-
     }
 
     private void finishCurrectActivity() {
         finish();
         overridePendingTransition(R.anim.left_to_right, R.anim.right_to_left);
-    }
-
-
-    private void setOfflineStorageOnViews(String size) {
-        mOfflineStorage_tv.setText(size);
-        mPref.setMemorySize(mDefaultSize);
-
-    }
-
-    @SuppressLint("SetTextI18n")
-    private void setSyncTimeOnViews() {
-        mPref.addItem(Constants.KEY_SYNC_DATA_TIME, mSyncTime);
-        if (mSyncTime == Constants.SYNC_DATA_TIME || mSyncTime == 30) {
-            mDataSyncTime_tv.setText("" + mSyncTime + " Sec");
-        } else {
-            mDataSyncTime_tv.setText("0" + Math.round(mSyncTime/60) + " Min");
-        }
-    }
-
-    private void broadcastToMessage() {
-        LogUtil.d(TAG, "broadcast sync time change message with delay " + mSyncTime);
-        Intent intent = new Intent(Constants.LOCAL_SERVICE_RECEIVER_ACTION_NAME);
-        intent.putExtra(Constants.MESSAGE, SYNC_TIME);
-        getApplicationContext().sendBroadcast(intent);
-        //LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
     private void startNextActivity(Activity activity) {

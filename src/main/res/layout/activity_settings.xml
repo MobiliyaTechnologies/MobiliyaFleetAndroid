@@ -169,133 +169,49 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="@color/text_color_separator" />
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <com.mobiliya.fleet.customViews.CustomTextViewRegular
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="@dimen/dim_18"
-                    android:paddingTop="@dimen/dim_18"
-                    android:text="@string/offline_storage"
-                    android:textColor="@color/text_color_setting"
-                    android:textSize="@dimen/font_16sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="right"
-                    android:orientation="horizontal"
-                    tools:ignore="RtlHardcoded">
-
-                    <ImageView
-                        android:id="@+id/offline_storage_time_sub"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:src="@drawable/substract"
-                        tools:ignore="ContentDescription" />
-
-                    <com.mobiliya.fleet.customViews.CustomTextViewRegular
-                        android:id="@+id/offline_storage"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingBottom="@dimen/dim_18"
-                        android:paddingLeft="@dimen/dim_18"
-                        android:paddingRight="@dimen/dim_18"
-                        android:paddingTop="@dimen/dim_18"
-                        android:textColor="@color/text_color_setting"
-                        android:textSize="@dimen/font_16sp" />
-
-                    <ImageView
-                        android:id="@+id/offline_storage_time_add"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:src="@drawable/add"
-                        tools:ignore="ContentDescription" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/text_color_separator" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <com.mobiliya.fleet.customViews.CustomTextViewRegular
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="@dimen/dim_18"
-                    android:paddingTop="@dimen/dim_18"
-                    android:text="@string/data_sync_time"
-                    android:textColor="@color/text_color_setting"
-                    android:textSize="@dimen/font_16sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="right"
-                    android:orientation="horizontal"
-                    tools:ignore="RtlHardcoded">
-
-                    <ImageView
-                        android:id="@+id/data_sync_time_sub"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:src="@drawable/substract"
-                        tools:ignore="ContentDescription" />
-
-                    <com.mobiliya.fleet.customViews.CustomTextViewRegular
-                        android:id="@+id/data_sync_time"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingBottom="@dimen/dim_18"
-                        android:paddingLeft="@dimen/dim_18"
-                        android:paddingRight="@dimen/dim_18"
-                        android:paddingTop="@dimen/dim_18"
-                        android:textColor="@color/text_color_setting"
-                        android:textSize="@dimen/font_16sp" />
-
-                    <ImageView
-                        android:id="@+id/data_sync_time_add"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:src="@drawable/add"
-                        tools:ignore="ContentDescription" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <com.mobiliya.fleet.customViews.CustomButtonMedium
-                android:id="@+id/btn_sign_out"
-                android:layout_width="@dimen/dim_160dp"
-                android:layout_height="40dp"
                 android:layout_gravity="center"
-                android:gravity="center"
-                android:layout_marginBottom="@dimen/dim_24"
-                android:layout_marginTop="@dimen/dim_24"
-                android:background="@drawable/login_out_button_gradient"
-                android:drawablePadding="@dimen/dim_12"
-                android:drawableRight="@drawable/swithoff"
-                android:paddingLeft="@dimen/dim_18"
-                android:paddingRight="@dimen/dim_18"
-                android:text="@string/sign_out"
-                android:textAllCaps="false"
-                android:textColor="@color/text_color_white"
-                android:textSize="@dimen/font_14sp"
-                tools:ignore="RtlHardcoded" />
+                android:gravity="right"
+                android:orientation="horizontal"
+                tools:ignore="RtlHardcoded">
+                <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                    android:id="@+id/app_settings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="@dimen/dim_18"
+                    android:paddingTop="@dimen/dim_18"
+                    android:text="@string/application_settings"
+                    android:textColor="@color/text_color_setting"
+                    android:textSize="@dimen/font_16sp" />
 
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="bottom"
+                android:orientation="vertical">
+                <com.mobiliya.fleet.customViews.CustomButtonMedium
+                    android:id="@+id/btn_sign_out"
+                    android:layout_width="@dimen/dim_160dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="@dimen/dim_24"
+                    android:layout_marginTop="@dimen/dim_24"
+                    android:background="@drawable/login_out_button_gradient"
+                    android:drawablePadding="@dimen/dim_12"
+                    android:drawableRight="@drawable/swithoff"
+                    android:gravity="center"
+                    android:paddingLeft="@dimen/dim_18"
+                    android:paddingRight="@dimen/dim_18"
+                    android:text="@string/sign_out"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_color_white"
+                    android:textSize="@dimen/font_14sp"
+                    tools:ignore="RtlHardcoded" />
+            </LinearLayout>
         </LinearLayout>
 
     </ScrollView>

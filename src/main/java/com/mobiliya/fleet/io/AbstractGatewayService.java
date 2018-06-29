@@ -1,24 +1,35 @@
 package com.mobiliya.fleet.io;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Binder;
+import android.os.Build;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
+import android.util.Log;
 
-import com.google.inject.Inject;
 import com.mobiliya.fleet.AcceleratorApplication;
-import com.mobiliya.fleet.activity.VehicleHealthAcitivity;
+import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.db.DatabaseProvider;
+import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.models.Parameter;
 import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.net.IOTHubCommunication;
@@ -30,8 +41,9 @@ import com.mobiliya.fleet.utils.LogUtil;
 import com.mobiliya.fleet.utils.SharePref;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -40,38 +52,38 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import roboguice.service.RoboService;
 
+import static com.mobiliya.fleet.utils.Constants.GPS_DISTANCE;
 import static com.mobiliya.fleet.utils.TripManagementUtils.SendLocalTripsToServer;
 
 @SuppressWarnings({"ALL", "unused"})
-public abstract class AbstractGatewayService extends RoboService {
-    static final int NOTIFICATION_ID = 1;
+public abstract class AbstractGatewayService extends RoboService{
+    static final Queue<Message> EventsQueue = new LinkedList<Message>();
     private static final String TAG = AbstractGatewayService.class.getName();
-    private final IBinder binder = new AbstractGatewayServiceBinder();
-    @Inject
-    final NotificationManager notificationManager = null;
-    Context ctx;
-    boolean isRunning = false;
-    Long queueCounter = 0L;
+    public static CustomIgnitionStatusInterface sIgnitionStatusCallback;
     final BlockingQueue<ObdCommandJob> jobsQueue = new LinkedBlockingQueue<>();
+    private final IBinder binder = new AbstractGatewayServiceBinder();
     protected Parameter mParameter;
     protected boolean isVehicleActivity = false;
-    private Timer timer;
-    static final Queue<Message> EventsQueue = new LinkedList<Message>();
     protected PowerManager powerManager;
     protected PowerManager.WakeLock wakeLock;
     protected GPSTracker gpsTracker;
-    public static CustomIgnitionStatusInterface sIgnitionStatusCallback;
-    // Run the executeQueue in a different thread to lighten the UI thread
-    private final Thread t = new Thread(new Runnable() {
+    Context ctx;
+    boolean isRunning = false;
+    Long queueCounter = 0L;
+    private Timer timer;
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
-        public void run() {
-            /*try {
-                executeQueue();
-            } catch (InterruptedException e) {
-                t.interrupt();
-            }*/
+        public void onReceive(Context context, Intent i) {
+            LogUtil.d(TAG, "Service BroadcastReceiver onReceive to change data sync time");
+            // You can also include some extra data.
+            String value = i.getExtras().get(Constants.MESSAGE).toString();
+
+            if (value.equalsIgnoreCase(Constants.SYNC_TIME)) {
+                int delay = SharePref.getInstance(ctx).getItem(Constants.KEY_SYNC_DATA_TIME, Constants.SYNC_DATA_TIME);
+                initDataSyncTimer(delay);
+            }
         }
-    });
+    };
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -88,12 +100,45 @@ public abstract class AbstractGatewayService extends RoboService {
     public void onCreate() {
         super.onCreate();
         LogUtil.d(TAG, "Creating service..");
+        //getLocation();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String adapter = SharePref.getInstance(this).getItem(Constants.PREF_ADAPTER_PROTOCOL, "");
+            Boolean mIsSkipEnabled = SharePref.getInstance(this).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
+            if (mIsSkipEnabled) {
+                adapter = "";
+            }
+            LogUtil.d(TAG, "Creating service for Oreo and above devices");
+            NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            nm.createNotificationChannel(new NotificationChannel("com.mobiliya.fleet.io.AbstractGatewayService"
+                    , "App Service", NotificationManager.IMPORTANCE_DEFAULT));
+            nm.createNotificationChannel(new NotificationChannel("com.mobiliya.fleet.io.AbstractGatewayServiceInfo"
+                    , "Download Info", NotificationManager.IMPORTANCE_DEFAULT));
+            Notification.Builder mBuilder = new Notification.Builder(this)
+                    .setContentTitle("" + adapter + " Service running")
+                    .setSmallIcon(R.drawable.notificationwhite)
+                    .setColor(this.getResources().getColor(R.color.dashboard_header_start_color))
+                    .setAutoCancel(false)
+                    .setOngoing(true)
+                    .setCategory(NotificationCompat.CATEGORY_PROGRESS)
+                    .setOnlyAlertOnce(true);
+            NotificationManager notificationManager = (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
+
+            String CHANNEL_ID = "my_channel_01";// The id of the channel.
+            CharSequence name = "mobiliya Fleet";// The user-visible name of the channel.
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
+            mBuilder.setChannelId(CHANNEL_ID);
+            notificationManager.createNotificationChannel(mChannel);
+
+            startForeground(1, mBuilder.build());
+        }
         powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                 "AcceleratorLockTag");
-        gpsTracker = GPSTracker.getInstance(this);
         wakeLock.acquire();
-        t.start();
+        gpsTracker = GPSTracker.getInstance(this);
+
+        gpsTracker.getLocation();
         LogUtil.d(TAG, "call initDataSyncTimer.");
         initDataSyncTimer(Constants.SYNC_DATA_TIME);
         registerReceiver(
@@ -102,14 +147,19 @@ public abstract class AbstractGatewayService extends RoboService {
     }
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
+    }
+
+    @Override
     public void onDestroy() {
         LogUtil.d(TAG, "Destroying service...");
-        notificationManager.cancel(NOTIFICATION_ID);
-        t.interrupt();
-        LogUtil.d(TAG, "Service destroyed.");
         super.onDestroy();
+        IOTHubCommunication.getInstance(getBaseContext()).closeClient();
         try {
-            //timer.cancel();
+            timer.cancel();
+            timer = null;
+            mParameter = null;
             unregisterReceiver(
                     mMessageReceiver);
             wakeLock.release();
@@ -146,30 +196,6 @@ public abstract class AbstractGatewayService extends RoboService {
         }
     }
 
-    /**
-     * Show a notification while this service is running.
-     */
-    void showNotification(String contentTitle, String contentText) {
-        final PendingIntent contentIntent = PendingIntent.getActivity(ctx, 0, new Intent(ctx, VehicleHealthAcitivity.class), 0);
-        final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(ctx);
-        notificationBuilder.setContentTitle(contentTitle)
-                .setContentText(contentText).setSmallIcon(com.mobiliya.fleet.R.drawable.ic_btcar)
-                .setContentIntent(contentIntent)
-                .setWhen(System.currentTimeMillis());
-        // can cancel?
-        if (true) {
-            notificationBuilder.setOngoing(true);
-        } else {
-            notificationBuilder.setAutoCancel(true);
-        }
-        if (false) {
-            notificationBuilder.setDefaults(Notification.DEFAULT_VIBRATE);
-        }
-        if (true) {
-            notificationManager.notify(NOTIFICATION_ID, notificationBuilder.getNotification());
-        }
-    }
-
     public void setContext(Context c) {
         ctx = c;
     }
@@ -184,34 +210,8 @@ public abstract class AbstractGatewayService extends RoboService {
 
     abstract public void stopService();
 
-    @SuppressWarnings("unused")
-    public class AbstractGatewayServiceBinder extends Binder {
-        public AbstractGatewayService getService() {
-            return AbstractGatewayService.this;
-        }
-    }
-
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent i) {
-            LogUtil.d(TAG, "Service BroadcastReceiver onReceive to change data sync time");
-            // You can also include some extra data.
-            String value = i.getExtras().get(Constants.MESSAGE).toString();
-
-            if (value.equalsIgnoreCase(Constants.SYNC_TIME)) {
-                int delay = SharePref.getInstance(ctx).getItem(Constants.KEY_SYNC_DATA_TIME, Constants.SYNC_DATA_TIME);
-                initDataSyncTimer(delay);
-            }
-        }
-    };
-
     /*method to initialize timer task to upload vehicle information to iotHub*/
-    protected void initDataSyncTimer(final int delay) {
-        /*if (!SharePref.getInstance(this).getBooleanItem(Constants.PREF_MOVED_TO_DASHBOARD, false)) {
-            LogUtil.d(TAG, "Return since acitivity is not moved to dashboard");
-            return;
-        }*/
-
+    private void initDataSyncTimer(final int delay) {
         LogUtil.d(TAG, "initDataSyncTimer called with delay:" + delay);
         if (timer != null) {
             timer.cancel();
@@ -221,64 +221,65 @@ public abstract class AbstractGatewayService extends RoboService {
             timer = new Timer();
         }
 
-        int delayTime = delay;
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                LogUtil.i("AbstractGatewayService Timer", "timer callback callled ->" + delay+" Sec");
+                LogUtil.i("AbstractGatewayService Timer", "timer callback callled ->" + delay + " Sec");
                 processData();
             }
-        }, 0, (delayTime * 1000));
+        }, 0, (delay * 1000));
     }
 
     public void processData() {
         LogUtil.d(TAG, "processData called");
+        if (!SharePref.getInstance(this).getBooleanItem(Constants.PREF_MOVED_TO_DASHBOARD, false)) {
+            LogUtil.d(TAG, "Return since acitivity is not moved to dashboard");
+            return;
+        }
         if (ctx == null) {
             return;
         }
         if (mParameter == null) {
             mParameter = new Parameter();
         }
-
+        //gpsTracker.getLocation();
         if (gpsTracker.getIsGPSTrackingEnabled()) {
             mParameter.Latitude = String.valueOf(gpsTracker.getLatitude());
             mParameter.Longitude = String.valueOf(gpsTracker.getLongitude());
 
             LogUtil.d(TAG, "GPSTracker latitude: " + gpsTracker.getLatitude() + " longitude: " + gpsTracker.getLongitude());
         }
-        if (CommonUtil.isNetworkConnected(AbstractGatewayService.this)) {
+        mParameter.TenantId = SharePref.getInstance(ctx).getUser().getTenantId();
+        mParameter.UserId = SharePref.getInstance(ctx).getUser().getId();
+        mParameter.VehicleId = SharePref.getInstance(ctx).getVehicleID();
+        mParameter.isConnected = !SharePref.getInstance(ctx).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
+
+        Trip trip = DatabaseProvider.getInstance(getApplicationContext()).getCurrentTrip();
+        if (trip != null) {
+            if (SharePref.getInstance(ctx).getBooleanItem(GPS_DISTANCE, true)) {
+                float distance = Float.valueOf(String.format("%.2f", gpsTracker.getDistance()));
+                if (distance >= 0) {
+                    LogUtil.d(TAG, "GPS_DISTANCE :" + distance);
+                    mParameter.Distance = distance;
+                }
+            }
+            CommonUtil.milesDriven(getApplicationContext(), mParameter.Distance);
+            mParameter.TripId = trip.commonId;
+        } else {
+            mParameter.TripId = "NA";
+        }
+        if (gpsTracker.getLatitude() != 0.0 && gpsTracker.getLongitude() != 0.0) {
+            addParameterToDatabase(mParameter);
+        }
+
+        LogUtil.i("AbstractGatewayService Timer", "Parameter.TenantId ->" + mParameter.TenantId);
+        if (CommonUtil.isOnline(getBaseContext())) {
+            LogUtil.i("AbstractGatewayService Timer", "broadcastToIoTHub ->");
+            broadcastToIoTHub();
             LogUtil.i("AbstractGatewayService", "Sending trip details");
             SendLocalTripsToServer(ctx);
-        }
-        if (mParameter != null) {
-
-            mParameter.TenantId = SharePref.getInstance(ctx).getUser().getTenantId();
-            mParameter.UserId = SharePref.getInstance(ctx).getUser().getId();
-            mParameter.VehicleId = SharePref.getInstance(ctx).getVehicleID();
-            if (!SharePref.getInstance(ctx).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false)) {
-                mParameter.isConnected = true;
-            } else {
-                mParameter.isConnected = false;
-            }
-            Trip trip = DatabaseProvider.getInstance(getApplicationContext()).getCurrentTrip();
-            if (trip != null) {
-                mParameter.TripId = trip.commonId;
-                CommonUtil.milesDriven(getApplicationContext(), String.valueOf(mParameter.Distance));
-            } else {
-                mParameter.TripId = "NA";
-            }
-            addParameterToDatabase(mParameter);
-            LogUtil.i("AbstractGatewayService Timer", "Paramters ->" + mParameter.TenantId);
-            if (CommonUtil.isNetworkConnected(AbstractGatewayService.this)) {
-                LogUtil.i("AbstractGatewayService Timer", "broadcastToIoTHub ->");
-                broadcastToIoTHub();
-            }
-        } else {
-            boolean flag = SharePref.getInstance(ctx).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
-            if (flag && CommonUtil.isNetworkConnected(AbstractGatewayService.this)) {
-                LogUtil.i("AbstractGatewayService Timer", "broadcastToIoTHub ->");
-                broadcastToIoTHub();
-            }
+        }else {
+            LogUtil.i("AbstractGatewayService", "No internet Connection ->");
         }
     }
 
@@ -286,40 +287,24 @@ public abstract class AbstractGatewayService extends RoboService {
     private void broadcastToIoTHub() {
         Parameter[] parameters = DatabaseProvider.getInstance(AbstractGatewayService.this).getParameterData();
         if (parameters != null && parameters.length > 0) {
-            try {
-                LogUtil.d("AbstractGatewayService Timer", "broadcastToIoTHub called ->");
-
-                IOTHubCommunication.getInstance(AbstractGatewayService.this).SendMessage(parameters);
-                if (mParameter != null && !TextUtils.isEmpty(mParameter.ParameterDateTime)) {
-                    LogUtil.d(TAG, "ParameterDateTime Time:" + mParameter.ParameterDateTime);
-                }
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+            LogUtil.d("AbstractGatewayService Timer", "broadcastToIoTHub called ->");
+            IOTHubCommunication.getInstance(AbstractGatewayService.this).SendMessage(parameters);
+            if (mParameter != null && !TextUtils.isEmpty(mParameter.ParameterDateTime)) {
+                LogUtil.d(TAG, "ParameterDateTime Time:" + mParameter.ParameterDateTime);
             }
         }
     }
 
     private void addParameterToDatabase(Parameter param) {
         DatabaseProvider.getInstance(ctx).addParameter(param);
-        /*if (!CommonUtil.checkDbSizeExceeds(ctx)) {
-            DatabaseProvider.getInstance(ctx).addParameter(param);
-        } else {
-            Intent intent = new Intent(Constants.DATABASEFULL);
-            ctx.sendBroadcast(intent);
-            //LocalBroadcastManager.getInstance(ctx).sendBroadcast(intent);
-        }*/
     }
 
     public boolean isAdapterConnected() {
         return AcceleratorApplication.sIsAbdapterConnected;
     }
 
-
     public void connectToAdapter() {
     }
-
 
     public void getVehicleData() {
     }
@@ -327,13 +312,10 @@ public abstract class AbstractGatewayService extends RoboService {
     public void startTimer() {
     }
 
-    public void stopVehicleData() {
-    }
-
-    public void sendAdapterStatusBroadcast(boolean status) {
-        Intent intent = new Intent(Constants.ADAPTER_STATUS);
-        ctx.sendBroadcast(intent);
-        //LocalBroadcastManager.getInstance(ctx).sendBroadcast(intent);
+    public class AbstractGatewayServiceBinder extends Binder {
+        public AbstractGatewayService getService() {
+            return AbstractGatewayService.this;
+        }
     }
 
 }

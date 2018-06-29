@@ -27,10 +27,12 @@ import com.github.pires.obd.commands.pressure.BarometricPressureCommand;
 import com.github.pires.obd.commands.pressure.FuelPressureCommand;
 import com.github.pires.obd.commands.pressure.FuelRailPressureCommand;
 import com.github.pires.obd.commands.pressure.IntakeManifoldPressureCommand;
+import com.github.pires.obd.commands.protocol.ResetTroubleCodesCommand;
 import com.github.pires.obd.commands.temperature.AirIntakeTemperatureCommand;
 import com.github.pires.obd.commands.temperature.AmbientAirTemperatureCommand;
 import com.github.pires.obd.commands.temperature.EngineCoolantTemperatureCommand;
 import com.github.pires.obd.enums.FuelTrim;
+import com.mobiliya.fleet.io.ObdCommandJob;
 
 import java.util.ArrayList;
 
@@ -43,19 +45,17 @@ public final class ObdConfig {
         cmds.add(new ModuleVoltageCommand());
         cmds.add(new EquivalentRatioCommand());
         cmds.add(new DistanceMILOnCommand());
-        cmds.add(new DistanceSinceCCCommand());
-        cmds.add(new DtcNumberCommand());
+        //cmds.add(new DtcNumberCommand());
         cmds.add(new TimingAdvanceCommand());
         cmds.add(new TroubleCodesCommand());
         cmds.add(new VinCommand());
-
+        cmds.add(new AmbientAirTemperatureCommand());
         // Engine
         cmds.add(new LoadCommand());
         cmds.add(new RPMCommand());
         cmds.add(new RuntimeCommand());
         cmds.add(new MassAirFlowCommand());
         cmds.add(new ThrottlePositionCommand());
-
         // Fuel
         cmds.add(new FindFuelTypeCommand());
         cmds.add(new ConsumptionRateCommand());
@@ -83,6 +83,9 @@ public final class ObdConfig {
         cmds.add(new AirIntakeTemperatureCommand());
         cmds.add(new AmbientAirTemperatureCommand());
         cmds.add(new EngineCoolantTemperatureCommand());
+
+        //cmds.add(new ResetTroubleCodesCommand());
+        cmds.add(new DistanceSinceCCCommand());
 
         // Misc
         cmds.add(new SpeedCommand());

@@ -75,6 +75,20 @@ public class DateUtils {
     }
 
     @SuppressLint("SimpleDateFormat")
+    public static String tripOngoingFormat(String title) {
+        String currentdate = null;
+        try {
+            @SuppressLint("SimpleDateFormat") DateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            Date date = formatter2.parse(title);
+
+            currentdate = new SimpleDateFormat("EEEE, MMMM d hh:mm a").format(date);
+        } catch (Exception ex) {
+            ex.getMessage();
+        }
+        return currentdate;
+    }
+
+    @SuppressLint("SimpleDateFormat")
     public static String tripDetailFormat(String title) {
 
         String currentdate = null;

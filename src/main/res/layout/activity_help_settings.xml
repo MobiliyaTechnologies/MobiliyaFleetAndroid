@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?><!--suppress ALL -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dim_30"
+        android:orientation="horizontal"
+        tools:ignore="RtlHardcoded">
+
+        <ImageButton
+            android:id="@+id/back_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="back"
+            android:background="@null"
+            android:paddingLeft="@dimen/dim_30"
+            android:paddingRight="@dimen/dim_24"
+            android:paddingTop="@dimen/dim_11"
+            android:src="@drawable/back_arrow"
+            tools:ignore="ContentDescription,RtlHardcoded" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/dim_84">
+
+            <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/help"
+                android:textColor="@color/outer_space"
+                android:textSize="@dimen/font_24sp"
+                tools:ignore="RtlHardcoded" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/font_48sp"
+        android:src="@drawable/aboutus" />
+
+    <com.mobiliya.fleet.customViews.CustomTextViewSemiBold
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/dim_20"
+        android:text="@string/app_name"
+        android:textColor="@color/outer_space"
+        android:textSize="@dimen/font_16sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dim_2"
+        android:layout_marginLeft="@dimen/dim_35"
+        android:layout_marginRight="@dimen/dim_35"
+        android:layout_marginTop="@dimen/dim_40"
+        android:background="@color/ash_tray" />
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/dim_28">
+
+        <com.mobiliya.fleet.customViews.CustomTextViewRegular
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginLeft="@dimen/dim_35"
+            android:layout_marginRight="@dimen/dim_35"
+            android:text="@string/help_string"
+            android:textSize="@dimen/font_14sp" />
+    </ScrollView>
+</LinearLayout>

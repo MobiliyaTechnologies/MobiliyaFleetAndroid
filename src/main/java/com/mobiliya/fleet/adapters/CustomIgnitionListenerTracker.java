@@ -8,6 +8,7 @@ import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.services.CustomIgnitionStatusInterface;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
+import com.mobiliya.fleet.utils.NotificationManagerUtil;
 import com.mobiliya.fleet.utils.SharePref;
 import com.mobiliya.fleet.utils.TripManagementUtils;
 import com.mobiliya.fleet.utils.TripStatus;
@@ -25,13 +26,19 @@ public class CustomIgnitionListenerTracker {
                         boolean mIsSkipEnabled = SharePref.getInstance(activity).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
                         if (trip != null) {
                             if (CommonUtil.isAppInBackground(activity.getApplicationContext())) {
-                                if (isConnected) {
+                                    NotificationManagerUtil.getInstance().dismissDeviceDisConnectedNotification(activity.getBaseContext());
+                                    NotificationManagerUtil.getInstance().createDeviceDisConnectedNotification(activity.getApplicationContext());
+
+                                /*if (isConnected) {
                                     if (trip.status == TripStatus.Pause.getValue()) {
                                         TripManagementUtils.resumeTrip(activity.getApplicationContext());
                                     }
-                                } else {
-                                    TripManagementUtils.pauseTrip(activity);
                                 }
+                                else {
+                                    if (trip.status == TripStatus.Start.getValue()) {
+                                        TripManagementUtils.pauseTrip(activity);
+                                    }
+                                }*/
                             } else if (!CommonUtil.isAppInBackground(activity.getApplicationContext()) && !mIsSkipEnabled) {
                                 if (!isConnected && trip.status == TripStatus.Start.getValue()) {
                                     TripManagementUtils.showDongleDisconnectedDialog(activity);

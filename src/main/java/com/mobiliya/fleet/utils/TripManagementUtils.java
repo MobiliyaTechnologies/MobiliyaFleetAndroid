@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.res.Resources;
-import android.location.Location;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,9 +14,9 @@ import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.VolleyError;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.activity.DashboardActivity;
 import com.mobiliya.fleet.activity.TripActivity;
@@ -48,6 +47,7 @@ import static com.mobiliya.fleet.utils.Constants.GET_TRIP_LIST_URL;
 import static com.mobiliya.fleet.utils.Constants.LATITUDE;
 import static com.mobiliya.fleet.utils.Constants.LONGITUDE;
 import static com.mobiliya.fleet.utils.DateUtils.getLocalTimeString;
+import static com.mobiliya.fleet.utils.DateUtils.tripOngoingFormat;
 
 @SuppressWarnings({"ALL", "unused"})
 public class TripManagementUtils {
@@ -74,28 +74,31 @@ public class TripManagementUtils {
         Double longitude = 0.0;
         SharePref pref = SharePref.getInstance(activity.getBaseContext());
         GPSTracker gps = GPSTracker.getInstance(activity.getBaseContext());
-        gps.setDistance(0.0);
+        gps.setDistance(0.0f);
         if (latlong != null) {
-            latitude = latlong.getLatitude();
-            longitude = latlong.getLongitude();
+            latitude = latlong.latitude;
+            longitude = latlong.longitude;
             try {
-                GPSTracker gpsTracker = GPSTracker.getInstance(activity);
                 locations = new LatLong(String.valueOf(latitude), String.valueOf(longitude));
-                address = gpsTracker.getAddressFromLatLong(activity.getBaseContext(), locations);
-                //address = pref.getItem(Constants.LAST_ADDRESS,"");
+                address = gps.getAddressFromLatLong(activity.getBaseContext(), locations);
             } catch (Exception ex) {
                 Log.d(TAG, "Failed to get address");
             }
         }
 
         if (latitude != 0.0 && longitude != 0.0 && address != null && locations != null) {
-
+            pref.addItem(Constants.FIRST_MILES_ONGOING, -1.0f);
+            pref.addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
+            pref.addItem(Constants.SPEEDING, 0);
+            pref.addItem(Constants.FUEL_ONGOING, "NA");
+            pref.addItem(Constants.TIME_ONGOING, "0");
 
             Trip newTrip = new Trip();
             UUID uuid = UUID.randomUUID();
             String randomUUIDString = uuid.toString();
             newTrip.commonId = randomUUIDString;
-            newTrip.tripName = "New Trip";
+            //newTrip.tripName = "New Trip";
+            newTrip.tripName = tripOngoingFormat(getLocalTimeString());
             newTrip.description = newTrip.tripName;
             newTrip.startTime = getLocalTimeString();
             newTrip.StartDate = getLocalTimeString();
@@ -186,13 +189,15 @@ public class TripManagementUtils {
         String address = null;
         LatLong locations = null;
 
-        Double latitude = Double.valueOf(SharePref.getInstance(activity.getBaseContext()).getItem(LATITUDE));
-        Double longitude = Double.valueOf(SharePref.getInstance(activity.getBaseContext()).getItem(LONGITUDE));
         SharePref pref = SharePref.getInstance(activity.getApplication());
         GPSTracker gps = GPSTracker.getInstance(activity.getBaseContext());
-        gps.setDistance(0.0);
+        gps.setDistance(0.0f);
+        Double latitude = 0.0;
+        Double longitude = 0.0;
         try {
             GPSTracker gpsTracker = GPSTracker.getInstance(activity);
+            latitude = gpsTracker.getLatitude();//Double.valueOf(SharePref.getInstance(activity.getBaseContext()).getItem(LATITUDE,"0.0"));
+            longitude = gpsTracker.getLongitude();//Double.valueOf(SharePref.getInstance(activity.getBaseContext()).getItem(LONGITUDE,"0.0"));
             locations = new LatLong(String.valueOf(latitude), String.valueOf(longitude));
             //address = gpsTracker.getAddressFromLatLong(activity.getBaseContext(), locations);
             address = pref.getItem(Constants.LAST_ADDRESS,"");
@@ -213,12 +218,12 @@ public class TripManagementUtils {
                 newTrip.EndDate = getLocalTimeString();
                 newTrip.status = TripStatus.Stop.getValue();
                 newTrip.stops = DatabaseProvider.getInstance(activity).getStopsCount(newTrip.commonId);
-                float miles = SharePref.getInstance(activity.getBaseContext()).getItem(Constants.MILES_ONGOING, 0.0f);
+                float miles = SharePref.getInstance(activity.getBaseContext()).getItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
                 newTrip.milesDriven = String.format("%.2f", miles);
                 newTrip.IsSynced = false;
 
+                pref.addItem(Constants.FIRST_MILES_ONGOING, -1.0f);
                 pref.addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
-                pref.addItem(Constants.MILES_ONGOING, 0.0f);
                 pref.addItem(Constants.FUEL_ONGOING, "NA");
                 pref.addItem(Constants.TIME_ONGOING, "0");
 
@@ -229,8 +234,8 @@ public class TripManagementUtils {
                     DatabaseProvider.getInstance(activity.getBaseContext()).deleteLatLong(newTrip.commonId);
                     showToast(activity, activity.getString(R.string.trip_stopped));
 
+                    pref.addItem(Constants.FIRST_MILES_ONGOING, -1.0f);
                     pref.addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
-                    pref.addItem(Constants.MILES_ONGOING, 0.0f);
                     pref.addItem(Constants.SPEEDING, 0);
                     pref.addItem(Constants.FUEL_ONGOING, "NA");
                     pref.addItem(Constants.TIME_ONGOING, "0");
@@ -273,8 +278,8 @@ public class TripManagementUtils {
         LatLong locations = null;
         SharePref pref = SharePref.getInstance(context);
 
-        Double latitude = Double.valueOf(SharePref.getInstance(context).getItem(LATITUDE));
-        Double longitude = Double.valueOf(SharePref.getInstance(context).getItem(LONGITUDE));
+        Double latitude = Double.valueOf(SharePref.getInstance(context).getItem(LATITUDE,"0.0"));
+        Double longitude = Double.valueOf(SharePref.getInstance(context).getItem(LONGITUDE,"0.0"));
 
         try {
             GPSTracker gpsTracker = GPSTracker.getInstance(context);
@@ -307,8 +312,8 @@ public class TripManagementUtils {
                     updateLoactionToList(context, newTrip, locations);
                     DatabaseProvider.getInstance(context).deleteLatLong(newTrip.commonId);
                     Toast.makeText(context, context.getString(R.string.trip_stopped), Toast.LENGTH_LONG).show();
+                    SharePref.getInstance(context).addItem(Constants.FIRST_MILES_ONGOING, -1.0f);
                     SharePref.getInstance(context).addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
-                    SharePref.getInstance(context).addItem(Constants.MILES_ONGOING, 0.0f);
                     SharePref.getInstance(context).addItem(Constants.FUEL_ONGOING, "NA");
                     SharePref.getInstance(context).addItem(Constants.TIME_ONGOING, "0");
                     SharePref.getInstance(context).addItem(Constants.SPEEDING, 0);
@@ -544,7 +549,7 @@ public class TripManagementUtils {
                         LayoutInflater factory = LayoutInflater.from(activity);
                         View customTitleView = activity.getLayoutInflater().inflate(R.layout.alert_custom_tilte, null);
                         TextView header = (TextView) customTitleView.findViewById(R.id.title_header);
-                        header.setText("Ignition Off");
+                        header.setText("Dongle disconnected");
                         View dialogView = factory.inflate(R.layout.dongle_disconnected_dialog, null);
                         loginDialog.setCustomTitle(customTitleView);
                         loginDialog.setView(dialogView);

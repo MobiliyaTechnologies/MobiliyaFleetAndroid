@@ -19,6 +19,7 @@ import com.github.pires.obd.commands.ObdCommand;
 import com.github.pires.obd.commands.protocol.EchoOffCommand;
 import com.github.pires.obd.commands.protocol.LineFeedOffCommand;
 import com.github.pires.obd.commands.protocol.ObdResetCommand;
+import com.github.pires.obd.commands.protocol.ResetTroubleCodesCommand;
 import com.github.pires.obd.commands.protocol.SelectProtocolCommand;
 import com.github.pires.obd.commands.protocol.TimeoutCommand;
 import com.github.pires.obd.commands.temperature.AmbientAirTemperatureCommand;
@@ -68,9 +69,6 @@ public class ObdGatewayService extends AbstractGatewayService {
     private BluetoothDevice dev = null;
     private BluetoothSocket sock = null;
     private Context mContext;
-    private GPSTracker gpsTracker;
-    private Handler handle = new Handler();
-    private Handler handleTask = new Handler();
     int mSpeedCount = 0;
     private boolean isSpeedLowered = true;
     private HashMap<String, String> commandResult = new HashMap<>();
@@ -79,20 +77,19 @@ public class ObdGatewayService extends AbstractGatewayService {
     public int onStartCommand(Intent intent, int flags, int startId) {
         isRunning = true;
         LogUtil.d(TAG, "onStartCommand() called");
-        startConnection();
-        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
 
     public void startConnection() {
         new Thread(new Runnable() {
             public void run() {
+                jobsQueue.clear();
                 LogUtil.i(TAG, "connectToAdapter()");
                 if (sock != null && sock.isConnected()) {
                     // close socket
                     try {
                         sock.close();
                     } catch (IOException e) {
-                        LogUtil.d(TAG, "exception in connectToAdapter while closing socket");
                         LogUtil.e(TAG, e.getMessage());
                     }
                 }
@@ -106,8 +103,6 @@ public class ObdGatewayService extends AbstractGatewayService {
                 try {
                     startObdConnection();
                     getVehicleData();
-                    messageToActivityTimer();
-                    initDataSyncTimer();
                 } catch (Exception e) {
                     LogUtil.e(
                             TAG,
@@ -124,19 +119,11 @@ public class ObdGatewayService extends AbstractGatewayService {
         super.onCreate();
         LogUtil.d(TAG, "onCreate() called");
         mContext = this;
-        gpsTracker = GPSTracker.getInstance(this);
-        new Thread(new Runnable() {
-            public void run() {
-                initDataSyncTimer();
-                //handle.removeCallbacks(mQueueCommands);
-                //handle.post(mQueueCommands);
-            }
-        }).start();
         registerReceiver(
                 mSignOutReceiver, new IntentFilter(Constants.SIGNOUT));
     }
 
-    private void executeJobs(){
+    private void executeJobs() {
         new Thread(new Runnable() {
             public void run() {
                 try {
@@ -147,6 +134,7 @@ public class ObdGatewayService extends AbstractGatewayService {
             }
         }).start();
     }
+
     public void startService() {
         LogUtil.d(TAG, "Starting service..");
         isRunning = true;
@@ -155,39 +143,33 @@ public class ObdGatewayService extends AbstractGatewayService {
     @Override
     public void getVehicleData() {
         super.getVehicleData();
-        initDataSyncTimer(Constants.SYNC_DATA_TIME);
+        //messageToActivityTimer();
         LogUtil.i(TAG, "getVehicleData()");
         if (sock != null) {
 
             // Let's configure the connection.
             LogUtil.d(TAG, "Queueing jobs for connection configuration..");
-            queueJob(new ObdCommandJob(new ObdResetCommand()));
+            //queueJob(new ObdCommandJob(new ObdResetCommand()));
 
+            queueJob(new ObdCommandJob(new EchoOffCommand()));
+            queueJob(new ObdCommandJob(new LineFeedOffCommand()));
+            queueJob(new ObdCommandJob(new TimeoutCommand(500)));
             //Below is to give the adapter enough time to reset before sending the commands, otherwise the first startup commands could be ignored.
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            queueJob(new ObdCommandJob(new EchoOffCommand()));
-
             /*
              * Will send second-time based on tests.
              *
              */
-            queueJob(new ObdCommandJob(new EchoOffCommand()));
-            queueJob(new ObdCommandJob(new LineFeedOffCommand()));
-            queueJob(new ObdCommandJob(new TimeoutCommand()));
-
-            // Get protocol from preferences
             final String protocol = prefs.getString(ConfigActivity.PROTOCOLS_LIST_KEY, "AUTO");
             queueJob(new ObdCommandJob(new SelectProtocolCommand(ObdProtocols.valueOf(protocol))));
-
-            // Job for returning dummy data
-            queueJob(new ObdCommandJob(new AmbientAirTemperatureCommand()));
-
-            queueCounter = 0L;
-            LogUtil.d(TAG, "Initialization jobs queued.");
+            //start timer for message to activity and queing the commands
+            initDataSyncTimer();
+            initDataSyncTimerActivity();
+            LogUtil.d(TAG, "Initialization jobs queued and msg to dashboard");
         }
     }
 
@@ -203,41 +185,10 @@ public class ObdGatewayService extends AbstractGatewayService {
         startConnection();
     }
 
-
-    /*private final Runnable mQueueCommands = new Runnable() {
-        public void run() {
-            if (sock == null) {
-                LogUtil.d(TAG, "socket is null return");
-                return;
-            }
-            if (isRunning) {
-                if (isRunning()) {
-                    LogUtil.i(TAG, "Service is running");
-                }
-                if (queueEmpty()) {
-                    LogUtil.i(TAG, "Service queue is empty");
-                }
-            }
-            if (isRunning && queueEmpty()) {
-                queueCommands();
-            } else {
-                LogUtil.d(TAG, "mQueueCommands Service:null or service is not running or service queue is not empty");
-            }
-            if (isRunning) {
-                // run again in period defined in preferences
-                if (handle != null) {
-                    handle.postDelayed(mQueueCommands, ConfigActivity.getObdUpdatePeriod());
-                }
-            }
-        }
-    };*/
     private Timer mTimer;
+
     /*method to initialize timer task*/
     private void initDataSyncTimer() {
-        if (!SharePref.getInstance(this).getBooleanItem(Constants.PREF_MOVED_TO_DASHBOARD, false)) {
-            LogUtil.d(TAG, "Return since acitivity is not moved to dashboard");
-            return;
-        }
         executeJobs();
         if (mTimer != null) {
             mTimer.cancel();
@@ -247,33 +198,43 @@ public class ObdGatewayService extends AbstractGatewayService {
             mTimer = new Timer();
         }
 
-        int delayTime = 1;
-
         mTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                LogUtil.i("Default Timer initDataSyncTimer", "10 sec timer callback callled ->" + 10);
+                LogUtil.i(TAG, "10 sec timer queueCommands() and send msg to activity ->" + 10);
                 if (sock == null) {
                     LogUtil.d(TAG, "socket is null return");
                     return;
                 }
-                if (isRunning) {
-                    if (isRunning()) {
-                        LogUtil.i(TAG, "Service is running");
-                    }
-                    if (queueEmpty()) {
-                        LogUtil.i(TAG, "Service queue is empty");
-                    }
-                }
                 if (queueEmpty()) {
                     queueCommands();
                 } else {
-                    LogUtil.d(TAG, "mQueueCommands Service:null or service is not running or service queue is not empty");
+                    LogUtil.d(TAG, "Queue is not empty");
                 }
+                //sendMessageToActivity();
             }
         }, 0, (10 * 1000));
     }
 
+    private Timer mMsgTimer;
+
+    /*method to initialize timer task*/
+    private void initDataSyncTimerActivity() {
+        if (mMsgTimer != null) {
+            mMsgTimer.cancel();
+            mMsgTimer = null;
+            mMsgTimer = new Timer();
+        } else {
+            mMsgTimer = new Timer();
+        }
+
+        mMsgTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                sendMessageToActivity();
+            }
+        }, 0, (10 * 1000));
+    }
 
     private void queueCommands() {
         LogUtil.d(TAG, "queueCommands");
@@ -294,7 +255,7 @@ public class ObdGatewayService extends AbstractGatewayService {
         try {
             sock = BluetoothManager.connect(dev);
             AcceleratorApplication.sIsAbdapterConnected = true;
-            AbstractGatewayService.sIgnitionStatusCallback.onConnectionStatusChange(true);
+            //AbstractGatewayService.sIgnitionStatusCallback.onConnectionStatusChange(true);
             LogUtil.i(TAG, "Adapter is connected.");
             String Message = "Adapter is connected.";
             showDeviceStatus("Connected");
@@ -330,7 +291,6 @@ public class ObdGatewayService extends AbstractGatewayService {
         // You can also include some extra data.
         intent.putExtra(Constants.DASHBOARD_RECEIVER_NAME, msg);
         mContext.sendBroadcast(intent);
-        //LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 
     /**
@@ -353,22 +313,22 @@ public class ObdGatewayService extends AbstractGatewayService {
      */
     protected void executeQueue() throws InterruptedException {
         LogUtil.d(TAG, "Executing queue..");
-        while (true/*!Thread.currentThread().isInterrupted()*/) {
+        while (true) {
             ObdCommandJob job = null;
             try {
                 job = jobsQueue.take();
                 // log job
                 LogUtil.d(TAG, "Taking job[" + job.getId() + "] from queue..");
-
                 if (job.getState().equals(ObdCommandJobState.NEW)) {
                     LogUtil.d(TAG, "Job state is NEW. Run it..");
                     job.setState(ObdCommandJobState.RUNNING);
-                    if (sock.isConnected()) {
+                    if (sock != null && sock.isConnected()) {
                         job.getCommand().run(sock.getInputStream(), sock.getOutputStream());
                     } else {
                         showDeviceStatus("Disconnected");
                         job.setState(ObdCommandJobState.EXECUTION_ERROR);
                         jobsQueue.clear();
+                        stopTimer();
                         AbstractGatewayService.sIgnitionStatusCallback.onConnectionStatusChange(false);
                         LogUtil.e(TAG, "Can't run command on a closed socket.");
                         break;
@@ -381,7 +341,6 @@ public class ObdGatewayService extends AbstractGatewayService {
                 if (job != null) {
                     job.setState(ObdCommandJobState.NOT_SUPPORTED);
                 }
-                //showDeviceStatus("Disconnected");
                 LogUtil.d(TAG, "Command not supported. -> " + u.getMessage());
             } catch (IOException io) {
                 if (io.getMessage().contains("Broken pipe"))
@@ -389,13 +348,13 @@ public class ObdGatewayService extends AbstractGatewayService {
                 else
                     job.setState(ObdCommandJobState.EXECUTION_ERROR);
                 stopService();
-                //showDeviceStatus("Disconnected");
+                showDeviceStatus("Disconnected");
                 LogUtil.e(TAG, "IO error. -> " + io.getMessage());
+                break;
             } catch (Exception e) {
                 if (job != null) {
                     job.setState(ObdCommandJobState.EXECUTION_ERROR);
                 }
-                //showDeviceStatus("Disconnected");
                 LogUtil.e(TAG, "Failed to run command. -> " + e.getMessage());
             }
 
@@ -405,6 +364,13 @@ public class ObdGatewayService extends AbstractGatewayService {
                 stateUpdate(job2);
             }
             Thread.sleep(1000);
+        }
+    }
+
+    private void stopTimer() {
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
         }
     }
 
@@ -420,46 +386,32 @@ public class ObdGatewayService extends AbstractGatewayService {
         }
 
         commandResult.put(cmdName, cmdResult);
-        commandResult.put("Distance", String.valueOf(mParameter.Distance));
         commandResult.put("Speed", String.valueOf(mParameter.Speed));
         int speedcount = getSpeedCount(String.valueOf(mParameter.Speed));
         commandResult.put("Speedcount", String.valueOf(speedcount));
+        commandResult.put("RPM", String.valueOf(mParameter.RPM));
 
         if (gpsTracker.getIsGPSTrackingEnabled()) {
-            gpsTracker.getLocation();
             commandResult.put("latitude", String.valueOf(gpsTracker.getLatitude()));
             commandResult.put("longitude", String.valueOf(gpsTracker.getLongitude()));
             mParameter.Latitude = String.valueOf(gpsTracker.getLatitude());
             mParameter.Longitude = String.valueOf(gpsTracker.getLongitude());
-            updateLocations(getBaseContext(),mParameter);
+            updateLocations(getBaseContext(), mParameter);
             LogUtil.d(TAG, "GPSTracker latitude: " + gpsTracker.getLatitude() + " longitude: " + gpsTracker.getLongitude());
         }
-        //saveToPref(commandResult);
     }
-    private void saveToPref(HashMap<String,String> commandResult) {
-        try {
-            SharePref pref = SharePref.getInstance(getBaseContext());
-            pref.addItem(Constants.TIMER_LATITUDE, commandResult.get("latitude"));
-            pref.addItem(Constants.TIMER_LONGITUDE, commandResult.get("longitude"));
-            pref.addItem(Constants.SPEED_COUNT, commandResult.get("Speedcount"));
-            pref.addItem(Constants.TIMER_DISTANCE, commandResult.get("Distance"));
-            pref.addItem(Constants.TIMER_FAULT_SPN,commandResult.get("FaultSPN"));
-            Trip ongoingtrip = DatabaseProvider.getInstance(getApplicationContext()).getCurrentTrip();
-            if(ongoingtrip!=null){
-                String diff=getTimeDiff(getBaseContext(),ongoingtrip);
-                NotificationManagerUtil.getInstance().upDateNotification(getBaseContext(), diff);
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
+
     private void sendMessageToActivity() {
+        LogUtil.d(TAG, "sendMessageToActivity called");
+        if (!SharePref.getInstance(this).getBooleanItem(Constants.PREF_MOVED_TO_DASHBOARD, false)) {
+            LogUtil.d(TAG, "Return since acitivity is not moved to dashboard");
+            return;
+        }
         Trip ongoingtrip = DatabaseProvider.getInstance(getApplicationContext()).getCurrentTrip();
-        if(ongoingtrip!=null){
-            String diff=getTimeDiff(getBaseContext(),ongoingtrip);
+        if (ongoingtrip != null) {
+            String diff = getTimeDiff(getBaseContext(), ongoingtrip);
             NotificationManagerUtil.getInstance().upDateNotification(getBaseContext(), diff);
         }
-
         if (commandResult != null && commandResult.size() <= 0) {
             LogUtil.d(TAG, "Command result is zero return");
             return;
@@ -468,35 +420,7 @@ public class ObdGatewayService extends AbstractGatewayService {
         // You can also include some extra data.
         intent.putExtra(Constants.LOCAL_RECEIVER_NAME, commandResult);
         mContext.sendBroadcast(intent);
-        //LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
-
-    private Timer mMsgTimer;
-    private void messageToActivityTimer() {
-        if (!SharePref.getInstance(this).getBooleanItem(Constants.PREF_MOVED_TO_DASHBOARD, false)) {
-            LogUtil.d(TAG, "Return since acitivity is not moved to dashboard");
-            return;
-        }
-
-        if (mMsgTimer != null) {
-            mMsgTimer.cancel();
-            mMsgTimer = null;
-            mMsgTimer = new Timer();
-        } else {
-            mMsgTimer = new Timer();
-        }
-
-        int delayTime = 1;
-
-        mMsgTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                LogUtil.i("Default Timer messageToActivity", "10 sec timer callback callled ->" + 10);
-                sendMessageToActivity();
-            }
-        }, 0, (10 * 1000));
-    }
-
 
     private void updateParameter(final ObdCommandJob job) {
 
@@ -547,6 +471,10 @@ public class ObdGatewayService extends AbstractGatewayService {
                     }
                     float value = Float.valueOf(cmdResult);
                     LogUtil.d(TAG, "Distance since codes cleared in kms:" + value);
+                    if (16689.0 == value) {
+                        LogUtil.d(TAG, "Distance since codes cleared value is 16689.0 setting distance 0.0:");
+                        break;
+                    }
                     value = value * 0.621371F;
                     LogUtil.d(TAG, "Distance since codes cleared in miles:" + value);
                     mParameter.Distance = value;
@@ -670,9 +598,9 @@ public class ObdGatewayService extends AbstractGatewayService {
                         return;
                     }
                     float speed = Float.valueOf(cmdResult);
-                    mParameter.Speed = speed;
-                    mParameter.VehicleSpeed = speed;
-                    LogUtil.d(TAG, "Vehicle Speed :" + speed);
+                    mParameter.Speed = (float) 0.6214 * speed;
+                    mParameter.VehicleSpeed = mParameter.Speed;
+                    LogUtil.d(TAG, "OBD Vehicle Speed :" + mParameter.Speed);
                     break;
                 case "Mass Air Flow":
                     mParameter.MassAirFlow = cmdResult;
@@ -701,6 +629,13 @@ public class ObdGatewayService extends AbstractGatewayService {
         @Override
         public void onReceive(final Context context, Intent intent) {
             stopService();
+            // kill service
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                stopForeground(true);
+                stopSelf();
+            } else {
+                stopSelf();
+            }
         }
     };
 
@@ -709,8 +644,6 @@ public class ObdGatewayService extends AbstractGatewayService {
      */
     public void stopService() {
         LogUtil.d(TAG, "Stopping service..");
-
-        notificationManager.cancel(NOTIFICATION_ID);
         jobsQueue.clear();
         isRunning = false;
         AcceleratorApplication.sIsAbdapterConnected = false;
@@ -724,8 +657,6 @@ public class ObdGatewayService extends AbstractGatewayService {
                 LogUtil.e(TAG, e.getMessage());
             }
         }
-//        stopSelf();
-//        onDestroy();
     }
 
     @Override
@@ -734,8 +665,8 @@ public class ObdGatewayService extends AbstractGatewayService {
         try {
             unregisterReceiver(
                     mSignOutReceiver);
-        }catch (Exception e){
-            LogUtil.d(TAG,"Not register");
+        } catch (Exception e) {
+            LogUtil.d(TAG, "Not register");
         }
     }
 
@@ -743,51 +674,14 @@ public class ObdGatewayService extends AbstractGatewayService {
         return isRunning;
     }
 
-    public static void saveLogcatToFile(Context context, String devemail) {
-        Intent emailIntent = new Intent(Intent.ACTION_SEND);
-        emailIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        emailIntent.setType("text/plain");
-        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{devemail});
-        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "OBD2 Reader Debug Logs");
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("\nManufacturer: ").append(Build.MANUFACTURER);
-        sb.append("\nModel: ").append(Build.MODEL);
-        sb.append("\nRelease: ").append(Build.VERSION.RELEASE);
-
-        emailIntent.putExtra(Intent.EXTRA_TEXT, sb.toString());
-
-        String fileName = "OBDReader_logcat_" + System.currentTimeMillis() + ".txt";
-        File sdCard = Environment.getExternalStorageDirectory();
-        File dir = new File(sdCard.getAbsolutePath() + File.separator + "OBD2Logs");
-        if (dir.mkdirs()) {
-            File outputFile = new File(dir, fileName);
-            Uri uri = Uri.fromFile(outputFile);
-            emailIntent.putExtra(Intent.EXTRA_STREAM, uri);
-
-            LogUtil.d("savingFile", "Going to save logcat to " + outputFile);
-            //emailIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(Intent.createChooser(emailIntent, "Pick an Email provider").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-
-            try {
-                @SuppressWarnings("unused")
-                Process process = Runtime.getRuntime().exec("logcat -f " + outputFile.getAbsolutePath());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     private int getSpeedCount(String speed) {
         if (!TextUtils.isEmpty(speed)) {
             if (speed != null) {
-
                 mSpeedCount = SharePref.getInstance(getApplicationContext()).getItem(Constants.SPEEDING, 0);
                 Float speedingInt = Float.parseFloat(speed);
                 if (speedingInt < 100) {
                     isSpeedLowered = true;
                 }
-
                 if (speedingInt > 100 && isSpeedLowered) {
                     mSpeedCount++;
                     SharePref.getInstance(getApplicationContext()).addItem(Constants.SPEEDING, mSpeedCount);

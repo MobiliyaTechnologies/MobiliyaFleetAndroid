@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/dim_46"
+        android:paddingRight="@dimen/dim_40"
+        tools:ignore="UselessParent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/dim_35"
+            android:orientation="vertical"
+            android:weightSum="10"
+            tools:ignore="UselessParent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center_horizontal|center_vertical"
+                android:orientation="horizontal">
+
+                <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/application_settings"
+                    android:textColor="@color/heading_text_color"
+                    android:textSize="@dimen/font_26sp" />
+
+                <ImageView
+                    android:id="@+id/info"
+                    android:layout_width="@dimen/dim_37"
+                    android:layout_height="@dimen/dim_37"
+                    android:layout_marginLeft="@dimen/dim_11"
+                    android:background="@null"
+                    android:onClick="startHelpActivity"
+                    android:src="@drawable/info"
+                    android:tint="@color/accent" />
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_gravity="center"
+                android:paddingTop="@dimen/dim_20"
+                android:layout_marginBottom="@dimen/dim_8"
+                android:layout_weight="6.5"
+                android:gravity="center"
+                android:orientation="vertical">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
+                    android:orientation="vertical"
+                    tools:ignore="ScrollViewSize">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingBottom="@dimen/dim_18"
+                            android:paddingTop="@dimen/dim_18"
+                            android:text="@string/offline_storage"
+                            android:textColor="@color/text_color_setting"
+                            android:textSize="@dimen/font_16sp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="right"
+                            android:orientation="horizontal"
+                            tools:ignore="RtlHardcoded">
+
+                            <ImageView
+                                android:id="@+id/offline_storage_time_sub"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:src="@drawable/substract"
+                                tools:ignore="ContentDescription" />
+
+                            <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                                android:id="@+id/offline_storage"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingBottom="@dimen/dim_18"
+                                android:paddingLeft="@dimen/dim_18"
+                                android:paddingRight="@dimen/dim_18"
+                                android:paddingTop="@dimen/dim_18"
+                                android:textColor="@color/text_color_setting"
+                                android:textSize="@dimen/font_16sp" />
+
+                            <ImageView
+                                android:id="@+id/offline_storage_time_add"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:src="@drawable/add"
+                                tools:ignore="ContentDescription" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/text_color_separator" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingBottom="@dimen/dim_18"
+                            android:paddingTop="@dimen/dim_18"
+                            android:text="@string/data_sync_time"
+                            android:textColor="@color/text_color_setting"
+                            android:textSize="@dimen/font_16sp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="right"
+                            android:orientation="horizontal"
+                            tools:ignore="RtlHardcoded">
+
+                            <ImageView
+                                android:id="@+id/data_sync_time_sub"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:src="@drawable/substract"
+                                tools:ignore="ContentDescription" />
+
+                            <com.mobiliya.fleet.customViews.CustomTextViewRegular
+                                android:id="@+id/data_sync_time"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingBottom="@dimen/dim_18"
+                                android:paddingLeft="@dimen/dim_18"
+                                android:paddingRight="@dimen/dim_18"
+                                android:paddingTop="@dimen/dim_18"
+                                android:textColor="@color/text_color_setting"
+                                android:textSize="@dimen/font_16sp" />
+
+                            <ImageView
+                                android:id="@+id/data_sync_time_add"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:src="@drawable/add"
+                                tools:ignore="ContentDescription" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/text_color_separator" />
+                    <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/dim_20"
+                        android:lines="2"
+                        android:text="@string/distance_tracking"
+                        android:textColor="@color/heading_text_color"
+                        android:textSize="@dimen/font_16sp" />
+
+                    <RadioGroup
+                        android:id="@+id/rd_distance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/dim_5">
+
+                        <com.mobiliya.fleet.customViews.CustomRadioButtonViewRegular
+                            android:id="@+id/gps_distance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="@dimen/dim_20"
+                            android:text="@string/gps_based_distance"
+                            android:textColor="@color/text_color_setting"
+                            android:textSize="@dimen/font_16sp" />
+
+                        <com.mobiliya.fleet.customViews.CustomRadioButtonViewRegular
+                            android:id="@+id/adapDistance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="@dimen/dim_20"
+                            android:text="@string/adapter_based_distance"
+                            android:textColor="@color/text_color_setting"
+                            android:textSize="@dimen/font_16sp" />
+
+                    </RadioGroup>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_gravity="bottom"
+                android:layout_weight="2.5"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <com.mobiliya.fleet.customViews.CustomButtonMedium
+                    android:id="@+id/btn_save"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="@dimen/dim_24"
+                    android:background="@drawable/login_button_gradient"
+                    android:gravity="center"
+                    android:onClick="saveSelected"
+                    android:text="@string/save"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_color_white"
+                    android:textSize="@dimen/font_14sp" />
+
+                <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                    android:id="@+id/btn_back"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/dim_24"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="@dimen/dim_30"
+                    android:onClick="back"
+                    android:paddingLeft="@dimen/dim_18"
+                    android:paddingRight="@dimen/dim_18"
+                    android:text="@string/back"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_color_back_button"
+                    android:textSize="@dimen/font_14sp" />
+
+
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

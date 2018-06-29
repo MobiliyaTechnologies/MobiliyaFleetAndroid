@@ -5,24 +5,24 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 import android.widget.Toast;
 
+import com.j1939.api.Const;
 import com.j1939.api.J1939Adapter;
+import com.j1939.api.Vehicle;
 import com.j1939.api.enums.CANBusSpeeds;
 import com.j1939.api.enums.ConnectionStates;
-import com.j1939.api.Const;
 import com.j1939.api.enums.RecordingModes;
 import com.j1939.api.enums.RetrievalMethods;
 import com.j1939.api.enums.SleepModes;
-import com.j1939.api.Vehicle;
 import com.mobiliya.fleet.AcceleratorApplication;
 import com.mobiliya.fleet.activity.BaseActivity;
 import com.mobiliya.fleet.db.DatabaseProvider;
 import com.mobiliya.fleet.models.FaultModel;
-import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.models.Parameter;
 import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.utils.Constants;
@@ -30,7 +30,6 @@ import com.mobiliya.fleet.utils.LogUtil;
 import com.mobiliya.fleet.utils.NotificationManagerUtil;
 import com.mobiliya.fleet.utils.SPNData;
 import com.mobiliya.fleet.utils.SharePref;
-import com.mobiliya.fleet.utils.TripManagementUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -74,36 +73,18 @@ public class J1939DongleService extends AbstractGatewayService {
         super.onCreate();
         LogUtil.d(TAG, "onCreate");
         serviceContext = this;
-        mPref = SharePref.getInstance(this);
-        mIsSkipEnabled = mPref.getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
-        if (mIsSkipEnabled) {
-            startTimer();
-        } else {
-            // Setup to receive API events
-            ReceiveEventsThreading ReceiveEventsThread = new ReceiveEventsThreading();
-            ReceiveEventsThread.start();
-            getVehicleData();
-        }
         registerReceiver(
                 mSignOutReceiver, new IntentFilter(Constants.SIGNOUT));
     }
 
-    public void startTimer() {
-        mIsSkipEnabled = SharePref.getInstance(this).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
-        if (mIsSkipEnabled) {
-            initDataSyncTimer();
-        } else {
-            getVehicleData();
-        }
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        LogUtil.d(TAG, "onStartCommand() called");
+        return START_STICKY;
     }
 
     /*method to initialize timer task*/
     private void initDataSyncTimer() {
-        /*if (!SharePref.getInstance(this).getBooleanItem(Constants.PREF_MOVED_TO_DASHBOARD, false)) {
-            LogUtil.d(TAG, "Return since acitivity is not moved to dashboard");
-            return;
-        }*/
-
         if (mTimer != null) {
             mTimer.cancel();
             mTimer = null;
@@ -112,34 +93,28 @@ public class J1939DongleService extends AbstractGatewayService {
             mTimer = new Timer();
         }
 
-        int delayTime = 1;
-
         mTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                LogUtil.i("Default Timer", "10 sec timer callback callled ->" + 10);
+                LogUtil.i(TAG, "10 sec timer callback callled ->" + 5);
                 performAction();
             }
-        }, 0, (10 * 1000));
+        }, 0, (3 * 1000));
     }
 
 
-    private void performAction(){
-        /*if (!isRunning) {
-            LogUtil.d(TAG, "service stop, no need to run timer task.");
-            return;
-        }*/
+    private void performAction() {
         LogUtil.d(TAG, "called runnable");
         HashMap<String, String> commandResult = new HashMap<>();
         if (gpsTracker.getIsGPSTrackingEnabled()) {
-            gpsTracker.getLocation();
+            //gpsTracker.getLocation();
             commandResult.put("latitude", String.valueOf(gpsTracker.getLatitude()));
             commandResult.put("longitude", String.valueOf(gpsTracker.getLongitude()));
+            commandResult.put("RPM", "NA");
             if (mParameter != null) {
                 mParameter.Latitude = String.valueOf(gpsTracker.getLatitude());
                 mParameter.Longitude = String.valueOf(gpsTracker.getLongitude());
-
-                updateLocations(getBaseContext(),mParameter);
+                updateLocations(getBaseContext(), mParameter);
                 try {
                     float speed = Float.valueOf(String.format("%.2f", gpsTracker.getSpeed()));
                     int speedInt = Math.round(speed);
@@ -149,37 +124,19 @@ public class J1939DongleService extends AbstractGatewayService {
                         commandResult.put("Speedcount", String.valueOf("0"));
                     }
                     LogUtil.d(TAG, "Vehicle speed with out adapter:" + speed);
+
                     float distance = Float.valueOf(String.format("%.2f", gpsTracker.getDistance()));
                     if (distance >= 0) {
                         mParameter.Distance = distance;
-                        commandResult.put("Distance", String.valueOf(mParameter.Distance));
                     }
+                    LogUtil.d(TAG, "Vehicle distance with out adapter:" + distance);
                 } catch (Exception e) {
                     LogUtil.d(TAG, "execption on calculation of speed");
                 }
-                LogUtil.d(TAG, "latitude " + mParameter.Latitude + " Longitude:" + mParameter.Longitude);
+                LogUtil.d(TAG, "Coordinates - latitude " + mParameter.Latitude + " Longitude:" + mParameter.Longitude + " Accuracy " + gpsTracker.getAccuracy());
             }
         }
-        //saveToPref(commandResult);
         sendMessageToActivity(commandResult);
-    }
-
-    private void saveToPref(HashMap<String,String> commandResult) {
-        try {
-            SharePref pref = SharePref.getInstance(getBaseContext());
-            pref.addItem(Constants.TIMER_LATITUDE, commandResult.get("latitude"));
-            pref.addItem(Constants.TIMER_LONGITUDE, commandResult.get("longitude"));
-            pref.addItem(Constants.SPEED_COUNT, commandResult.get("Speedcount"));
-            pref.addItem(Constants.TIMER_DISTANCE, commandResult.get("Distance"));
-            pref.addItem(Constants.TIMER_FAULT_SPN,commandResult.get("FaultSPN"));
-            Trip ongoingtrip = DatabaseProvider.getInstance(getApplicationContext()).getCurrentTrip();
-            if(ongoingtrip!=null){
-                String diff=getTimeDiff(getBaseContext(),ongoingtrip);
-                NotificationManagerUtil.getInstance().upDateNotification(getBaseContext(), diff);
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -195,13 +152,13 @@ public class J1939DongleService extends AbstractGatewayService {
     public void connectToAdapter() {
         LogUtil.d(TAG, "connectToAdapter called");
 
-        if (SharePref.getInstance(this).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false)) {
-            LogUtil.d(TAG, "return, send data without adapter");
-            if (mIsSkipEnabled) {
-                initDataSyncTimer();
-            }
+        mIsSkipEnabled = SharePref.getInstance(this).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
+        LogUtil.d(TAG, "return, send data without adapter");
+        if (mIsSkipEnabled) {
+            initDataSyncTimer();
             return;
         }
+
         if (j1939 != null) {
             j1939.Disconnect(true);
         }
@@ -220,6 +177,13 @@ public class J1939DongleService extends AbstractGatewayService {
 
         // Initialize adapter properties
         initializeAdapter();
+
+        // Setup to receive API events
+        ReceiveEventsThreading ReceiveEventsThread = new ReceiveEventsThreading();
+        ReceiveEventsThread.start();
+        getVehicleData();
+
+
         ConnectAdapterThread connectThread = new ConnectAdapterThread();
         connectThread.start();
     }
@@ -228,10 +192,19 @@ public class J1939DongleService extends AbstractGatewayService {
     public void stopService() {
         LogUtil.d(TAG, "stopService adapter will disconnect");
         disconnectAdapter();
-        //isRunning = false;
+        isRunning = false;
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
+        }
         // kill service
-        //stopSelf();
-        //onDestroy();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            stopForeground(true);
+            stopSelf();
+        } else {
+            stopSelf();
+        }
+        mParameter = null;
     }
 
     // j1939 Event Handler
@@ -249,7 +222,7 @@ public class J1939DongleService extends AbstractGatewayService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        LogUtil.d(TAG,"onDestroy");
+        LogUtil.d(TAG, "onDestroy");
         try {
             unregisterReceiver(
                     mSignOutReceiver);
@@ -571,6 +544,7 @@ public class J1939DongleService extends AbstractGatewayService {
         sStatusConnected = false;
         AcceleratorApplication.sIsAbdapterConnected = false;
         J1939DongleService.sIgnitionStatusCallback.onConnectionStatusChange(false);
+
         String Message = "Adapter not connected.";
         ((BaseActivity) ctx).setBTStatus(Message);
     }
@@ -578,7 +552,7 @@ public class J1939DongleService extends AbstractGatewayService {
     /*Request data from the adapter. */
     public void getVehicleData() {
         LogUtil.d(TAG, "getVehicleData()");
-        initDataSyncTimer(Constants.SYNC_DATA_TIME);
+        //initDataSyncTimer(Constants.SYNC_DATA_TIME);
         if (j1939 == null) {
             LogUtil.d(TAG, "getVehicleData() return j1939 object is null");
             connectToAdapter();
@@ -728,7 +702,7 @@ public class J1939DongleService extends AbstractGatewayService {
             mParameter.Longitude = String.valueOf(gpsTracker.getLongitude());
             LogUtil.d(TAG, "GPSTracker latitude: " + gpsTracker.getLatitude() + " longitude: " + gpsTracker.getLongitude());
 
-            updateLocations(getBaseContext(),mParameter);
+            updateLocations(getBaseContext(), mParameter);
 
         }
 
@@ -742,7 +716,6 @@ public class J1939DongleService extends AbstractGatewayService {
         //saveToPref(commandResult);
         sendMessageToActivity(commandResult);
     }
-
 
 
     private int getSpeedCount(String speed) {
@@ -939,8 +912,8 @@ public class J1939DongleService extends AbstractGatewayService {
     private void sendMessageToActivity(HashMap<String, String> msg) {
 
         Trip ongoingtrip = DatabaseProvider.getInstance(getApplicationContext()).getCurrentTrip();
-        if(ongoingtrip!=null){
-            String diff=getTimeDiff(getBaseContext(),ongoingtrip);
+        if (ongoingtrip != null) {
+            String diff = getTimeDiff(getBaseContext(), ongoingtrip);
             NotificationManagerUtil.getInstance().upDateNotification(getBaseContext(), diff);
         }
 

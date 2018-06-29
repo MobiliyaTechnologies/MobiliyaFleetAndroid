@@ -21,6 +21,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.support.design.internal.BottomNavigationItemView;
 import android.support.design.internal.BottomNavigationMenuView;
 import android.support.design.widget.BottomNavigationView;
@@ -47,6 +48,7 @@ import com.mobiliya.fleet.db.tables.LatLongTable;
 import com.mobiliya.fleet.db.tables.ParameterTable;
 import com.mobiliya.fleet.db.tables.TripTable;
 import com.mobiliya.fleet.db.tables.UserTable;
+import com.mobiliya.fleet.models.BaseParameters;
 import com.mobiliya.fleet.models.FaultModel;
 import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.models.OBDFaultCode;
@@ -59,8 +61,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -122,6 +126,14 @@ public class CommonUtil {
     }
 
 
+
+    public static Boolean isOnline(Context context) {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
     /**
      * Checks Internet connection
      */
@@ -134,7 +146,9 @@ public class CommonUtil {
             android.net.NetworkInfo mobile = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
             return (mobile != null && mobile.isConnected()) || (wifi != null && wifi.isConnected());
-        } else return false;
+        } else {
+            return false;
+        }
     }
 
 
@@ -151,7 +165,7 @@ public class CommonUtil {
         toast.show();
     }
 
-    public static String getVehicleAndParameterJson(Parameter param,/* User user, */Context context) {
+    public static String getVehicleAndParameterJson(BaseParameters param,/* User user, */Context context) {
 
         String paramString = new Gson().toJson(param);
         JSONObject messageJSON = new JSONObject();
@@ -299,7 +313,7 @@ public class CommonUtil {
     }
 
     private static final String PASSWORD_PATTERN =
-            "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%]).{6,20})";
+            "((?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])|(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[^a-zA-Z0-9])|(?=.*?[A-Z])(?=.*?[0-9])(?=.*?[^a-zA-Z0-9])|(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^a-zA-Z0-9])).{8,}";
 
     /**
      * Validate password with regular expression
@@ -637,8 +651,9 @@ public class CommonUtil {
         }
     }
 
-    public static String getTimeDiff(Context cxt,Trip trip) {
-        String diff="0.0";
+
+    public static String getTimeDiff(Context cxt, Trip trip) {
+        String diff = "0.0";
 
         Date start = DateUtils.getDateFromString(trip.startTime);
         diff = DateUtils.getTimeDifference(start);
@@ -660,56 +675,45 @@ public class CommonUtil {
         return dir.delete();
     }
 
-    public static float milesDriven(Context context,String distance){
-        if (!TextUtils.isEmpty(distance)) {
-            LogUtil.d(TAG, "distance:" + distance);
-            if (!"NA".equalsIgnoreCase(distance)) {
-                float distanceValue = Float.parseFloat(distance);
-                if (distanceValue < 0) {
-                    LogUtil.d(TAG, "distance value is less then 0");
-                    return 0.0f;
-                }
-            }
-            //calculation for miles driven
-            float firstmilage = SharePref.getInstance(context).getItem(Constants.TOTAL_MILES_ONGOING,0.0f);
-            LogUtil.d(TAG, "firstmilage:" + firstmilage);
-            if (firstmilage <= 0) {
-                if (!"NA".equalsIgnoreCase(distance)) {
-                    firstmilage = Float.parseFloat(distance);
-                    LogUtil.d(TAG, "First milage reading :" + firstmilage);
-                    SharePref.getInstance(context).addItem(Constants.TOTAL_MILES_ONGOING, firstmilage);
-                }
-            } else {
-                if (!"NA".equalsIgnoreCase(distance)) {
-                    float milesdriven = 0.0f;
-                    milesdriven = Float.parseFloat(distance) - firstmilage;
-                    if (milesdriven <= 0) {
-                        LogUtil.d(TAG, "Miles driven less then 0");
-                        SharePref.getInstance(context).addItem(Constants.MILES_ONGOING, 0.0f);
-                        return 0;
-                    }
-                    LogUtil.d(TAG, "Distance travel :" + milesdriven);
-                    SharePref.getInstance(context).addItem(Constants.MILES_ONGOING, milesdriven);
-                    return milesdriven;
-                } else {
-                    float miles = SharePref.getInstance(context).getItem(Constants.MILES_ONGOING, 0.0f);
-                    LogUtil.d(TAG, "Distance travel :" + miles);
-                    return miles;
-                }
-            }
+    public static float milesDriven(Context context, float distance) {
+        LogUtil.d(TAG, "distance:" + distance);
+
+        float milesdriven = 0.0f;
+        if (distance < 0) {
+            LogUtil.d(TAG, "distance value is less then 0");
+            return 0.0f;
         }
-        return 0;
+        //calculation for miles driven
+        float firstmilage = SharePref.getInstance(context).getItem(Constants.FIRST_MILES_ONGOING, -1.0f);
+        LogUtil.d(TAG, "firstmilage:" + firstmilage);
+        if (firstmilage == -1.0) {
+            SharePref.getInstance(context).addItem(Constants.FIRST_MILES_ONGOING, distance);
+            LogUtil.d(TAG, "First milage reading set:" + distance);
+            return milesdriven;
+        } else {
+            milesdriven = distance - firstmilage;
+            if (milesdriven <= 0) {
+                LogUtil.d(TAG, "Miles driven less then previous cached miles");
+                return 0.0f;
+            } else if (milesdriven > 100) {
+                LogUtil.d(TAG, "Miles driven great then 50 miles so we are ignoring");
+                return 0.0f;
+            }
+            LogUtil.d(TAG, "Distance travel :" + milesdriven);
+            SharePref.getInstance(context).addItem(Constants.TOTAL_MILES_ONGOING, milesdriven);
+            return milesdriven;
+        }
     }
-    public static void deletAllDatabaseTables(Context cxt){
+
+    public static void deletAllDatabaseTables(Context cxt) {
         try {
             DatabaseProvider.getInstance(cxt).deleteAllTableData(new UserTable());
             DatabaseProvider.getInstance(cxt).deleteAllTableData(new ParameterTable());
             DatabaseProvider.getInstance(cxt).deleteAllTableData(new TripTable());
             DatabaseProvider.getInstance(cxt).deleteAllTableData(new FaultTable());
             DatabaseProvider.getInstance(cxt).deleteAllTableData(new LatLongTable());
-        }catch (Exception ex){
-            LogUtil.d(TAG,"Failed while deleting db");
+        } catch (Exception ex) {
+            LogUtil.d(TAG, "Failed while deleting db");
         }
     }
-
 }

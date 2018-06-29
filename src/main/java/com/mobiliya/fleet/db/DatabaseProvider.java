@@ -333,6 +333,7 @@ public class DatabaseProvider {
         return tripslist;
     }
 
+
     /**
      * Get Top 10 records of ParameterTable.
      *
@@ -676,6 +677,9 @@ public class DatabaseProvider {
      * @return
      */
     public boolean addLatLong(String tripId, LatLong latlong) {
+        if("0.0".equalsIgnoreCase(latlong.latitude) || "0.0".equalsIgnoreCase(latlong.longitude)){
+            return false;
+        }
         boolean isUpdated = false;
         String[] params = {tripId};
         List<DB_BASIC> currentLatlongList = dbHandler.GetTableRow(LatLongTable.class, "mTripId=?", params);
@@ -701,8 +705,6 @@ public class DatabaseProvider {
                     jarray.add(objectFromString);
                     table.latlongArray = jarray.toString();
                 }
-
-
                 ContentValues cv = new ContentValues();
                 cv.put("mTripId", tripId);
                 cv.put("latlongArray", table.latlongArray);

@@ -56,8 +56,6 @@ public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHo
         } catch (Exception ex) {
             ex.getMessage();
         }
-
-
         holder.mStartLocation.setText(start);
         holder.mEndLocation.setText(end);
 

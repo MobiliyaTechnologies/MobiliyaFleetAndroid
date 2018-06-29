@@ -55,6 +55,10 @@ public class TripListActivity extends AppCompatActivity implements ApiCallBackLi
         mNotrips_ll = (LinearLayout) findViewById(R.id.notrips);
         mAdapter = new TripListAdapter(this, mTriplist, null);
         mRecyclerView.setAdapter(mAdapter);
+
+        if (CommonUtil.isNetworkConnected(getBaseContext())) {
+            TripManagementUtils.getTripList(this, this);
+        }
     }
 
     @Override
@@ -69,9 +73,7 @@ public class TripListActivity extends AppCompatActivity implements ApiCallBackLi
                 finishCurrectActivity();
             }
         });
-        if (CommonUtil.isNetworkConnected(getBaseContext())) {
-            TripManagementUtils.getTripList(this, this);
-        }
+
     }
 
     @Override
