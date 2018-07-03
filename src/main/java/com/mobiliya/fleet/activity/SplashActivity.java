@@ -9,7 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 
 import com.mobiliya.fleet.R;
-import com.mobiliya.fleet.services.GPSTracker;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.SharePref;
 
@@ -17,7 +16,6 @@ import static com.mobiliya.fleet.utils.Constants.FLEETURL;
 import static com.mobiliya.fleet.utils.Constants.IDENTITYURL;
 import static com.mobiliya.fleet.utils.Constants.TRIPURL;
 
-@SuppressWarnings({"ALL", "unused"})
 public class SplashActivity extends AppCompatActivity {
 
     private final String mIdentityurl="https://mobiliya-identity-service.azurewebsites.net/";
@@ -31,7 +29,6 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        //GPSTracker tracker = GPSTracker.getInstance(this);
         mPreference = getSharedInstance(getBaseContext());
         String identityurls = getIdentityUrl(getApplicationContext());
         if(TextUtils.isEmpty(identityurls)) {

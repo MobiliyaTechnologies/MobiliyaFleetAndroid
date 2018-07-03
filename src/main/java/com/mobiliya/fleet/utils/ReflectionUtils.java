@@ -3,7 +3,6 @@ package com.mobiliya.fleet.utils;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-@SuppressWarnings({"TryWithIdenticalCatches", "EmptyCatchBlock"})
 public class ReflectionUtils {
     public static String GetClassName(Class<?> c) {
         String name = null;

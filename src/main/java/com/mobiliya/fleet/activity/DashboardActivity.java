@@ -49,8 +49,8 @@ import com.mobiliya.fleet.models.DriverScore;
 import com.mobiliya.fleet.models.LastTrip;
 import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.models.Vehicle;
-import com.mobiliya.fleet.services.GPSTracker;
-import com.mobiliya.fleet.services.GpsLocationReceiver;
+import com.mobiliya.fleet.location.GPSTracker;
+import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.DateUtils;
@@ -73,7 +73,6 @@ import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getTripServiceUrl
 import static com.mobiliya.fleet.utils.CommonUtil.getTimeDiff;
 import static com.mobiliya.fleet.utils.CommonUtil.showToast;
 
-@SuppressWarnings({"ALL", "unused"})
 public class DashboardActivity extends BaseActivity implements View.OnClickListener {
 
     private static final String TAG = "DashboardActivity";

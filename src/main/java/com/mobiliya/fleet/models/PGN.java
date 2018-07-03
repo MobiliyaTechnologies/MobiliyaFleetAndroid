@@ -1,6 +1,5 @@
 package com.mobiliya.fleet.models;
 
-@SuppressWarnings({"ALL", "unused"})
 public class PGN {
     String PGN;
 

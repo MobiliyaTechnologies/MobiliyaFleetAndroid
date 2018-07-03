@@ -5,10 +5,8 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,7 +19,7 @@ import com.mobiliya.fleet.comm.VolleyCallback;
 import com.mobiliya.fleet.comm.VolleyCommunicationManager;
 import com.mobiliya.fleet.models.ResponseModel;
 import com.mobiliya.fleet.models.User;
-import com.mobiliya.fleet.services.GpsLocationReceiver;
+import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.DateUtils;
@@ -33,15 +31,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-
 import static com.mobiliya.fleet.utils.CommonUtil.deletAllDatabaseTables;
 import static com.mobiliya.fleet.utils.CommonUtil.trimCache;
 import static com.mobiliya.fleet.utils.Constants.GET_USER_URL;
 import static com.mobiliya.fleet.utils.Constants.LAST_SYNC_DATE;
-import static com.mobiliya.fleet.utils.Constants.SYNC_TIME;
 
-@SuppressWarnings({"ALL", "unused"})
 public class SettingsActivity extends Activity implements View.OnClickListener {
 
     private static final String TAG = "SettingsActivity";

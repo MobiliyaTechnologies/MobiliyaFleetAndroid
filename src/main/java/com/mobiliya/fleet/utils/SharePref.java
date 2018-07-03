@@ -22,7 +22,6 @@ import java.util.Set;
  *
  * @author Kunal
  */
-@SuppressWarnings({"ALL", "unused"})
 public class SharePref {
 
     private static final String TAG = SharePref.class.getSimpleName();

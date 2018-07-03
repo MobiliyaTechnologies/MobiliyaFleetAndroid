@@ -11,7 +11,6 @@ import com.github.pires.obd.commands.ObdCommand;
  * representation of an ObdCommand instance plus a state that will be
  * interpreted and manipulated by ObdGatewayService.
  */
-@SuppressWarnings({"ALL", "unused"})
 public class ObdCommandJob {
     private Long _id;
     private final ObdCommand _command;

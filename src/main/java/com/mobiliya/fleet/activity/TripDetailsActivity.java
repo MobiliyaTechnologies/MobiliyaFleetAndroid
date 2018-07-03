@@ -7,14 +7,12 @@ import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.VolleyError;
-
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -29,7 +27,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.adapters.CustomIgnitionListenerTracker;
 import com.mobiliya.fleet.comm.VolleyCallback;
@@ -37,11 +34,12 @@ import com.mobiliya.fleet.comm.VolleyCommunicationManager;
 import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.models.TripDetailModel;
 import com.mobiliya.fleet.models.User;
-import com.mobiliya.fleet.services.GPSTracker;
-import com.mobiliya.fleet.services.GpsLocationReceiver;
+import com.mobiliya.fleet.location.GPSTracker;
+import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.DateUtils;
+import com.mobiliya.fleet.utils.LogUtil;
 import com.mobiliya.fleet.utils.SharePref;
 
 import org.json.JSONException;
@@ -55,7 +53,6 @@ import java.util.Locale;
 
 import static com.mobiliya.fleet.utils.Constants.GET_TRIP_DETAIL_URL;
 
-@SuppressWarnings({"ALL", "unused"})
 public class TripDetailsActivity extends AppCompatActivity implements OnMapReadyCallback {
     private String TAG = TripDetailsActivity.class.getSimpleName();
     TextView mStartLocation, mEndLocation, mStartTime, mEndTime;
@@ -75,17 +72,16 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trip_details);
-
+        LogUtil.d(TAG, "onCreate()");
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
         mTripId = getIntent().getStringExtra(Constants.TRIPID);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if(mapView!=null)
+        if (mapView != null)
             mapView.onResume();
 
         CustomIgnitionListenerTracker.showDialogOnIgnitionChange(this);
@@ -96,21 +92,21 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        if(mapView!=null)
+        if (mapView != null)
             mapView.onLowMemory();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if(mapView!=null)
-        mapView.onSaveInstanceState(outState);
+        if (mapView != null)
+            mapView.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if(mapView!=null)
+        if (mapView != null)
             mapView.onPause();
         CommonUtil.unRegisterGpsReceiver(getBaseContext(), gpsLocationReceiver);
     }
@@ -118,11 +114,12 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(mapView!=null)
+        if (mapView != null)
             mapView.onDestroy();
     }
 
     private void getTripsDetailsById(String tripId) {
+        LogUtil.d(TAG, "getTripsDetailsById()");
         final ProgressDialog dialog = new ProgressDialog(this);
         dialog.setIndeterminate(true);
         dialog.setMessage("Loading trip details, please wait...");
@@ -139,11 +136,11 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
                     if (result != null) {
                         try {
                             if (result.getString("message").equals("Success")) {
-
                                 String data = result.get("data").toString();
                                 if (data != null && data.trim().length() > 1) {
                                     Type type = new TypeToken<TripDetailModel>() {
                                     }.getType();
+                                    LogUtil.d(TAG, "getTripsDetailsById() Success DATA:" + data);
                                     Gson gson = new Gson();
                                     TripDetailModel tDetail = gson.fromJson(data, type);
                                     if (tDetail != null) {
@@ -151,14 +148,14 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
                                     }
                                 }
                             } else if (result.getString("message").equals("Unauthorized")) {
-                                Log.d(TAG, "Get trip details request failed due to:" + result.getString("message"));
+                                LogUtil.d(TAG, "Get trip details request failed due to:" + result.getString("message"));
                                 finish();
 
                             } else if (result.getString("message").equals("InternalServerError")) {
-                                Log.d(TAG, "Get trip details request failed due to:" + result.getString("message"));
+                                LogUtil.d(TAG, "Get trip details request failed due to:" + result.getString("message"));
                                 finish();
                             } else {
-                                Log.d(TAG, "Get trip details request failed due to: " + result.getString("message"));
+                                LogUtil.d(TAG, "Get trip details request failed due to: " + result.getString("message"));
                                 finish();
                             }
                         } catch (JSONException e) {
@@ -173,7 +170,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
                 @Override
                 public void onError(VolleyError result) {
                     dialog.dismiss();
-                    Log.d(TAG, "Get trip details request failed due to: " + result.getMessage());
+                    LogUtil.d(TAG, "Get trip details request failed due to: " + result.getMessage());
                     return;
                 }
             });
@@ -296,13 +293,10 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
             } else {
                 mSpeeding.setText(tDetail.speedings);
             }
-
             mHardnraking.setText("NA");
             mEnginefaults.setText("NA");
             mAccelerator.setText("NA");
             mPhoneUsage.setText("NA");
-
-
             if (tDetail.locationDetails != null && !tDetail.locationDetails.isEmpty() && tDetail.locationDetails.size() > 0) {
                 if (start_latitude != null && start_longitude != null) {
                     startpoint = new LatLong(start_latitude, start_longitude);
@@ -333,10 +327,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
                     tDetail.locationDetails.add(endpoint);
                     drawLine(tDetail.locationDetails);
                 }
-
             }
-
-
         }
     }
 

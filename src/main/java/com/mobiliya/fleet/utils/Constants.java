@@ -8,7 +8,6 @@ import android.text.TextUtils;
 import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getIdentityUrl;
 import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getTripServiceUrl;
 
-@SuppressWarnings({"ALL", "unused"})
 public class Constants {
 
     final public static String PROTOCOL = "PROTOCOL";

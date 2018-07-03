@@ -1,7 +1,6 @@
 package com.mobiliya.fleet.models;
 
 
-@SuppressWarnings({"ALL", "unused"})
 public class LatLong {
 
     public String latitude;

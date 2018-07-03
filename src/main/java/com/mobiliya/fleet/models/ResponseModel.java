@@ -1,10 +1,5 @@
 package com.mobiliya.fleet.models;
 
-/**
- * Created by pritee on 07-11-2017.
- */
-
-@SuppressWarnings({"ALL", "unused"})
 public class ResponseModel {
 
     public short getStatus() {

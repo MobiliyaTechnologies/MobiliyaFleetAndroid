@@ -4,7 +4,6 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-@SuppressWarnings({"ALL", "unused"})
 public class TripDetailModel {
     public String _id;
     public String tripName;

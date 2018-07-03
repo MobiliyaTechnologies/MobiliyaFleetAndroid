@@ -21,7 +21,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.support.design.internal.BottomNavigationItemView;
 import android.support.design.internal.BottomNavigationMenuView;
 import android.support.design.widget.BottomNavigationView;
@@ -52,19 +51,16 @@ import com.mobiliya.fleet.models.BaseParameters;
 import com.mobiliya.fleet.models.FaultModel;
 import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.models.OBDFaultCode;
-import com.mobiliya.fleet.models.Parameter;
 import com.mobiliya.fleet.models.Trip;
-import com.mobiliya.fleet.services.GPSTracker;
-import com.mobiliya.fleet.services.GpsLocationReceiver;
+import com.mobiliya.fleet.location.GPSTracker;
+import com.mobiliya.fleet.location.GpsLocationReceiver;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -83,7 +79,6 @@ import java.util.regex.Pattern;
 import static android.content.Context.LOCATION_SERVICE;
 import static com.mobiliya.fleet.utils.Constants.ACCESS_LOCATION;
 
-@SuppressWarnings({"ALL", "unused"})
 public class CommonUtil {
     private static final String TAG = "CommonUtil";
 
@@ -715,5 +710,15 @@ public class CommonUtil {
         } catch (Exception ex) {
             LogUtil.d(TAG, "Failed while deleting db");
         }
+    }
+
+    public static boolean isServiceRunning(Class<?> serviceClass, Context context) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

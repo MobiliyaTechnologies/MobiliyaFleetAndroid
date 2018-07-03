@@ -8,11 +8,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * Created by prashant on 02/20/2018.
- */
-
-@SuppressWarnings({"ALL", "unused"})
 public class DateUtils {
 
     @SuppressLint("SimpleDateFormat")
@@ -169,7 +164,11 @@ public class DateUtils {
                         return diffence;
                     }
                 } else {
-                    diffence = diffMinutes + "." + diffSeconds + " mins";
+                    if (diffHours != 0) {
+                        diffence = diffHours + "." + diffMinutes + " hrs";
+                    } else {
+                        diffence = diffMinutes + "." + diffSeconds + " mins";
+                    }
                     return diffence;
                 }
 

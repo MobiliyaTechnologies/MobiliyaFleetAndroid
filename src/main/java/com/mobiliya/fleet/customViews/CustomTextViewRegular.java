@@ -9,7 +9,6 @@ import android.util.AttributeSet;
  * Created by Kunal on 24-Feb-18.
  */
 
-@SuppressWarnings({"ALL", "unused"})
 public class CustomTextViewRegular extends android.support.v7.widget.AppCompatTextView {
     public CustomTextViewRegular(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);

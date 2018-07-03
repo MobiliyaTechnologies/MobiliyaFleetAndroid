@@ -1,6 +1,5 @@
 package com.mobiliya.fleet.models;
 
-@SuppressWarnings({"ALL", "unused"})
 public class User {
 
     private String id;

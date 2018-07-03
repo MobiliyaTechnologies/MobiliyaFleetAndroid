@@ -1,6 +1,5 @@
 package com.mobiliya.fleet.models;
 
-@SuppressWarnings({"ALL", "unused"})
 public class Trip {
     public String _id;
     public String tripName;

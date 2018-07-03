@@ -27,9 +27,8 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.mobiliya.fleet.R;
-import com.mobiliya.fleet.location.LocationInfo;
-import com.mobiliya.fleet.services.GPSTracker;
-import com.mobiliya.fleet.services.GpsLocationReceiver;
+import com.mobiliya.fleet.location.GPSTracker;
+import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.LogUtil;
 
@@ -38,7 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-@SuppressWarnings({"ALL", "unused"})
 public class LocationSettingActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -241,7 +239,6 @@ public class LocationSettingActivity extends AppCompatActivity implements View.O
     private String getAddress(final Location currentBestLocation) {
         LogUtil.d(TAG, "Into getAddress() method");
         String address = "";
-        LocationInfo lInfo = new LocationInfo();
         if (currentBestLocation != null) {
             Geocoder geocoder;
             List<Address> addresses = new ArrayList<>();
@@ -274,7 +271,9 @@ public class LocationSettingActivity extends AppCompatActivity implements View.O
     @Override
     protected void onDestroy() {
         super.onDestroy();
-       /* LocationServices.FusedLocationApi
-                .removeLocationUpdates(googleApiClient, LocationSettingActivity.this);*/
+        /*if(googleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi
+                    .removeLocationUpdates(googleApiClient, LocationSettingActivity.this);
+        }*/
     }
 }

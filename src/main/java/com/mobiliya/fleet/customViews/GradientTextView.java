@@ -10,7 +10,6 @@ import android.util.AttributeSet;
 
 import com.mobiliya.fleet.R;
 
-@SuppressWarnings({"ALL", "unused"})
 public class GradientTextView extends android.support.v7.widget.AppCompatTextView {
 
     public GradientTextView(Context context, AttributeSet attrs) {

@@ -13,7 +13,6 @@ import com.mobiliya.fleet.utils.SharePref;
 import com.mobiliya.fleet.utils.TripManagementUtils;
 import com.mobiliya.fleet.utils.TripStatus;
 
-@SuppressWarnings({"ALL", "unused"})
 public class CustomIgnitionListenerTracker {
     public static void showDialogOnIgnitionChange(final Activity activity) {
 

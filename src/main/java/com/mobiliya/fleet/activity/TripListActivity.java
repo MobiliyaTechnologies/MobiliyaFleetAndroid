@@ -17,7 +17,7 @@ import com.mobiliya.fleet.adapters.ApiCallBackListener;
 import com.mobiliya.fleet.adapters.CustomIgnitionListenerTracker;
 import com.mobiliya.fleet.adapters.TripListAdapter;
 import com.mobiliya.fleet.models.Trip;
-import com.mobiliya.fleet.services.GpsLocationReceiver;
+import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.TripManagementUtils;
@@ -32,7 +32,6 @@ import java.util.List;
 
 import static com.mobiliya.fleet.utils.CommonUtil.showToast;
 
-@SuppressWarnings({"ALL", "unused"})
 public class TripListActivity extends AppCompatActivity implements ApiCallBackListener {
 
     private TripListAdapter mAdapter;

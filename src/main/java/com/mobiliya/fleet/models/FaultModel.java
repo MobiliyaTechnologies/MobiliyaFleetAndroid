@@ -8,7 +8,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
-@SuppressWarnings({"ALL", "unused"})
 public class FaultModel implements Comparable<FaultModel> {
     public int ID;
     public String fmi;

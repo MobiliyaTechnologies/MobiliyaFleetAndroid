@@ -15,7 +15,7 @@ import android.widget.LinearLayout;
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.adapters.CustomIgnitionListenerTracker;
 import com.mobiliya.fleet.adapters.VehicleDataAdapter;
-import com.mobiliya.fleet.services.GpsLocationReceiver;
+import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
@@ -23,7 +23,6 @@ import com.mobiliya.fleet.utils.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
 
-//@SuppressWarnings({"ALL", "unused"})
 public class VehicleHealthActivity extends BaseActivity {
 
     private static final String TAG = "VehicleHealthActivity";

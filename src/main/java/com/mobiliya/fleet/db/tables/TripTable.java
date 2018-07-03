@@ -2,7 +2,6 @@ package com.mobiliya.fleet.db.tables;
 
 @SuppressWarnings({"ALL", "unused"})
 public class TripTable extends DB_BASIC {
-
     public String TripId;
     public String ServerId;
     public String TenantId;

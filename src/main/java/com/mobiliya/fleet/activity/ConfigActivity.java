@@ -30,7 +30,6 @@ import java.util.Set;
 /**
  * Configuration com.github.pires.obd.reader.activity.
  */
-@SuppressWarnings({"ALL", "unused"})
 public class ConfigActivity extends PreferenceActivity implements OnPreferenceChangeListener {
     public static final String BLUETOOTH_LIST_KEY = "bluetooth_list_preference";
     public static final String UPLOAD_URL_KEY = "upload_url_preference";

@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@SuppressWarnings({"ALL", "unused"})
 public class PGNStorage {
     private static final PGNStorage instance = new PGNStorage();
     private List<PGN> pgnList = new ArrayList<>();

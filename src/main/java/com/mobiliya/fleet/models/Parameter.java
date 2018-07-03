@@ -5,11 +5,6 @@ import com.mobiliya.fleet.db.tables.DB_BASIC;
 import static com.mobiliya.fleet.utils.DateUtils.getLocalTimeString;
 
 
-/**
- * Created by prashant on 02/20/2018.
- */
-
-@SuppressWarnings({"ALL", "unused"})
 public class Parameter extends DB_BASIC {
     public String TripId = null;
     public String TenantId = null;

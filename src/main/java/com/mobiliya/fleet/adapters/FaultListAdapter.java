@@ -11,7 +11,6 @@ import com.mobiliya.fleet.models.FaultModel;
 
 import java.util.List;
 
-@SuppressWarnings({"ALL", "unused"})
 public class FaultListAdapter extends BaseAdapter {
     private List<FaultModel> faultlist;
     private Activity context;

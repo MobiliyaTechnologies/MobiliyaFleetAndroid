@@ -10,12 +10,11 @@ import android.widget.TextView;
 
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.models.DriverScore;
-import com.mobiliya.fleet.services.GpsLocationReceiver;
+import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.LogUtil;
 import com.mobiliya.fleet.utils.SharePref;
 
-@SuppressWarnings({"CanBeFinal", "RedundantCast"})
 public class DriverScoreActivity extends Activity {
     private static final String TAG = "DriverScoreActivity";
     private GpsLocationReceiver gpsLocationReceiver = new GpsLocationReceiver();

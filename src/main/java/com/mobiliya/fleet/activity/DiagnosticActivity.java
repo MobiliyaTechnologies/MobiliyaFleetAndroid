@@ -18,7 +18,7 @@ import com.mobiliya.fleet.adapters.CustomIgnitionListenerTracker;
 import com.mobiliya.fleet.adapters.EngineFaultAdapter;
 import com.mobiliya.fleet.db.DatabaseProvider;
 import com.mobiliya.fleet.models.FaultModel;
-import com.mobiliya.fleet.services.GpsLocationReceiver;
+import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.SharePref;
@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings({"ALL", "unused"})
 public class DiagnosticActivity extends Activity {
     //Diagnostic Section
     private Map<String, String> mParamList = null;

@@ -14,7 +14,6 @@ import com.mobiliya.fleet.R;
  * Created by Darshana on 07-Apr-18.
  */
 
-@SuppressWarnings({"DefaultFileTemplate", "RedundantCast"})
 public class ShowDialogActivity extends Activity {
 
     @Override

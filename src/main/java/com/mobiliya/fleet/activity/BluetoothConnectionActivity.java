@@ -38,6 +38,7 @@ import com.mobiliya.fleet.adapters.DeviceListAdapter;
 import com.mobiliya.fleet.io.AbstractGatewayService;
 import com.mobiliya.fleet.io.J1939DongleService;
 import com.mobiliya.fleet.io.ObdGatewayService;
+import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
 import com.mobiliya.fleet.utils.SharePref;
@@ -48,8 +49,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Set;
 
-
-@SuppressWarnings({"ALL", "unused"})
 public class BluetoothConnectionActivity extends BaseActivity implements AdapterView.OnItemClickListener, View.OnClickListener {
     private static final String TAG = "BluetoothConnectionActivity";
     private BluetoothAdapter mBluetoothAdapter;
@@ -607,6 +606,7 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
         LogUtil.d(TAG, "Protocol Selected: " + protocol);
         startIOTService(protocol);
         Intent intent = new Intent(BluetoothConnectionActivity.this, DashboardActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         mPref.addItem(Constants.PREF_MOVED_TO_DASHBOARD, true);
         startActivity(intent);
         overridePendingTransition(R.anim.enter, R.anim.leave);
@@ -618,20 +618,24 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
         Intent mServiceIntent;
         try {
             if (mAdapterProtocol.equalsIgnoreCase(Constants.OBD)) {
-                LogUtil.d(TAG, "startIOTService: OBD");
-                mServiceIntent = new Intent(this, ObdGatewayService.class);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startForegroundService(mServiceIntent);
-                } else {
-                    startService(mServiceIntent);
+                if(!CommonUtil.isServiceRunning(ObdGatewayService.class, this)) {
+                    LogUtil.d(TAG, "startIOTService: OBD");
+                    mServiceIntent = new Intent(this, ObdGatewayService.class);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(mServiceIntent);
+                    } else {
+                        startService(mServiceIntent);
+                    }
                 }
             } else {
                 LogUtil.d(TAG, "startIOTService: J1939");
-                mServiceIntent = new Intent(this, J1939DongleService.class);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startForegroundService(mServiceIntent);
-                } else {
-                    startService(mServiceIntent);
+                if(!CommonUtil.isServiceRunning(J1939DongleService.class, this)) {
+                    mServiceIntent = new Intent(this, J1939DongleService.class);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(mServiceIntent);
+                    } else {
+                        startService(mServiceIntent);
+                    }
                 }
             }
         } catch (IllegalStateException e) {

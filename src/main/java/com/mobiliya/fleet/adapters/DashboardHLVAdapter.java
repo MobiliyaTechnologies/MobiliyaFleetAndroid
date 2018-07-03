@@ -9,16 +9,18 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.mobiliya.fleet.R;
+import com.mobiliya.fleet.activity.DashboardActivity;
 import com.mobiliya.fleet.activity.SettingsActivity;
 import com.mobiliya.fleet.activity.TripActivity;
 import com.mobiliya.fleet.activity.TripListActivity;
 import com.mobiliya.fleet.activity.VehicleHealthActivity;
+import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
 
 import static android.content.ContentValues.TAG;
+import static com.mobiliya.fleet.utils.CommonUtil.showToast;
 
-@SuppressWarnings({"WeakerAccess", "CanBeFinal", "UnusedAssignment"})
 public class DashboardHLVAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private Context mContext;
@@ -78,6 +80,11 @@ public class DashboardHLVAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 @Override
                 public void onClick(View view, int position, boolean isLongClick) {
                     Activity activity = (Activity) mContext;
+                    if(!CommonUtil.isNetworkConnected(mContext)){
+                        LogUtil.d(TAG,"Cannot start trip, when network is not connected");
+                        showToast(activity, mContext.getString(R.string.no_internet_connection));
+                        return;
+                    }
                     Intent intent = new Intent(mContext, TripActivity.class);
                     activity.startActivityForResult(intent, Constants.DASHBOARD_REQUEST_CODE);
                     activity.overridePendingTransition(R.anim.enter, R.anim.leave);

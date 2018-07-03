@@ -1,7 +1,6 @@
 package com.mobiliya.fleet.utils;
 
 
-@SuppressWarnings({"ALL", "unused"})
 public enum TripStatus {
     Start(1), Stop(0), Pause(2);
 

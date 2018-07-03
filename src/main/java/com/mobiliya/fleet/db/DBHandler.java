@@ -22,7 +22,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-@SuppressWarnings({"ALL", "unused"})
 public class DBHandler extends SQLiteOpenHelper {
     //TAG (Class name) for Log tagging
     private static final String LOG_TAG = "DBHandler";

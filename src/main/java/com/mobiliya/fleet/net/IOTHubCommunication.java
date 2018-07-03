@@ -24,7 +24,6 @@ import java.util.HashMap;
 import static com.mobiliya.fleet.utils.Constants.IOTURL;
 import static com.mobiliya.fleet.utils.Constants.LAST_SYNC_DATE;
 
-//@SuppressWarnings({"ALL", "unused"})
 public class IOTHubCommunication {
 
     private static final String TAG = "IOTHubCommunication";
@@ -96,17 +95,17 @@ public class IOTHubCommunication {
 
     public void SendMessage(Parameter[] parameters) {
 
-        LogUtil.d("SendMessage", "SendMessage called");
+        LogUtil.d(TAG, "SendMessage called");
 
         try {
             if (client == null) {
                 String stringC = SharePref.getInstance(mCtx).getItem(IOTURL);
                 if (!TextUtils.isEmpty(stringC)) {
+                    LogUtil.i(TAG, "SendMessage with IOT string: " + stringC);
                     client = new DeviceClient(stringC, protocol);
                     client.open();
-                    LogUtil.i("SendMessage", "SendMessage called string: " + stringC);
                 } else {
-                    LogUtil.i("SendMessage", "SendMessage called string: null");
+                    LogUtil.i(TAG, "SendMessage IOT string is null");
                     return;
                 }
             }
@@ -133,7 +132,7 @@ public class IOTHubCommunication {
 
                 // Wait for IoT Hub to respond.
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -142,7 +141,11 @@ public class IOTHubCommunication {
             LogUtil.d(TAG, "IllegalStateException: while sending IOT data, so try to open connection");
             try {
                 if (client != null) {
-                    client.open();
+                    //client.open();
+                    closeClient();
+                    LogUtil.d(TAG, "Client close");
+                }else{
+                    LogUtil.d(TAG, "Client connection is NULL");
                 }
             } catch (Exception ep) {
                 LogUtil.d(TAG, "Exception while opening client");
@@ -158,7 +161,7 @@ public class IOTHubCommunication {
     public void closeClient() {
         try {
             if (client != null) {
-                LogUtil.d(TAG, "closeClient");
+                LogUtil.d(TAG, "closeClient called");
                 client.closeNow();
                 client = null;
             }

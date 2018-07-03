@@ -19,18 +19,13 @@ import static com.mobiliya.fleet.utils.Constants.ADAPTER_NOTIFICATION;
 import static com.mobiliya.fleet.utils.Constants.ONGOINGTRIP_NOTIFICATION;
 
 
-/**
- * Created by Darshana Pandit on 19-04-2018.
- */
-
-@SuppressWarnings("DefaultFileTemplate")
 public class NotificationReceiver extends BroadcastReceiver {
 
     private static final String TAG = NotificationReceiver.class.getName();
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.v("NotificationReceiver", "I Arrived!!!!");
+        LogUtil.d("NotificationReceiver", "I Arrived!!!!");
 
         String action = intent.getAction();
         if ("PAUSE".equals(action)) {

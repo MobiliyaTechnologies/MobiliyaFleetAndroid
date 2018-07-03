@@ -17,7 +17,7 @@ import com.mobiliya.fleet.comm.VolleyCallback;
 import com.mobiliya.fleet.comm.VolleyCommunicationManager;
 import com.mobiliya.fleet.models.ResponseModel;
 import com.mobiliya.fleet.models.User;
-import com.mobiliya.fleet.services.GpsLocationReceiver;
+import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
@@ -32,7 +32,6 @@ import butterknife.ButterKnife;
 
 import static com.mobiliya.fleet.utils.Constants.GET_USER_URL;
 
-@SuppressWarnings({"deprecation", "AccessStaticViaInstance", "WeakerAccess", "CanBeFinal", "unused", "TryWithIdenticalCatches"})
 public class UserInfoActivity extends AppCompatActivity {
     static final String TAG = UserInfoActivity.class.getName();
     @Bind(R.id.user_name)

@@ -335,27 +335,12 @@ public class SignInActivity extends AppCompatActivity implements View.OnFocusCha
         } else {
             intent = new Intent(SignInActivity.this, LocationSettingActivity.class);
         }
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         overridePendingTransition(R.anim.enter, R.anim.leave);
         finish();
     }
 
-   /* private void checkServiceRunning() {
-        LogUtil.d(TAG, "checkServiceRunning");
-        String mAdapterProtocol = SharePref.getInstance(this).getItem(Constants.PREF_ADAPTER_PROTOCOL, "");
-        Class T = null;
-        if (mAdapterProtocol.equals(Constants.OBD)) {
-            T = ObdGatewayService.class;
-        } else {
-            T = J1939DongleService.class;
-        }
-        if (!isServiceRunning(T)) {
-            startService(mAdapterProtocol);
-        }else {
-            LogUtil.d(TAG,"Service is already running");
-        }
-    }
-*/
     private void getUserDetails() {
         mDialog.setMessage("Please wait....");
         String email = mSharePref.getItem(Constants.PREF_EMAIL);

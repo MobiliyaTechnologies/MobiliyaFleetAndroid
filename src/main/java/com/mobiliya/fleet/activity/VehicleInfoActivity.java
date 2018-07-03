@@ -20,7 +20,7 @@ import com.mobiliya.fleet.comm.VolleyCallback;
 import com.mobiliya.fleet.comm.VolleyCommunicationManager;
 import com.mobiliya.fleet.models.ResponseModel;
 import com.mobiliya.fleet.models.Vehicle;
-import com.mobiliya.fleet.services.GpsLocationReceiver;
+import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
@@ -36,7 +36,6 @@ import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getFleetUrl;
 import static com.mobiliya.fleet.utils.Constants.REGISTRATION_NUMBER;
 import static com.mobiliya.fleet.utils.Constants.VEHICLES;
 
-@SuppressWarnings({"ALL", "unused"})
 public class VehicleInfoActivity extends AppCompatActivity {
 
     private static final String TAG = "VehicleInfoActivity";

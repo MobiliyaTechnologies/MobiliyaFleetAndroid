@@ -23,7 +23,6 @@ import com.mobiliya.fleet.utils.LogUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@SuppressWarnings({"ALL", "unused"})
 public class ForgotPasswordActivity extends AppCompatActivity implements View.OnClickListener, View.OnFocusChangeListener {
 
     private static final String TAG = "ForgotPasswordActivity";

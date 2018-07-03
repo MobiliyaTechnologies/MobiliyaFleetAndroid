@@ -1,7 +1,5 @@
 package com.mobiliya.fleet.io;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -9,32 +7,22 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.mobiliya.fleet.AcceleratorApplication;
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.db.DatabaseProvider;
-import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.models.Parameter;
 import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.net.IOTHubCommunication;
 import com.mobiliya.fleet.services.CustomIgnitionStatusInterface;
-import com.mobiliya.fleet.services.GPSTracker;
+import com.mobiliya.fleet.location.GPSTracker;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
@@ -42,8 +30,6 @@ import com.mobiliya.fleet.utils.SharePref;
 
 import java.io.IOException;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -55,8 +41,7 @@ import roboguice.service.RoboService;
 import static com.mobiliya.fleet.utils.Constants.GPS_DISTANCE;
 import static com.mobiliya.fleet.utils.TripManagementUtils.SendLocalTripsToServer;
 
-@SuppressWarnings({"ALL", "unused"})
-public abstract class AbstractGatewayService extends RoboService{
+public abstract class AbstractGatewayService extends RoboService {
     static final Queue<Message> EventsQueue = new LinkedList<Message>();
     private static final String TAG = AbstractGatewayService.class.getName();
     public static CustomIgnitionStatusInterface sIgnitionStatusCallback;
@@ -67,7 +52,7 @@ public abstract class AbstractGatewayService extends RoboService{
     protected PowerManager powerManager;
     protected PowerManager.WakeLock wakeLock;
     protected GPSTracker gpsTracker;
-    Context ctx;
+    protected Context ctx;
     boolean isRunning = false;
     Long queueCounter = 0L;
     private Timer timer;
@@ -79,7 +64,7 @@ public abstract class AbstractGatewayService extends RoboService{
             String value = i.getExtras().get(Constants.MESSAGE).toString();
 
             if (value.equalsIgnoreCase(Constants.SYNC_TIME)) {
-                int delay = SharePref.getInstance(ctx).getItem(Constants.KEY_SYNC_DATA_TIME, Constants.SYNC_DATA_TIME);
+                int delay = SharePref.getInstance(getApplicationContext()).getItem(Constants.KEY_SYNC_DATA_TIME, Constants.SYNC_DATA_TIME);
                 initDataSyncTimer(delay);
             }
         }
@@ -100,6 +85,7 @@ public abstract class AbstractGatewayService extends RoboService{
     public void onCreate() {
         super.onCreate();
         LogUtil.d(TAG, "Creating service..");
+        ctx = this;
         //getLocation();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String adapter = SharePref.getInstance(this).getItem(Constants.PREF_ADAPTER_PROTOCOL, "");
@@ -200,6 +186,7 @@ public abstract class AbstractGatewayService extends RoboService{
         ctx = c;
     }
 
+
     public void setIsVehicleActivity(boolean mIsVehicleActivity) {
         isVehicleActivity = mIsVehicleActivity;
     }
@@ -224,7 +211,7 @@ public abstract class AbstractGatewayService extends RoboService{
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                LogUtil.i("AbstractGatewayService Timer", "timer callback callled ->" + delay + " Sec");
+                LogUtil.i(TAG, "timer callback callled ->" + delay + " Sec");
                 processData();
             }
         }, 0, (delay * 1000));
@@ -236,11 +223,13 @@ public abstract class AbstractGatewayService extends RoboService{
             LogUtil.d(TAG, "Return since acitivity is not moved to dashboard");
             return;
         }
-        if (ctx == null) {
-            return;
-        }
+        Trip trip = DatabaseProvider.getInstance(getApplicationContext()).getCurrentTrip();
         if (mParameter == null) {
             mParameter = new Parameter();
+        }
+        if (CommonUtil.isOnline(getApplicationContext())) {
+            LogUtil.i(TAG, "SendLocalTripsToServer");
+            SendLocalTripsToServer(getApplicationContext());
         }
         //gpsTracker.getLocation();
         if (gpsTracker.getIsGPSTrackingEnabled()) {
@@ -249,20 +238,19 @@ public abstract class AbstractGatewayService extends RoboService{
 
             LogUtil.d(TAG, "GPSTracker latitude: " + gpsTracker.getLatitude() + " longitude: " + gpsTracker.getLongitude());
         }
-        mParameter.TenantId = SharePref.getInstance(ctx).getUser().getTenantId();
-        mParameter.UserId = SharePref.getInstance(ctx).getUser().getId();
-        mParameter.VehicleId = SharePref.getInstance(ctx).getVehicleID();
-        mParameter.isConnected = !SharePref.getInstance(ctx).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
+        mParameter.TenantId = SharePref.getInstance(getApplicationContext()).getUser().getTenantId();
+        mParameter.UserId = SharePref.getInstance(getApplicationContext()).getUser().getId();
+        mParameter.VehicleId = SharePref.getInstance(getApplicationContext()).getVehicleID();
+        mParameter.isConnected = !SharePref.getInstance(getApplicationContext()).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
 
-        Trip trip = DatabaseProvider.getInstance(getApplicationContext()).getCurrentTrip();
         if (trip != null) {
-            if (SharePref.getInstance(ctx).getBooleanItem(GPS_DISTANCE, true)) {
+            if (SharePref.getInstance(getApplicationContext()).getBooleanItem(GPS_DISTANCE, true)) {
                 float distance = Float.valueOf(String.format("%.2f", gpsTracker.getDistance()));
                 if (distance >= 0) {
                     LogUtil.d(TAG, "GPS_DISTANCE :" + distance);
                     mParameter.Distance = distance;
                 }
-            }else {
+            } else {
                 LogUtil.d(TAG, "Adapter distance from dongle Distance:" + mParameter.Distance);
             }
             CommonUtil.milesDriven(getApplicationContext(), mParameter.Distance);
@@ -271,17 +259,17 @@ public abstract class AbstractGatewayService extends RoboService{
             mParameter.TripId = "NA";
         }
         if (gpsTracker.getLatitude() != 0.0 && gpsTracker.getLongitude() != 0.0) {
-            addParameterToDatabase(mParameter);
+            if (trip != null) {
+                LogUtil.d(TAG,"addParameterToDatabase called when is not NA");
+                addParameterToDatabase(mParameter);
+            }
         }
-
-        LogUtil.i("AbstractGatewayService Timer", "Parameter.TenantId ->" + mParameter.TenantId);
-        if (CommonUtil.isOnline(getBaseContext())) {
-            LogUtil.i("AbstractGatewayService Timer", "broadcastToIoTHub ->");
+        LogUtil.i(TAG, "Parameter.TenantId ->" + mParameter.TenantId);
+        if (CommonUtil.isOnline(getApplicationContext())) {
+            LogUtil.i(TAG, "broadcastToIoTHub ->");
             broadcastToIoTHub();
-            LogUtil.i("AbstractGatewayService", "Sending trip details");
-            SendLocalTripsToServer(ctx);
-        }else {
-            LogUtil.i("AbstractGatewayService", "No internet Connection ->");
+        } else {
+            LogUtil.i(TAG, "No internet Connection ->");
         }
     }
 
@@ -289,7 +277,7 @@ public abstract class AbstractGatewayService extends RoboService{
     private void broadcastToIoTHub() {
         Parameter[] parameters = DatabaseProvider.getInstance(AbstractGatewayService.this).getParameterData();
         if (parameters != null && parameters.length > 0) {
-            LogUtil.d("AbstractGatewayService Timer", "broadcastToIoTHub called ->");
+            LogUtil.d(TAG, "broadcastToIoTHub called ->");
             IOTHubCommunication.getInstance(AbstractGatewayService.this).SendMessage(parameters);
             if (mParameter != null && !TextUtils.isEmpty(mParameter.ParameterDateTime)) {
                 LogUtil.d(TAG, "ParameterDateTime Time:" + mParameter.ParameterDateTime);
@@ -298,7 +286,7 @@ public abstract class AbstractGatewayService extends RoboService{
     }
 
     private void addParameterToDatabase(Parameter param) {
-        DatabaseProvider.getInstance(ctx).addParameter(param);
+        DatabaseProvider.getInstance(getApplicationContext()).addParameter(param);
     }
 
     public boolean isAdapterConnected() {

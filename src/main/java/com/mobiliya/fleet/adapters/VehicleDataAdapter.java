@@ -12,7 +12,6 @@ import com.mobiliya.fleet.R;
 import java.util.ArrayList;
 import java.util.Map;
 
-@SuppressWarnings({"ALL", "unused"})
 public class VehicleDataAdapter extends RecyclerView.Adapter<VehicleDataAdapter.ViewHolder> {
 
     private ArrayList<Map.Entry<String, String>> mData;

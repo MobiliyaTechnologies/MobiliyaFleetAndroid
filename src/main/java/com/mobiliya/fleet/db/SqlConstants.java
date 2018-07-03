@@ -1,10 +1,6 @@
 package com.mobiliya.fleet.db;
 
-/**
- * Created by Akil on 11/24/2017.
- */
 
-@SuppressWarnings({"ALL", "unused"})
 public class SqlConstants {
     public static final String GET_PARAMS_DATA = "SELECT * FROM ParameterTable LIMIT 10";
 

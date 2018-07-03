@@ -47,7 +47,6 @@ import static com.mobiliya.fleet.utils.TripManagementUtils.updateLocations;
  * Class is responsible for handling connection and events of j1939 dongle
  */
 
-@SuppressWarnings({"ALL", "unused"})
 public class J1939DongleService extends AbstractGatewayService {
     // j1939 adapter and service
     private J1939Adapter j1939;
@@ -96,7 +95,7 @@ public class J1939DongleService extends AbstractGatewayService {
         mTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                LogUtil.i(TAG, "10 sec timer callback callled ->" + 5);
+                LogUtil.i(TAG, "3 sec timer callback callled ->" + 3);
                 performAction();
             }
         }, 0, (3 * 1000));

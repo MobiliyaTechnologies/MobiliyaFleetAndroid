@@ -1,6 +1,5 @@
 package com.mobiliya.fleet.services;
 
-@SuppressWarnings({"ALL", "unused"})
 public class CustomIgnitionStatus {
 
     private static CustomIgnitionStatus sInstance;

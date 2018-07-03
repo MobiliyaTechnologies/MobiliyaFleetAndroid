@@ -32,7 +32,6 @@ import java.util.Collections;
 import java.util.List;
 
 
-@SuppressWarnings({"ALL", "unused"})
 public class DatabaseProvider {
     private static DatabaseProvider instance = null;
     private DBHandler dbHandler;
@@ -253,9 +252,7 @@ public class DatabaseProvider {
         if (currentTripList != null && !currentTripList.isEmpty() && currentTripList.size() > 0) {
             DB_BASIC row = currentTripList.get(currentTripList.size() - 1);
             TripTable table = (TripTable) row;
-
             Trip trip = new Trip();
-
             trip.commonId = table.TripId;
             trip.tripName = table.TripName;
             trip.startLocation = table.StartLocation;

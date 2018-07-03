@@ -1,6 +1,5 @@
 package com.mobiliya.fleet.db;
 
-@SuppressWarnings({"ALL", "unused"})
 public class ConstantsCollection {
     public static final String DATABASE_NAME = "telemetry";
     public static final int DATABASE_VERSION = 1;

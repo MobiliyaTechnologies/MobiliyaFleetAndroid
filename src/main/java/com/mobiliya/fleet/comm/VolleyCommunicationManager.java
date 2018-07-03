@@ -36,7 +36,6 @@ import static com.android.volley.VolleyLog.TAG;
 import static com.mobiliya.fleet.utils.CommonUtil.trimCache;
 
 
-@SuppressWarnings({"ALL", "unused"})
 public class VolleyCommunicationManager {
 
     private static RequestQueue sRequestQueue;

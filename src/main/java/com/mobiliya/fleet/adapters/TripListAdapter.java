@@ -18,7 +18,6 @@ import com.mobiliya.fleet.utils.DateUtils;
 
 import java.util.List;
 
-@SuppressWarnings({"ALL", "unused"})
 public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHolder> {
 
     private List<Trip> mData;

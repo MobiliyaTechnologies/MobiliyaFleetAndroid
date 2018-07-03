@@ -11,11 +11,8 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.location.Address;
 import android.location.Geocoder;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -24,10 +21,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.volley.VolleyError;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -51,8 +44,8 @@ import com.mobiliya.fleet.io.J1939DongleService;
 import com.mobiliya.fleet.io.ObdGatewayService;
 import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.models.Trip;
-import com.mobiliya.fleet.services.GPSTracker;
-import com.mobiliya.fleet.services.GpsLocationReceiver;
+import com.mobiliya.fleet.location.GPSTracker;
+import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
@@ -71,7 +64,6 @@ import java.util.Locale;
 import static com.mobiliya.fleet.utils.CommonUtil.getTimeDiff;
 import static com.mobiliya.fleet.utils.CommonUtil.showToast;
 
-@SuppressWarnings({"ALL", "unused"})
 public class TripActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final String TAG = TripActivity.class.getName();
     private GoogleMap mMap;
@@ -198,6 +190,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onPause() {
         super.onPause();
+        LogUtil.d(TAG,"onPause called");
         if (mapView != null) {
             mapView.onPause();
         }
@@ -243,6 +236,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     };
 
     public void onStopCalled() {
+        LogUtil.d(TAG,"onStopCalled");
         Trip trip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
         if (trip != null) {
             showStopDialog();
@@ -252,6 +246,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onPauseCalled() {
+        LogUtil.d(TAG,"onPauseCalled");
         Trip trip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
         if (trip != null) {
             if (trip.status == TripStatus.Pause.getValue()) {
@@ -275,6 +270,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onResume() {
         super.onResume();
+        LogUtil.d(TAG,"onResume");
         if (mapView != null) {
             mapView.onResume();
         }
@@ -420,6 +416,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     public void showStopDialog() {
+        LogUtil.d(TAG,"showStopDialog");
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle(getString(R.string.stop_trip_dialog));
         alert.setMessage(getString(R.string.do_want_to_stop_trip));
@@ -457,8 +454,8 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                                                 if (object != null) {
                                                     try {
                                                         if (object.getString("message").equals("Success")) {
-                                                            LogUtil.d(TAG, "addTripOnServer() sucess");
                                                             String data = object.getString("data");
+                                                            LogUtil.d(TAG, "addTripOnServer() sucess DATA:"+data);
                                                             Type type = new TypeToken<Trip>() {
                                                             }.getType();
                                                             Gson gson = new Gson();
@@ -469,7 +466,6 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                                                             } catch (Exception ex) {
                                                                 ex.getMessage();
                                                             }
-
                                                             String commonId = trip_result.commonId;
                                                             Intent intent = new Intent(TripActivity.this, TripDetailsActivity.class);
                                                             intent.putExtra(Constants.TRIPID, commonId);
@@ -477,6 +473,8 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                                                             finish();
                                                         }
                                                     } catch (Exception ex) {
+                                                        LogUtil.d(TAG, "Exception addTripOnServer() ");
+                                                        ex.printStackTrace();
                                                     }
                                                 }
                                                 dialogProgress.dismiss();
@@ -519,7 +517,6 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     private BroadcastReceiver mParameterReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String TAG = "TripActivity";
             LogUtil.d(TAG, "onReceive() parameter received");
             if (mIsTripStop) {
                 LogUtil.d(TAG, "onReceive() parameter received Return trip already stop dont update parameter");
@@ -577,6 +574,8 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     private BroadcastReceiver mNotificationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+
+            LogUtil.d(TAG,"mNotificationReceiver called");
             if (intent.getAction().equals(Constants.NOTIFICATION_PAUSE_BROADCAST)) {
                 mTrip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
                 if (mTrip.status == TripStatus.Pause.getValue()) {
@@ -588,7 +587,9 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             if (intent.getAction().equals(Constants.NOTIFICATION_STOP_BROADCAST)) {
                 try {
+                    LogUtil.d(TAG,"mNotificationReceiver called NOTIFICATION_STOP_BROADCAST");
                     unregisterReceiver(mParameterReceiver);
+                    finish();
                 } catch (IllegalArgumentException iae) {
                     iae.getMessage();
                 }

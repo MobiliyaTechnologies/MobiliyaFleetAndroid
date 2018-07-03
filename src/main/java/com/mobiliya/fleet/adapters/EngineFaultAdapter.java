@@ -14,7 +14,6 @@ import com.mobiliya.fleet.models.FaultModel;
 import java.util.HashMap;
 import java.util.List;
 
-@SuppressWarnings({"ALL", "unused"})
 public class EngineFaultAdapter extends RecyclerView.Adapter<EngineFaultAdapter.ViewHolder> {
     List<FaultModel> faultlist;
     HashMap<String, Integer> faultCountMap;

@@ -18,7 +18,6 @@ import static android.content.Context.NOTIFICATION_SERVICE;
 import static com.mobiliya.fleet.utils.Constants.ADAPTER_NOTIFICATION;
 import static com.mobiliya.fleet.utils.Constants.ONGOINGTRIP_NOTIFICATION;
 
-@SuppressWarnings({"deprecation", "WeakerAccess", "UnusedParameters", "DefaultFileTemplate"})
 public class NotificationManagerUtil {
 
     public NotificationManager notificationManager,notificationManager_status;

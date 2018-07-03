@@ -8,21 +8,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
-import android.os.Handler;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
 import com.github.pires.obd.commands.ObdCommand;
 import com.github.pires.obd.commands.protocol.EchoOffCommand;
 import com.github.pires.obd.commands.protocol.LineFeedOffCommand;
-import com.github.pires.obd.commands.protocol.ObdResetCommand;
-import com.github.pires.obd.commands.protocol.ResetTroubleCodesCommand;
 import com.github.pires.obd.commands.protocol.SelectProtocolCommand;
 import com.github.pires.obd.commands.protocol.TimeoutCommand;
-import com.github.pires.obd.commands.temperature.AmbientAirTemperatureCommand;
 import com.github.pires.obd.enums.ObdProtocols;
 import com.github.pires.obd.exceptions.UnsupportedCommandException;
 import com.google.inject.Inject;
@@ -36,14 +29,12 @@ import com.mobiliya.fleet.io.ObdCommandJob.ObdCommandJobState;
 import com.mobiliya.fleet.models.FaultModel;
 import com.mobiliya.fleet.models.Parameter;
 import com.mobiliya.fleet.models.Trip;
-import com.mobiliya.fleet.services.GPSTracker;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
 import com.mobiliya.fleet.utils.NotificationManagerUtil;
 import com.mobiliya.fleet.utils.SharePref;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Objects;
@@ -61,7 +52,6 @@ import static com.mobiliya.fleet.utils.TripManagementUtils.updateLocations;
  * Secondarily, it will serve as a repository of ObdCommandJobs and at the same
  * time the application state-machine.
  */
-@SuppressWarnings({"ALL", "unused"})
 public class ObdGatewayService extends AbstractGatewayService {
     private static final String TAG = ObdGatewayService.class.getName();
     @Inject
@@ -371,6 +361,10 @@ public class ObdGatewayService extends AbstractGatewayService {
         if (mTimer != null) {
             mTimer.cancel();
             mTimer = null;
+        }
+        if (mMsgTimer != null) {
+            mMsgTimer.cancel();
+            mMsgTimer = null;
         }
     }
 

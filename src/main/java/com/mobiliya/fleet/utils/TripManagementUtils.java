@@ -28,7 +28,7 @@ import com.mobiliya.fleet.db.DatabaseProvider;
 import com.mobiliya.fleet.models.LatLong;
 import com.mobiliya.fleet.models.Parameter;
 import com.mobiliya.fleet.models.Trip;
-import com.mobiliya.fleet.services.GPSTracker;
+import com.mobiliya.fleet.location.GPSTracker;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,7 +49,6 @@ import static com.mobiliya.fleet.utils.Constants.LONGITUDE;
 import static com.mobiliya.fleet.utils.DateUtils.getLocalTimeString;
 import static com.mobiliya.fleet.utils.DateUtils.tripOngoingFormat;
 
-@SuppressWarnings({"ALL", "unused"})
 public class TripManagementUtils {
     private static final String TAG = "TripManagementUtils";
     public static int count = 0;
@@ -181,6 +180,7 @@ public class TripManagementUtils {
 
     public static long stopTrip(Activity activity) {
 
+        LogUtil.d(TAG,"stopTrip");
         final ProgressDialog dialog = new ProgressDialog(activity);
         dialog.setIndeterminate(true);
         dialog.setMessage("Stopping Trip....");
@@ -230,12 +230,10 @@ public class TripManagementUtils {
                 pref.addItem(Constants.TIME_ONGOING, "0");
 
                 recordAffected = DatabaseProvider.getInstance(activity.getApplicationContext()).updateTrip(newTrip);
-
                 if (recordAffected > 0) {
                     updateLoactionToList(activity, newTrip, locations);
                     DatabaseProvider.getInstance(activity.getBaseContext()).deleteLatLong(newTrip.commonId);
                     showToast(activity, activity.getString(R.string.trip_stopped));
-
                     pref.addItem(Constants.FIRST_MILES_ONGOING, -1.0f);
                     pref.addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
                     pref.addItem(Constants.SPEEDING, 0);
@@ -340,12 +338,12 @@ public class TripManagementUtils {
                 addTripOnServer(ctx, trip, new ApiCallBackListener() {
                     @Override
                     public void onSuccess(JSONObject object) {
-                        LogUtil.d(TAG, "onSuccess");
+                        LogUtil.d(TAG, "SendLocalTripsToServer onSuccess");
                     }
 
                     @Override
                     public void onError(VolleyError result) {
-                        LogUtil.d(TAG, "onError");
+                        LogUtil.d(TAG, "SendLocalTripsToServer onError");
                     }
                 });
             }
@@ -387,6 +385,7 @@ public class TripManagementUtils {
                     if (result != null) {
                         try {
                             if (result.getString("message").equals("Success")) {
+                                LogUtil.d(TAG, "addTripOnServer() Success");
                                 String data = result.getString("data");
                                 Type type = new TypeToken<Trip>() {
                                 }.getType();
@@ -400,30 +399,23 @@ public class TripManagementUtils {
 
                                 if (trip.status == TripStatus.Stop.getValue()) {
                                     SharePref.getInstance(ctx).addItem("firstmilage", 0);
+                                    LogUtil.d(TAG, "addTripOnServer() trip status STOP(0), so delete entry from DB");
                                     DatabaseProvider.getInstance(ctx).deleteTrip(trip.commonId);
                                 } else if (trip.status == TripStatus.Pause.getValue()) {
                                     trip._id = trip_result._id;
                                     trip.commonId = trip_result.commonId;
                                     trip.IsSynced = true;
+                                    LogUtil.d(TAG, "addTripOnServer() trip status PAUSE(2), so update entry from DB");
                                     DatabaseProvider.getInstance(ctx).updateTrip(trip);
                                 } else {
                                     trip._id = trip_result._id;
                                     trip.commonId = trip_result.commonId;
                                     trip.IsSynced = true;
+                                    LogUtil.d(TAG, "addTripOnServer() trip status START(1), so update entry from DB");
                                     DatabaseProvider.getInstance(ctx).updateTrip(trip);
                                 }
                                 LogUtil.d(TAG, "addTripOnServer() onSucess()");
-                            } /*else if (result.getString("message").equals("Unauthorized")) {
-                                LogUtil.d(TAG, "Add Trip Request Failed due to:" + result.getString("message"));
-                                if (trip.status == TripStatus.Stop.getValue()) {
-                                    DatabaseProvider.getInstance(ctx).deleteTrip(trip.commonId);
-                                }
-                            } else if (result.getString("message").equals("InternalServerError")) {
-                                LogUtil.d(TAG, "Add Trip Request Failed due to:" + result.getString("message"));
-                                if (trip.status == TripStatus.Stop.getValue()) {
-                                    DatabaseProvider.getInstance(ctx).deleteTrip(trip.commonId);
-                                }
-                            }*/ else {
+                            }else {
                                 LogUtil.d(TAG, "Add Trip Request Failed (Duplicate Trip): " + result.getString("message"));
                             }
 
@@ -437,8 +429,9 @@ public class TripManagementUtils {
                 @Override
                 public void onError(VolleyError result) {
                     if (result != null) {
-                        Log.d(TAG, "Error while updating server trip" + result.toString());
+                        LogUtil.d(TAG, "Error while updating server trip" + result.toString());
                     }
+                    LogUtil.d(TAG, "Error while updating server trip");
                     listener.onError(result);
                 }
             });
@@ -547,17 +540,18 @@ public class TripManagementUtils {
                 @Override
                 public void run() {
                     if (!activity.isFinishing()) {
-                        final android.support.v7.app.AlertDialog.Builder loginDialog = new android.support.v7.app.AlertDialog.Builder(activity);
+                        final android.support.v7.app.AlertDialog.Builder mDialog = new android.support.v7.app.AlertDialog.Builder(activity);
                         LayoutInflater factory = LayoutInflater.from(activity);
                         View customTitleView = activity.getLayoutInflater().inflate(R.layout.alert_custom_tilte, null);
                         TextView header = (TextView) customTitleView.findViewById(R.id.title_header);
                         header.setText("Dongle disconnected");
                         View dialogView = factory.inflate(R.layout.dongle_disconnected_dialog, null);
-                        loginDialog.setCustomTitle(customTitleView);
-                        loginDialog.setView(dialogView);
+                        mDialog.setCustomTitle(customTitleView);
+                        mDialog.setView(dialogView);
+                        mDialog.setCancelable(false);
 
                         final TextView pausetrip = (TextView) dialogView.findViewById(R.id.pause);
-                        final android.support.v7.app.AlertDialog alertDialog = loginDialog.show();
+                        final android.support.v7.app.AlertDialog alertDialog = mDialog.show();
 
                         pausetrip.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -577,7 +571,6 @@ public class TripManagementUtils {
                                         }
                                     }
                                 }
-
                                 alertDialog.dismiss();
                             }
                         });
@@ -587,7 +580,6 @@ public class TripManagementUtils {
                             public void onClick(View v) {
                                 count = 0;
                                 alertDialog.dismiss();
-
                                 if (TripManagementUtils.stopTrip(activity) > 0) {
 
                                     NotificationManagerUtil.getInstance().dismissNotification(activity.getBaseContext());

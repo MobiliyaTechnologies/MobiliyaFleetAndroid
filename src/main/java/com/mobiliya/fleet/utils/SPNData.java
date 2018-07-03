@@ -14,8 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-
-@SuppressWarnings({"UnnecessaryLocalVariable", "WeakerAccess", "UnusedAssignment"})
 public class SPNData {
 
     @SuppressLint("StaticFieldLeak")

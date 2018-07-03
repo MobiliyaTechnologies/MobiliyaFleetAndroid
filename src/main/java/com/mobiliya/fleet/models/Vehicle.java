@@ -4,7 +4,6 @@ package com.mobiliya.fleet.models;
  * Created by Kunal on 12-Mar-18.
  */
 
-@SuppressWarnings({"ALL", "unused"})
 public class Vehicle {
     private String id;
     private String vehicleName;

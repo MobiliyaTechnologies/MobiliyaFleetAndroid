@@ -8,7 +8,6 @@ import android.widget.Button;
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.utils.Constants;
 
-@SuppressWarnings({"ALL", "unused"})
 public class ResetSucessActivity extends AppCompatActivity {
 
     @Override

@@ -21,7 +21,6 @@ import static android.content.ContentValues.TAG;
  * Adapter for available bluetooth devices list
  */
 
-@SuppressWarnings({"ALL", "unused"})
 public class DeviceListAdapter extends ArrayAdapter<BluetoothDevice> {
 
     private final LayoutInflater mLayoutInflater;

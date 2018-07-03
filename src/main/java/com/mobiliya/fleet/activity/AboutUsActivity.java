@@ -9,13 +9,12 @@ import android.widget.TextView;
 
 import com.mobiliya.fleet.BuildConfig;
 import com.mobiliya.fleet.R;
-import com.mobiliya.fleet.services.GpsLocationReceiver;
+import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-@SuppressWarnings({"WeakerAccess", "CanBeFinal", "unused"})
 public class AboutUsActivity extends BaseActivity {
     @Bind(R.id.back_button)
     ImageButton mBack_btn;
