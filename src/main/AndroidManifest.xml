@@ -21,6 +21,7 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:name=".AcceleratorApplication"
@@ -72,10 +73,6 @@
             android:launchMode="singleInstance" />
         <service
             android:name=".io.J1939DongleService"
-            android:exported="false"
-            android:launchMode="singleInstance" />
-        <service
-            android:name=".location.GPSTracker"
             android:exported="false"
             android:launchMode="singleInstance" />
 
@@ -162,6 +159,13 @@
             <intent-filter>
                 <action android:name="PAUSE" />
                 <action android:name="STOP" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".services.BootCompleteReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <category android:name="android.intent.category.HOME" />
             </intent-filter>
         </receiver>
 
