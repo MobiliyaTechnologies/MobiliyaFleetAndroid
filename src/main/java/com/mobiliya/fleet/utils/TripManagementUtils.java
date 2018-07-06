@@ -273,6 +273,7 @@ public class TripManagementUtils {
     }
 
     public static long stopTripFromNotification(Context context) {
+        LogUtil.d(TAG,"stopTripFromNotification");
         long recordAffected = -1;
         String address = null;
         LatLong locations = null;
@@ -298,12 +299,17 @@ public class TripManagementUtils {
                     LogUtil.d(TAG, "currect trip is null");
                     return -1;
                 }
-
+                LogUtil.d(TAG, "currect trip is saved in DB");
                 newTrip.endLocation = latitude + "," + longitude + "#" + address;
                 newTrip.endTime = getLocalTimeString();
                 newTrip.EndDate = getLocalTimeString();
                 newTrip.status = TripStatus.Stop.getValue();
                 newTrip.stops = DatabaseProvider.getInstance(context).getStopsCount(newTrip.commonId);
+                float miles = SharePref.getInstance(context).getItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
+                newTrip.milesDriven = String.format("%.2f", miles);
+                LogUtil.d(TAG, "currect trip is saved in DB with Mile:"+newTrip.milesDriven);
+                newTrip.IsSynced = false;
+
                 newTrip.IsSynced = false;
 
                 recordAffected = DatabaseProvider.getInstance(context).updateTrip(newTrip);
