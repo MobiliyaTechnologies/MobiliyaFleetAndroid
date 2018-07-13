@@ -18,11 +18,11 @@ import android.text.TextUtils;
 import com.mobiliya.fleet.AcceleratorApplication;
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.db.DatabaseProvider;
+import com.mobiliya.fleet.location.GPSTracker;
 import com.mobiliya.fleet.models.Parameter;
 import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.net.IOTHubCommunication;
 import com.mobiliya.fleet.services.CustomIgnitionStatusInterface;
-import com.mobiliya.fleet.location.GPSTracker;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
@@ -249,18 +249,23 @@ public abstract class AbstractGatewayService extends RoboService {
                 if (distance >= 0) {
                     LogUtil.d(TAG, "GPS_DISTANCE :" + distance);
                     mParameter.Distance = distance;
+                    CommonUtil.milesDriven(getApplicationContext(), mParameter.Distance);
                 }
             } else {
-                LogUtil.d(TAG, "Adapter distance from dongle Distance:" + mParameter.Distance);
+                if (mParameter.Distance != 0) {
+                    LogUtil.d(TAG, "Adapter distance from dongle Distance NON 0:" + mParameter.Distance);
+                    CommonUtil.milesDriven(getApplicationContext(), mParameter.Distance);
+                }else {
+                    LogUtil.d(TAG, "Adapter distance from dongle Distance ZERO:" + mParameter.Distance);
+                }
             }
-            CommonUtil.milesDriven(getApplicationContext(), mParameter.Distance);
             mParameter.TripId = trip.commonId;
         } else {
             mParameter.TripId = "NA";
         }
         if (gpsTracker.getLatitude() != 0.0 && gpsTracker.getLongitude() != 0.0) {
             if (trip != null) {
-                LogUtil.d(TAG,"addParameterToDatabase called when is not NA");
+                LogUtil.d(TAG, "addParameterToDatabase called when is not NA");
                 addParameterToDatabase(mParameter);
             }
         }

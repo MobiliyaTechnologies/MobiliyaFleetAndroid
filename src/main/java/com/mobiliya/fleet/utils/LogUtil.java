@@ -76,7 +76,7 @@ public class LogUtil {
         Date date = new Date();
         BufferedWriter bw = null;
         FileWriter fw = null;
-        final String FILENAME = "fleet_logs1.txt";
+        final String FILENAME = "fleet_logs2.txt";
         String path = Environment.getExternalStorageDirectory().getPath() + "/" + FILENAME;
         try {
             File file = new File(path);

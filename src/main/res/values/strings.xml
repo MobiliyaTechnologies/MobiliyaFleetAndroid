@@ -128,7 +128,7 @@
     <string name="location">Locations</string>
     <string name="average_speed">Avg. Speed</string>
     <string name="topspeed">Top Speed</string>
-    <string name="milage">Milage</string>
+    <string name="milage">Mileage</string>
     <string name="enginefaults">Engine \nFaults</string>
     <string name="aggresive_accelerator">Aggressive \nAccelator</string>
     <string name="phone_usage">Phone \nUsage</string>

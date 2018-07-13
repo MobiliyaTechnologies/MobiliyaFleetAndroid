@@ -41,6 +41,7 @@ public final class ObdConfig {
     public static ArrayList<ObdCommand> getCommands() {
         ArrayList<ObdCommand> cmds = new ArrayList<>();
 
+        cmds.add(new DistanceSinceCCCommand());
         // Control
         cmds.add(new ModuleVoltageCommand());
         cmds.add(new EquivalentRatioCommand());
@@ -85,7 +86,6 @@ public final class ObdConfig {
         cmds.add(new EngineCoolantTemperatureCommand());
 
         //cmds.add(new ResetTroubleCodesCommand());
-        cmds.add(new DistanceSinceCCCommand());
 
         // Misc
         cmds.add(new SpeedCommand());
