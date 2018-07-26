@@ -805,7 +805,7 @@ public class J1939DongleService extends AbstractGatewayService {
 
         mParameter.RPM = Vehicle.RPM != -1 ? Vehicle.RPM : mParameter.RPM;
         mParameter.Speed = Vehicle.Speed != -1 ? Vehicle.Speed * Const.KphToMph : mParameter.Speed;
-        mParameter.VehicleSpeed = mParameter.Speed;
+        //mParameter.VehicleSpeed = mParameter.Speed;
         mParameter.Distance = Vehicle.Distance != -1 ? Vehicle.Distance * Const.MetersToMiles : mParameter.Distance;
         mParameter.Odometer = Vehicle.Odometer != -1 ? Vehicle.Odometer * Const.MetersToMiles : mParameter.Odometer;
         mParameter.TotalHours = Vehicle.TotalHours != -1.0F ? Vehicle.TotalHours : mParameter.TotalHours;

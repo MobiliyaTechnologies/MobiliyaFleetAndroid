@@ -197,7 +197,7 @@ public class Parameter extends DB_BASIC {
     public String IntakeMainfoldPressure = null;
     public String AirIntakeTemperature = null;
     public String EngineCoolantTemperature = null;
-    public float VehicleSpeed = 0;
+    //public float VehicleSpeed = 0;
     public String MassAirFlow = null;
     public String AirFuelRatio = null;
     public String AmbientAirTempreture = null;

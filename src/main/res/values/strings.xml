@@ -43,7 +43,7 @@
     <string name="pref_obd_update_period_summary">The length of time between querying vehicle data in seconds</string>
     <string name="pref_max_fuel_econ_title">Maximum Fuel Economy Value</string>
     <string name="pref_max_fuel_econ_summary">Any fuel economy values larger than this will be thrown out</string>
-    <string name="pref_volumetric_efficiency_dialog_title">Volumetric Efficiency (eg 0.85)</string>
+    <string name="pref_volumetric_efficiency_dialog_title">Volumetric Efficiency (e.g. 0.85)</string>
     <string name="pref_volumetric_efficiency_summary">Used for fuel economy on vehicles without MAF sensor</string>
     <string name="pref_volumetric_efficiency_title">Volumetric Efficiency</string>
     <string name="pref_engine_displacement_title">Engine Displacement (liters)</string>
@@ -145,7 +145,7 @@
     <string name="trip_paused">Trip has been paused</string>
     <string name="trip_stopped">Trip has been stopped</string>
     <string name="trip_started">Trip has been started</string>
-    <string name="aunthentication_error">Autentication Error</string>
+    <string name="aunthentication_error">Authentication Error</string>
 
     <string name="error_occured">Failed to complete request due to some issues</string>
     <string name="skip">Skip</string>
@@ -197,7 +197,7 @@
     <string name="please_connect_adapter" tools:ignore="UnusedResources">Please connect to adapter</string>
     <string name="incorrect_vehicle">Incorrect vehicle registration number</string>
     <string name="no_device">No device assigned to vehicle</string>
-    <string name="username_not_exist">This username do not exsist, try again.</string>
+    <string name="username_not_exist">This username do not exist, try again.</string>
     <string name="company_name_empty">Company name should not be empty</string>
     <string name="vehicle_is_empty">Registration number should not be empty</string>
     <string name="password_is_empty">Password should not be empty</string>
@@ -211,7 +211,7 @@
     <string name="hard_breaking">Hard \nbraking</string>
     <string name="phoneusage" tools:ignore="UnusedResources">Phone \nUsage</string>
     <string name="over_speeding">Over \nSpeeding</string>
-    <string name="agreesive_accelerator" tools:ignore="UnusedResources">Agreesive \nAccelator</string>
+    <string name="agreesive_accelerator" tools:ignore="UnusedResources">Aggressive \nAccelerator</string>
     <string name="title_activity_aboutus" tools:ignore="UnusedResources">AboutusActivity</string>
     <string name="fleet_management_system" tools:ignore="UnusedResources">Fleet Management App</string>
     <string name="something_went_wrong">Something went wrong. \nCouldnt connect device</string>
@@ -256,8 +256,8 @@
     <string name="gps_based_distance">GPS based distance</string>
     <string name="help">Help</string>
     <string name="engine_rpm">Engine RPM</string>
-    <string name="help_string">\u2022 OBD based distance tracking feature uses /"Distance from Code Clear/" parameter from OBD to measure the distance travelled by vehichle once user starts a trip. As this parameter can hold maxium value of 65535, the feature may not work proerply if your vehicle "DCC" parameter has already reached this value. This is an experimental feature and it is recommended to use GPS based distance tracking option for better results.\n \n \u2022
-GPS based distrace tracking system using device GPS locations to calculate the distance travelled by vehicle during the trip. As GPS has an inaccuracy of certain extent, the distance calculated will be an approximation only.
+    <string name="help_string">\u2022 OBD based distance tracking feature uses /"Distance from Code Clear/" parameter from OBD to measure the distance travelled by vehicle once user starts a trip. As this parameter can hold maximum value of 65535, the feature may not work properly if your vehicle "DCC" parameter has already reached this value. This is an experimental feature and it is recommended to use GPS based distance tracking option for better results.\n \n \u2022
+GPS based distance tracking system using device GPS locations to calculate the distance travelled by vehicle during the trip. As GPS has an inaccuracy of certain extent, the distance calculated will be an approximation only.
     </string>
 
 </resources>

@@ -593,7 +593,7 @@ public class ObdGatewayService extends AbstractGatewayService {
                     }
                     float speed = Float.valueOf(cmdResult);
                     mParameter.Speed = (float) 0.6214 * speed;
-                    mParameter.VehicleSpeed = mParameter.Speed;
+                    //mParameter.VehicleSpeed = mParameter.Speed;
                     LogUtil.d(TAG, "OBD Vehicle Speed :" + mParameter.Speed);
                     break;
                 case "Mass Air Flow":

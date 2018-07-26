@@ -470,7 +470,7 @@ public class DatabaseProvider {
         p.PGNActualValue = param.PGNActualValue;
         p.PGNRawValue = param.PGNRawValue;
         p.AccelPedal = param.AccelPedal;
-        p.VehicleSpeed = param.VehicleSpeed;
+        //p.VehicleSpeed = param.VehicleSpeed;
         p.FaultDescription = param.FaultDescription;
         p.isConnected = param.isConnected;
 
@@ -587,7 +587,7 @@ public class DatabaseProvider {
         p.PGN = param.PGN;
         p.PGNActualValue = param.PGNActualValue;
         p.PGNRawValue = param.PGNRawValue;
-        p.VehicleSpeed = param.VehicleSpeed;
+        //p.VehicleSpeed = param.VehicleSpeed;
         p.FaultDescription = param.FaultDescription;
         p.isConnected = param.isConnected;
         return p;

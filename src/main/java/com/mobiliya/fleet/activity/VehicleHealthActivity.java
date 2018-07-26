@@ -99,6 +99,7 @@ public class VehicleHealthActivity extends BaseActivity {
             HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra(Constants.LOCAL_RECEIVER_NAME);
             try {
                 hashMap.remove("Speedcount");
+                hashMap.remove("RPM");
             } catch (Exception e) {
                 e.printStackTrace();
             }
