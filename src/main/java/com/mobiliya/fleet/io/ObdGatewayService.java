@@ -191,7 +191,7 @@ public class ObdGatewayService extends AbstractGatewayService {
         mTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                LogUtil.i(TAG, "10 sec timer queueCommands() and send msg to activity ->" + 10);
+                LogUtil.i(TAG, "5 sec timer queueCommands() and send msg to activity ->" + 5);
                 if (sock == null) {
                     LogUtil.d(TAG, "socket is null return");
                     return;
@@ -201,9 +201,8 @@ public class ObdGatewayService extends AbstractGatewayService {
                 } else {
                     LogUtil.d(TAG, "Queue is not empty");
                 }
-                //sendMessageToActivity();
             }
-        }, 0, (10 * 1000));
+        }, 0, (5 * 1000));
     }
 
     private Timer mMsgTimer;

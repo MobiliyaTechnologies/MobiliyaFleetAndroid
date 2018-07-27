@@ -228,11 +228,10 @@ public class TripManagementUtils {
                 pref.addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
                 pref.addItem(Constants.FUEL_ONGOING, "NA");
                 pref.addItem(Constants.TIME_ONGOING, "0");
-
+                DatabaseProvider.getInstance(activity.getBaseContext()).deleteLatLong(newTrip.commonId);
                 recordAffected = DatabaseProvider.getInstance(activity.getApplicationContext()).updateTrip(newTrip);
                 if (recordAffected > 0) {
                     updateLoactionToList(activity, newTrip, locations);
-                    DatabaseProvider.getInstance(activity.getBaseContext()).deleteLatLong(newTrip.commonId);
                     showToast(activity, activity.getString(R.string.trip_stopped));
                     pref.addItem(Constants.FIRST_MILES_ONGOING, -1.0f);
                     pref.addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
@@ -311,12 +310,10 @@ public class TripManagementUtils {
                 newTrip.IsSynced = false;
 
                 newTrip.IsSynced = false;
-
+                DatabaseProvider.getInstance(context).deleteLatLong(newTrip.commonId);
                 recordAffected = DatabaseProvider.getInstance(context).updateTrip(newTrip);
-
                 if (recordAffected > 0) {
                     updateLoactionToList(context, newTrip, locations);
-                    DatabaseProvider.getInstance(context).deleteLatLong(newTrip.commonId);
                     Toast.makeText(context, context.getString(R.string.trip_stopped), Toast.LENGTH_LONG).show();
                     SharePref.getInstance(context).addItem(Constants.FIRST_MILES_ONGOING, -1.0f);
                     SharePref.getInstance(context).addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
