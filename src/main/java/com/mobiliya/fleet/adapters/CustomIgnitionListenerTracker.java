@@ -8,6 +8,7 @@ import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.services.CustomIgnitionStatusInterface;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
+import com.mobiliya.fleet.utils.LogUtil;
 import com.mobiliya.fleet.utils.NotificationManagerUtil;
 import com.mobiliya.fleet.utils.SharePref;
 import com.mobiliya.fleet.utils.TripManagementUtils;
@@ -40,6 +41,7 @@ public class CustomIgnitionListenerTracker {
                                 }*/
                             } else if (!CommonUtil.isAppInBackground(activity.getApplicationContext()) && !mIsSkipEnabled) {
                                 if (!isConnected && trip.status == TripStatus.Start.getValue()) {
+                                    LogUtil.d("IgnitionListner","showdialog");
                                     TripManagementUtils.showDongleDisconnectedDialog(activity);
                                 }
                             }

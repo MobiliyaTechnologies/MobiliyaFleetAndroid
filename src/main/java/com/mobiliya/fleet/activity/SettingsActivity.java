@@ -56,11 +56,6 @@ public class SettingsActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_settings);
         initViews();
         mPref = SharePref.getInstance(this);
-        /*if (CommonUtil.isNetworkConnected(getBaseContext())) {
-            getUserDetails();
-        } else {
-            setValues(mPref.getUser());
-        }*/
         setValues(mPref.getUser());
     }
 

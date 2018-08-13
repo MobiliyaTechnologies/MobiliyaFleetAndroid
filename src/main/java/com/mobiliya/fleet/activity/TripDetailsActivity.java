@@ -61,7 +61,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
     private GoogleMap mMap;
     private List<Marker> mMarkerList = new ArrayList<>();
     String mTripId;
-    private LinearLayout mBackButton;
+    private LinearLayout mBackButton, mLayoutAccel, mLayoutBreaking;
     private TextView mTripName;
     LatLngBounds.Builder mBoundsBuilder = new LatLngBounds.Builder();
     private GpsLocationReceiver gpsLocationReceiver = new GpsLocationReceiver();
@@ -130,11 +130,12 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
         String tenantId = user.getTenantId();
         try {
             String trip_details_url = String.format(Constants.getTripsURLs(getApplicationContext(), GET_TRIP_DETAIL_URL), tenantId, tripId);
+            LogUtil.d(TAG,"get trip details URL:"+trip_details_url);
             VolleyCommunicationManager.getInstance().SendRequest(trip_details_url, Request.Method.GET, null, this, new VolleyCallback() {
                 @Override
                 public void onSuccess(JSONObject result) {
+                    try {
                     if (result != null) {
-                        try {
                             if (result.getString("message").equals("Success")) {
                                 String data = result.get("data").toString();
                                 if (data != null && data.trim().length() > 1) {
@@ -158,19 +159,23 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
                                 LogUtil.d(TAG, "Get trip details request failed due to: " + result.getString("message"));
                                 finish();
                             }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
                     }
                     dialog.dismiss();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 @Override
                 public void onError(VolleyError result) {
-                    dialog.dismiss();
-                    LogUtil.d(TAG, "Get trip details request failed due to: " + result.getMessage());
+                    try {
+                        dialog.dismiss();
+                        LogUtil.d(TAG, "Get trip details request failed due to: " + result.getMessage());
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     return;
                 }
             });
@@ -252,7 +257,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
                 String stops = String.valueOf(tDetail.stops);
                 mStops.setText(stops);
             }
-            if (TextUtils.isEmpty(tDetail.milesDriven) || "-1".equals(tDetail.milesDriven)) {
+            if (TextUtils.isEmpty(tDetail.milesDriven) || "0".equals(tDetail.milesDriven)) {
                 mMilesDriven.setText("NA");
             } else {
                 mMilesDriven.setText(tDetail.milesDriven);
@@ -263,39 +268,61 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
             } else {
                 mTriptime.setText(tDetail.tripDuration);
             }
-            if (TextUtils.isEmpty(tDetail.fuelUsed) || "-1".equals(tDetail.fuelUsed)) {
+            if (TextUtils.isEmpty(tDetail.fuelUsed) || "0".equalsIgnoreCase(tDetail.fuelUsed)||
+                    "NA".equalsIgnoreCase(tDetail.fuelUsed)
+                    ||"0.00".equalsIgnoreCase(tDetail.fuelUsed)) {
                 mFuelused.setText("NA");
             } else {
                 mFuelused.setText(tDetail.fuelUsed);
             }
-            if (TextUtils.isEmpty(tDetail.avgSpeed) || "-1".equals(tDetail.avgSpeed)) {
+            if (TextUtils.isEmpty(tDetail.avgSpeed) || "0.00".equalsIgnoreCase(tDetail.avgSpeed)) {
                 mAveragespeed.setText("NA");
             } else {
                 //mAveragespeed.setText("" + String.format("%.2f", tDetail.avgSpeed) + " miles");
                 mAveragespeed.setText(tDetail.avgSpeed);
             }
 
-            if (TextUtils.isEmpty(tDetail.topSpeed) || "-1".equals(tDetail.topSpeed)) {
+            if (TextUtils.isEmpty(tDetail.topSpeed) || "0.00".equalsIgnoreCase(tDetail.topSpeed)) {
                 mTopspeed.setText("NA");
             } else {
                 //mTopspeed.setText("" + String.format("%.2f", tDetail.topSpeed) + " miles");
                 mTopspeed.setText(tDetail.topSpeed);
             }
 
-            if (TextUtils.isEmpty(tDetail.mileage) || "-1".equals(tDetail.mileage)) {
+            if (TextUtils.isEmpty(tDetail.mileage) || "0".equalsIgnoreCase(tDetail.mileage)) {
                 mMilage.setText("NA");
             } else {
                 mMilage.setText(tDetail.mileage);
             }
 
-            if (TextUtils.isEmpty(tDetail.speedings) || "00".equals(tDetail.speedings)) {
+            if (TextUtils.isEmpty(tDetail.speedings) || "0".equalsIgnoreCase(tDetail.speedings)) {
                 mSpeeding.setText("NA");
             } else {
                 mSpeeding.setText(tDetail.speedings);
             }
-            mHardnraking.setText("NA");
+
+            if (TextUtils.isEmpty(tDetail.hardBraking) || "00".equalsIgnoreCase(tDetail.hardBraking)) {
+                mHardnraking.setText("NA");
+            } else {
+                mHardnraking.setText(tDetail.hardBraking);
+            }
+
+            if (TextUtils.isEmpty(tDetail.aggressiveAccelerator) || "00".equalsIgnoreCase(tDetail.aggressiveAccelerator)) {
+                mEnginefaults.setText("NA");
+            } else {
+                mEnginefaults.setText(tDetail.aggressiveAccelerator);
+            }
+
+            if (TextUtils.isEmpty(tDetail.faultCount) || "00".equals(tDetail.faultCount)) {
+                mAccelerator.setText("NA");
+            } else {
+                mAccelerator.setText(tDetail.faultCount);
+            }
+
+
+           /* mHardnraking.setText("NA");
             mEnginefaults.setText("NA");
-            mAccelerator.setText("NA");
+            mAccelerator.setText("NA");*/
             mPhoneUsage.setText("NA");
             if (tDetail.locationDetails != null && !tDetail.locationDetails.isEmpty() && tDetail.locationDetails.size() > 0) {
                 if (start_latitude != null && start_longitude != null) {
@@ -350,10 +377,20 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
 
         mSpeeding = (TextView) findViewById(R.id.tv_speeding);
         mHardnraking = (TextView) findViewById(R.id.tv_hardbraking);
+
         mEnginefaults = (TextView) findViewById(R.id.tv_enginefaults);
         mAccelerator = (TextView) findViewById(R.id.tv_aggresiveaccelator);
         mPhoneUsage = (TextView) findViewById(R.id.tv_phoneUsage);
-
+        mLayoutAccel = (LinearLayout) findViewById(R.id.id_layout_accel);
+        mLayoutBreaking = (LinearLayout) findViewById(R.id.id_layout_breaking);
+        if (SharePref.getInstance(this).getItem(Constants.PREF_ADAPTER_PROTOCOL)
+                .equalsIgnoreCase(Constants.OBD)||
+                SharePref.getInstance(this).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false)) {
+            mHardnraking.setVisibility(View.GONE);
+            mAccelerator.setVisibility(View.GONE);
+            mLayoutBreaking.setVisibility(View.GONE);
+            mLayoutAccel.setVisibility(View.GONE);
+        }
         mBackButton = (LinearLayout) findViewById(R.id.back_button);
         mBackButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -391,6 +428,7 @@ public class TripDetailsActivity extends AppCompatActivity implements OnMapReady
             List<Address> addresses = null;
 
             if (latLong != null && latLong.latitude != null && latLong.longitude != null) {
+
 
                 addresses = geocoder.getFromLocation(Double.parseDouble(latLong.latitude), Double.parseDouble(latLong.longitude), 1);
                 if (addresses != null && addresses.size() > 0) {

@@ -2,7 +2,6 @@ package com.mobiliya.fleet.utils;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.text.TextUtils;
 
 import static com.mobiliya.fleet.activity.ConfigureUrlActivity.getIdentityUrl;
@@ -18,7 +17,6 @@ public class Constants {
    /* public static final String IOT_PROD_CONNSTRING = "HostName=MSFleetIotHub.azure-devices.net;DeviceId=mobileToIotHubDev;SharedAccessKey=7SEQU8wY7BqnUkJtTLSJ8nZqs64RGaclqhcM+2Yqt0k=";
     public static final String IOT_NEW_CONNECTION = "HostName=MSFleetIotHub.azure-devices.net;DeviceId=mobileToIotHubDev;SharedAccessKey=ZfAVd9KW3OrErrbv3xoZJt5Jj1CISzkkVrEhMoL6gdM=";
 */
-
 
 
     public static final String PREF_NAME = "UserSessionInfo";
@@ -93,6 +91,7 @@ public class Constants {
 
     public static final String LOCAL_RECEIVER_ACTION_NAME = "VehicleDataUpdates";
     public static final String LOCAL_RECEIVER_NAME = "VehicleData";
+    public static final String LOCAL_RECEIVER_NAME_SLOW = "VehicleDataSlow";
 
     public static final String DASHBOARD_RECEIVER_ACTION_NAME = "DashboardDataUpdates";
     public static final String DASHBOARD_RECEIVER_NAME = "DahsboardData";
@@ -111,7 +110,7 @@ public class Constants {
     public static final String SYNC_TIME = "synctime";
     public static final int SET_DEFAULT_MEMORY_SIZE = 50;
 
-    public  static final String ADAPTER_NOTIFICATION = "Adapter_disconnect_notification";
+    public static final String ADAPTER_NOTIFICATION = "Adapter_disconnect_notification";
     public static final String ONGOINGTRIP_NOTIFICATION = "Ongoing_trip_notification";
 
     /**
@@ -149,10 +148,10 @@ public class Constants {
     public static final String MAP_TOKEN = "sk.eyJ1IjoibW9iaWxpeWExMjM0IiwiYSI6ImNqZ3g5bjEwcTFpaWYzM3MzdTltaXlxa2wifQ.aTtyhsaulAemRph24Crn_A";
 
 
-    public static final String IDENTITYURL="Identityurl";
-    public static final String FLEETURL="fleeturl";
-    public static final String TRIPURL="tripurl";
-    public static final String IOTURL="ioturl";
+    public static final String IDENTITYURL = "Identityurl";
+    public static final String FLEETURL = "fleeturl";
+    public static final String TRIPURL = "tripurl";
+    public static final String IOTURL = "ioturl";
 
     public static final String UPDATE_TRIP_URL = "UPDATE_TRIP_URL";
     public static final String ADD_TRIP_URL = "ADD_TRIP_URL";
@@ -173,12 +172,18 @@ public class Constants {
     public static final String SPEED_COUNT = "Speed_Count";
     public static final String TIMER_FAULT_SPN = "Fault_SPN";
     public static final String GPS_DISTANCE = "gps_distance";
+    public static final String SPEED_LIMIT = "speed_limit";
+    public static final String VEHICLE_PARAMETERS = "Vehicle Parameters";
+    public static final String ADDITIONAL_PARAMETERS = "Additional Parameters";
+    public static int SET_DEFAULT_SPEED_LIMIT = 100;
+    public static int QUEUE_COMMANDS_SEC = 3;
+    public static int QUEUE_RESET_COUNTER = 6;
 
 
-    public static  String getTripsURLs(Context cxt,String type){
-        String tripbaseurl=getTripServiceUrl(cxt);
+    public static String getTripsURLs(Context cxt, String type) {
+        String tripbaseurl = getTripServiceUrl(cxt);
 
-        if(!TextUtils.isEmpty(tripbaseurl)) {
+        if (!TextUtils.isEmpty(tripbaseurl)) {
             if ("UPDATE_TRIP_URL".equals(type)) {
                 return tripbaseurl + "%s/trips/%s";
             }
@@ -192,31 +197,25 @@ public class Constants {
             }
 
             if ("GET_TRIP_DETAIL_URL".equals(type)) {
-                return tripbaseurl +  "%s/trips/%s";
+                return tripbaseurl + "%s/trips/%s";
             }
         }
 
         return null;
     }
 
-    public static String getIdentityURLs(Context cxt,String type){
-        String identitybaseurl=getIdentityUrl(cxt);
+    public static String getIdentityURLs(Context cxt, String type) {
+        String identitybaseurl = getIdentityUrl(cxt);
 
-        if(!TextUtils.isEmpty(identitybaseurl)) {
+        if (!TextUtils.isEmpty(identitybaseurl)) {
             if ("LOGIN_URL".equals(type)) {
                 return identitybaseurl + "/login";
-            }
-
-            else if ("FORGOT_PASSWORD_URL".equals(type)) {
+            } else if ("FORGOT_PASSWORD_URL".equals(type)) {
                 return identitybaseurl + "/forgot-password";
-            }
-
-            else if ("GET_USER_URL".equals(type)) {
+            } else if ("GET_USER_URL".equals(type)) {
                 return identitybaseurl + "/users";
-            }
-
-            else if("RESET_PASSWORD".equals(type)){
-                return identitybaseurl+"/reset-password";
+            } else if ("RESET_PASSWORD".equals(type)) {
+                return identitybaseurl + "/reset-password";
             }
         }
 

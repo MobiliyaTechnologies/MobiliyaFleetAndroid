@@ -37,6 +37,10 @@ public class SplashActivity extends AppCompatActivity {
         if (SharePref.getInstance(getBaseContext()).getMemorySize() == 0) {
             SharePref.getInstance(getBaseContext()).setMemorySize(Constants.SET_DEFAULT_MEMORY_SIZE);
         }
+
+        if (SharePref.getInstance(getBaseContext()).getSpeedLimit() == 0) {
+            SharePref.getInstance(getBaseContext()).setSpeedLimit(Constants.SET_DEFAULT_SPEED_LIMIT);
+        }
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {

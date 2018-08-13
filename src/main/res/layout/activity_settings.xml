@@ -18,15 +18,15 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="horizontal"
-
-            android:paddingTop="@dimen/dim_33"
+            android:id="@+id/back_button"
+            android:layout_marginTop="@dimen/dim_33"
             tools:ignore="RtlHardcoded,RtlSymmetry">
 
             <LinearLayout
                 android:paddingLeft="@dimen/dim_30"
-                android:id="@+id/back_button"
+                android:gravity="center"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="match_parent">
 
                 <ImageView
                     android:layout_width="wrap_content"

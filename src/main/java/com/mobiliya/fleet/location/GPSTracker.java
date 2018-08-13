@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -17,12 +18,15 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.mobiliya.fleet.models.LatLong;
+import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
 import com.mobiliya.fleet.utils.SharePref;
 
 import java.util.List;
 import java.util.Locale;
+
+import static com.mobiliya.fleet.utils.Constants.GPS_DISTANCE;
 
 
 @SuppressWarnings({"ALL", "unused"})
@@ -32,7 +36,6 @@ public class GPSTracker extends AppCompatActivity implements GoogleApiClient.Con
     private static final String TAG = "GPSTracker";
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 1001;
     private Context mContext;
-    private Geocoder mGeocoder;
     private GoogleApiClient googleApiClient;
     private final static int REQUEST_CHECK_SETTINGS_GPS = 0x1;
     private final static int REQUEST_ID_MULTIPLE_PERMISSIONS = 0x2;
@@ -44,14 +47,13 @@ public class GPSTracker extends AppCompatActivity implements GoogleApiClient.Con
     private Long time_new = System.currentTimeMillis();
     private float speed = 0;
     private float distance = 0;
-    private double latitude;
-    private double longitude;
+    private double latitude = 0.0;
+    private double longitude = 0.0;
     private Location prevLocation = null;
 
     private GPSTracker(Context context) {
         this.mContext = context;
         setUpGClient();
-        mGeocoder = new Geocoder(this.mContext, Locale.getDefault());
         getLocation();
     }
 
@@ -65,14 +67,21 @@ public class GPSTracker extends AppCompatActivity implements GoogleApiClient.Con
         return mGPSTrackerInstance;
     }
 
+    public static synchronized void resetGPSInstance() {
+        LogUtil.d(TAG, "resetGPSInstance");
+        mGPSTrackerInstance = null;
+    }
 
     public void getLocation() {
+        LogUtil.d(TAG, "getLocation called");
         if (googleApiClient != null) {
             if (googleApiClient.isConnected()) {
                 this.location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
                 if (this.location != null) {
                     LogUtil.d(TAG, "getLastLocation: " + this.location.getLatitude());
 //                    LogUtil.d(TAG, "getLastLocation: Accuracy: " + this.location.getAccuracy());
+                } else {
+                    retrieveLastLocation();
                 }
                 updateGPSCoordinates();
                 LocationRequest locationRequest = new LocationRequest();
@@ -87,6 +96,9 @@ public class GPSTracker extends AppCompatActivity implements GoogleApiClient.Con
             } else {
                 LogUtil.d(TAG, "googleApiClient.isConnected(): FALSE");
             }
+        } else {
+            setUpGClient();
+            LogUtil.d(TAG, "getLocation googleApiClient is NULL");
         }
     }
 
@@ -125,6 +137,10 @@ public class GPSTracker extends AppCompatActivity implements GoogleApiClient.Con
         double speedLocal = 0.0f;
         try {
             if (CurrectLocation != null && CurrectLocation.getLatitude() != 0.0 && CurrectLocation.getLongitude() != 0.0) {
+                if (this.location == null) {
+                    LogUtil.d(TAG, "Location object is null, so set now");
+                    this.location = CurrectLocation;
+                }
                 if (CurrectLocation.getAccuracy() > 95) {
                     LogUtil.d(TAG, "we are ignoring GPS location since accuaracy is greater then 100");
                     return;
@@ -166,7 +182,17 @@ public class GPSTracker extends AppCompatActivity implements GoogleApiClient.Con
                         this.speed = (float) speedLocal;
                     }
                     double dist = Math.round(distanceLocal * 100.0) / 100.0;
-                    this.distance += (float) dist;
+                    if (SharePref.getInstance(this.mContext).getBooleanItem(GPS_DISTANCE, true)) {
+                        float ongoingDistance = SharePref.getInstance(this.mContext)
+                                .getItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
+                        this.distance = ongoingDistance;
+                        this.distance += (float) dist;
+                        LogUtil.d(TAG, "Distance last and current Miles after addition:" + this.distance);
+                        SharePref.getInstance(this.mContext)
+                                .addItem(Constants.TOTAL_MILES_ONGOING, this.distance);
+                    } else {
+                        this.distance += (float) dist;
+                    }
                     LogUtil.d(TAG, "Speed Miles/Hrs:" + this.speed);
                     LogUtil.d(TAG, "Total miles On going trip:" + this.distance);
                     time_old = time_new;
@@ -199,8 +225,26 @@ public class GPSTracker extends AppCompatActivity implements GoogleApiClient.Con
             SharePref.getInstance(mContext).addItem(Constants.LATITUDE, String.valueOf(this.latitude));
             SharePref.getInstance(mContext).addItem(Constants.LONGITUDE, String.valueOf(this.longitude));
             LatLong locations = new LatLong(String.valueOf(latitude), String.valueOf(this.longitude));
-            String address = getAddressFromLatLong(mContext, locations);
-            SharePref.getInstance(mContext).addItem(Constants.LAST_ADDRESS, address);
+            String address = getAddressFromLatLong(this, locations);
+            if(!TextUtils.isEmpty(address)) {
+                SharePref.getInstance(mContext).addItem(Constants.LAST_ADDRESS, address);
+            }else{
+                LogUtil.d(TAG,"address is null");
+            }
+        }
+    }
+
+    private void retrieveLastLocation() {
+        try {
+            LogUtil.d(TAG, "retrieveLastLocation");
+            Double lat = Double.parseDouble(SharePref.getInstance(mContext).getItem(Constants.LATITUDE));
+            Double lng = Double.parseDouble(SharePref.getInstance(mContext).getItem(Constants.LONGITUDE));
+            this.latitude = lat;
+            this.longitude = lng;
+            LogUtil.d(TAG, "Last Lat:" + lat + " Long:" + lng);
+        } catch (Exception e) {
+            LogUtil.d(TAG, "Parsing error for last lat long");
+            e.printStackTrace();
         }
     }
 
@@ -231,12 +275,19 @@ public class GPSTracker extends AppCompatActivity implements GoogleApiClient.Con
             double longitude = Double.parseDouble(latLong.longitude);
             latlongString = "" + latitude + ", " + longitude;
             try {
+                if(CommonUtil.isNetworkConnected(context)){
+                    LogUtil.d(TAG,"Geocoder network is connected");
+                }else {
+                    LogUtil.d(TAG,"Geocoder network is not connected");
+                }
+                Geocoder mGeocoder = new Geocoder(context, Locale.getDefault());
                 List<Address> mAddresses = mGeocoder.getFromLocation(latitude, longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
                 String addressLine = mAddresses.get(0).getAddressLine(0);
+                LogUtil.d(TAG, "Geocoder address:"+addressLine);
                 return addressLine;
             } catch (Exception e) {
                 e.getMessage();
-                LogUtil.e(TAG, "Impossible to connect to Geocoder");
+                LogUtil.d(TAG, "Impossible to connect to Geocoder");
             }
         }
         return latlongString;
@@ -251,7 +302,7 @@ public class GPSTracker extends AppCompatActivity implements GoogleApiClient.Con
         /*if (location != null) {
             latitude = round(location.getLatitude(), 4);
         }*/
-        return latitude;
+        return this.latitude;
     }
 
     /**
@@ -264,7 +315,7 @@ public class GPSTracker extends AppCompatActivity implements GoogleApiClient.Con
             longitude = round(location.getLongitude(), 4);
 
         }*/
-        return longitude;
+        return this.longitude;
     }
 
     /**
@@ -298,6 +349,11 @@ public class GPSTracker extends AppCompatActivity implements GoogleApiClient.Con
 
     public float getDistance() {
         if (location != null) {
+            if (SharePref.getInstance(this.mContext).getBooleanItem(GPS_DISTANCE, true)) {
+                float ongoingDistance = SharePref.getInstance(this.mContext)
+                        .getItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
+                this.distance = ongoingDistance;
+            }
             return this.distance;
         }
         return 0;

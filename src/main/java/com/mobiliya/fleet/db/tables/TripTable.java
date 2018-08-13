@@ -16,4 +16,5 @@ public class TripTable extends DB_BASIC {
     public int Status;
     public int Stops;
     public boolean IsSynced;
+    public String speedings;
 }

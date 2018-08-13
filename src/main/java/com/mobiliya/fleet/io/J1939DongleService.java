@@ -36,6 +36,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -107,8 +108,8 @@ public class J1939DongleService extends AbstractGatewayService {
         HashMap<String, String> commandResult = new HashMap<>();
         if (gpsTracker.getIsGPSTrackingEnabled()) {
             //gpsTracker.getLocation();
-            commandResult.put("latitude", String.valueOf(gpsTracker.getLatitude()));
-            commandResult.put("longitude", String.valueOf(gpsTracker.getLongitude()));
+            commandResult.put("Latitude", String.valueOf(gpsTracker.getLatitude()));
+            commandResult.put("Longitude", String.valueOf(gpsTracker.getLongitude()));
             commandResult.put("RPM", "NA");
             if (mParameter != null) {
                 mParameter.Latitude = String.valueOf(gpsTracker.getLatitude());
@@ -119,7 +120,7 @@ public class J1939DongleService extends AbstractGatewayService {
                     int speedInt = Math.round(speed);
                     if (speedInt >= 0) {
                         mParameter.Speed = speedInt;
-                        commandResult.put("speed", String.valueOf(mParameter.Speed));
+                        commandResult.put("Speed", String.valueOf(mParameter.Speed)+" mph");
                         commandResult.put("Speedcount", String.valueOf("0"));
                     }
                     LogUtil.d(TAG, "Vehicle speed with out adapter:" + speed);
@@ -130,7 +131,7 @@ public class J1939DongleService extends AbstractGatewayService {
                     }
                     LogUtil.d(TAG, "Vehicle distance with out adapter:" + distance);
                 } catch (Exception e) {
-                    LogUtil.d(TAG, "execption on calculation of speed");
+                    LogUtil.d(TAG, "exception on calculation of speed");
                 }
                 LogUtil.d(TAG, "Coordinates - latitude " + mParameter.Latitude + " Longitude:" + mParameter.Longitude + " Accuracy " + gpsTracker.getAccuracy());
             }
@@ -721,18 +722,18 @@ public class J1939DongleService extends AbstractGatewayService {
         if (!TextUtils.isEmpty(speed)) {
             if (speed != null) {
                 mSpeedCount = SharePref.getInstance(getApplicationContext()).getItem(Constants.SPEEDING, 0);
+                int limit = SharePref.getInstance(getApplicationContext()).getSpeedLimit();
                 Float speedingInt = Float.parseFloat(speed);
-                if (speedingInt < 100) {
+                if (speedingInt < limit) {
                     isSpeedLowered = true;
                 }
-                if (speedingInt > 100 && isSpeedLowered) {
+                if (speedingInt > limit && isSpeedLowered) {
                     mSpeedCount++;
                     SharePref.getInstance(getApplicationContext()).addItem(Constants.SPEEDING, mSpeedCount);
                     isSpeedLowered = false;
                 }
                 return mSpeedCount;
             }
-
         }
         return 0;
     }

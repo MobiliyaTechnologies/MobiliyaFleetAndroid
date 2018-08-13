@@ -21,6 +21,7 @@ import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class VehicleHealthActivity extends BaseActivity {
@@ -29,9 +30,10 @@ public class VehicleHealthActivity extends BaseActivity {
 
     private RecyclerView mRecyclerViewParams;
     private VehicleDataAdapter mVehicleDataAdapter;
-    private HashMap<String, String> mParamsList = new HashMap<>();
+    private LinkedHashMap<String, String> mParamsList = new LinkedHashMap<>();
+    private LinkedHashMap<String, String> mParamsListSlow = new LinkedHashMap<>();
 
-    private LinearLayout mErrorLayout;
+    private LinearLayout mErrorLayout, mDataLayout;
     private GpsLocationReceiver gpsLocationReceiver = new GpsLocationReceiver();
 
     @Override
@@ -39,8 +41,15 @@ public class VehicleHealthActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.acitivity_vehicle_health);
         mErrorLayout = findViewById(R.id.error_layout);
+        mDataLayout = findViewById(R.id.data_id);
+
         mRecyclerViewParams = findViewById(R.id.recycler_view);
         mRecyclerViewParams.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerViewParams.setNestedScrollingEnabled(false);
+
+        mRecyclerViewParams.setNestedScrollingEnabled(false);
+        mVehicleDataAdapter = new VehicleDataAdapter(this, mParamsList);
+        mRecyclerViewParams.setAdapter(mVehicleDataAdapter);
 
         LinearLayout mBackButton_ll = findViewById(R.id.back_button);
         mBackButton_ll.setOnClickListener(new View.OnClickListener() {
@@ -50,8 +59,6 @@ public class VehicleHealthActivity extends BaseActivity {
             }
         });
 
-        mVehicleDataAdapter = new VehicleDataAdapter(this, mParamsList);
-        mRecyclerViewParams.setAdapter(mVehicleDataAdapter);
     }
 
     private void finishCurrentActivity() {
@@ -65,7 +72,6 @@ public class VehicleHealthActivity extends BaseActivity {
         LogUtil.d(TAG, "onDestroy called");
         unregisterReceiver(
                 mParameterReceiver);
-
         super.onDestroy();
     }
 
@@ -96,29 +102,50 @@ public class VehicleHealthActivity extends BaseActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             LogUtil.d(TAG, "onReceive() parameter received");
-            HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra(Constants.LOCAL_RECEIVER_NAME);
+            HashMap<String, String> hashMapSlowInterval = (HashMap<String, String>) intent.
+                    getSerializableExtra(Constants.LOCAL_RECEIVER_NAME_SLOW);
+            HashMap<String, String> hashMapFastInterval = (HashMap<String, String>) intent.
+                    getSerializableExtra(Constants.LOCAL_RECEIVER_NAME);
             try {
-                hashMap.remove("Speedcount");
-                hashMap.remove("RPM");
+                hashMapFastInterval.remove("Speedcount");
+                hashMapFastInterval.remove("RPM");
+                hashMapFastInterval.remove("Vehicle Speed");
+                hashMapFastInterval.get("Distance since codes cleared");
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            mParamsList.putAll(hashMap);
-            assignValues(mParamsList);
+            if (hashMapFastInterval != null && hashMapFastInterval.size() > 0) {
+                mParamsList.putAll(hashMapFastInterval);
+
+            }
+            if (hashMapSlowInterval != null && hashMapSlowInterval.size() > 0) {
+                mParamsListSlow.putAll(hashMapSlowInterval);
+            }
+            assignValues(mParamsList, mParamsListSlow);
         }
     };
 
     //assign values to adapter
-    public void assignValues(Map<String, String> commandResult) {
+    public void assignValues(Map<String, String> commandResult, Map<String, String> commandResultSlow) {
         LogUtil.d(TAG, "assignValues");
-        if (commandResult.size() != 0) {
-            mErrorLayout.setVisibility(View.GONE);
-            mRecyclerViewParams.setVisibility(View.VISIBLE);
 
-            mVehicleDataAdapter.addListItem(commandResult);
+        LinkedHashMap<String, String> finalList = new LinkedHashMap<>();
+        if (commandResult.size() > 0) {
+            finalList.put(Constants.VEHICLE_PARAMETERS, "");
+        }
+        finalList.putAll(commandResult);
+        if (commandResultSlow.size() > 0) {
+            finalList.put(Constants.ADDITIONAL_PARAMETERS, "");
+            finalList.putAll(commandResultSlow);
+        }
+
+        if (commandResult != null && commandResult.size() != 0) {
+            mErrorLayout.setVisibility(View.GONE);
+            mDataLayout.setVisibility(View.VISIBLE);
+            mVehicleDataAdapter.addListItem(finalList);
         } else {
             mErrorLayout.setVisibility(View.VISIBLE);
-            mRecyclerViewParams.setVisibility(View.GONE);
+            mDataLayout.setVisibility(View.GONE);
         }
     }
 

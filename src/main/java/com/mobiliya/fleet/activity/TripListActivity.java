@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.android.volley.VolleyError;
 import com.google.gson.Gson;
@@ -36,7 +37,8 @@ public class TripListActivity extends AppCompatActivity implements ApiCallBackLi
 
     private TripListAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
-    private ImageButton mBackButton;
+    private RelativeLayout mBackButton;
+    private ImageButton mImageButton;
     final List<Trip> mTriplist = new ArrayList<Trip>();
     private LinearLayout mNotrips_ll;
     private RecyclerView mRecyclerView;
@@ -65,7 +67,14 @@ public class TripListActivity extends AppCompatActivity implements ApiCallBackLi
         super.onResume();
         CustomIgnitionListenerTracker.showDialogOnIgnitionChange(this);
         CommonUtil.registerGpsReceiver(getBaseContext(), gpsLocationReceiver);
-        mBackButton = (ImageButton) findViewById(R.id.back_button);
+        mImageButton = (ImageButton) findViewById(R.id.back_button_img);
+        mImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finishCurrectActivity();
+            }
+        });
+        mBackButton = (RelativeLayout) findViewById(R.id.back_button);
         mBackButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

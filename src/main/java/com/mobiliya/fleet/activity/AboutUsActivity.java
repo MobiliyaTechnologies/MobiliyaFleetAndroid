@@ -5,6 +5,8 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.mobiliya.fleet.BuildConfig;
@@ -17,13 +19,15 @@ import butterknife.ButterKnife;
 
 public class AboutUsActivity extends BaseActivity {
     @Bind(R.id.back_button)
-    ImageButton mBack_btn;
+    RelativeLayout mBack_btn;
+    @Bind(R.id.btn_backImg)
+    ImageView mBack_btn_img;
+
 
     @Bind(R.id.version)
     TextView version;
     GpsLocationReceiver gpsLocationReceiver = new GpsLocationReceiver();
     private LocationManager locationManager;
-    private boolean isGPSEnabled;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -34,6 +38,12 @@ public class AboutUsActivity extends BaseActivity {
         version.setText("Version :" + BuildConfig.VERSION_NAME);
 
         mBack_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finishCurrectActivity();
+            }
+        });
+        mBack_btn_img.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 finishCurrectActivity();

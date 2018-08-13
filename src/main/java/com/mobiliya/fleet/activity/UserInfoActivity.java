@@ -15,9 +15,9 @@ import com.android.volley.VolleyError;
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.comm.VolleyCallback;
 import com.mobiliya.fleet.comm.VolleyCommunicationManager;
+import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.models.ResponseModel;
 import com.mobiliya.fleet.models.User;
-import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
@@ -55,11 +55,14 @@ public class UserInfoActivity extends AppCompatActivity {
     private SharePref mSharePref;
     private GpsLocationReceiver gpsLocationReceiver = new GpsLocationReceiver();
 
+    ProgressDialog dialog = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_info);
         ButterKnife.bind(this);
+        dialog = new ProgressDialog(this);
         mSharePref = SharePref.getInstance(getBaseContext());
         mBack_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,7 +74,7 @@ public class UserInfoActivity extends AppCompatActivity {
         mChangePassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(UserInfoActivity.this,ChangePasswordActivity.class));
+                startActivity(new Intent(UserInfoActivity.this, ChangePasswordActivity.class));
             }
         });
         if (CommonUtil.isNetworkConnected(getBaseContext())) {
@@ -104,13 +107,12 @@ public class UserInfoActivity extends AppCompatActivity {
     }
 
     private void getUserDetails() {
-        final ProgressDialog dialog = new ProgressDialog(this);
         dialog.setIndeterminate(true);
         dialog.setMessage("Please wait....");
         dialog.setCancelable(false);
         dialog.show();
         String email = mSharePref.getItem(Constants.PREF_EMAIL);
-        String USER_URL = Constants.getIdentityURLs(getApplicationContext(),GET_USER_URL) + "?email=" + email;
+        String USER_URL = Constants.getIdentityURLs(getApplicationContext(), GET_USER_URL) + "?email=" + email;
         LogUtil.d(TAG, "Get User details for email:" + email);
         LogUtil.d(TAG, "Get User details for URL:" + USER_URL);
         try {
@@ -130,12 +132,12 @@ public class UserInfoActivity extends AppCompatActivity {
                             User user = mSharePref.convertUserResponse(responseData);
                             mSharePref.setUserData(user);
                             setValues(user);
-                            dialog.dismiss();
+                            dismissDialog();
                         } catch (JSONException e) {
-                            dialog.dismiss();
+                            dismissDialog();
                             e.printStackTrace();
                         } catch (Exception e) {
-                            dialog.dismiss();
+                            dismissDialog();
                             e.printStackTrace();
                         }
                     }
@@ -143,13 +145,13 @@ public class UserInfoActivity extends AppCompatActivity {
 
                 @Override
                 public void onError(VolleyError result) {
-                    dialog.dismiss();
+                    dismissDialog();
                     Toast.makeText(UserInfoActivity.this, getString(R.string.try_again),
                             Toast.LENGTH_LONG).show();
                 }
             });
         } catch (Exception e) {
-            dialog.dismiss();
+            dismissDialog();
             e.printStackTrace();
         }
     }
@@ -160,4 +162,22 @@ public class UserInfoActivity extends AppCompatActivity {
         mFirstName_tv.setText("" + user.getFirstName() + " " + user.getLastName());
         mEmail_tv.setText(user.getEmail());
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        dismissDialog();
+    }
+
+    private void dismissDialog(){
+        try {
+            if (dialog != null && dialog.isShowing()) {
+                dialog.dismiss();
+                dialog = null;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
 }

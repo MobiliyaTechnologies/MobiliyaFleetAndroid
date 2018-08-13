@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import com.github.pires.obd.commands.ObdCommand;
 import com.github.pires.obd.commands.protocol.EchoOffCommand;
 import com.github.pires.obd.commands.protocol.LineFeedOffCommand;
+import com.github.pires.obd.commands.protocol.ObdResetCommand;
 import com.github.pires.obd.commands.protocol.SelectProtocolCommand;
 import com.github.pires.obd.commands.protocol.TimeoutCommand;
 import com.github.pires.obd.enums.ObdProtocols;
@@ -61,7 +62,8 @@ public class ObdGatewayService extends AbstractGatewayService {
     private Context mContext;
     int mSpeedCount = 0;
     private boolean isSpeedLowered = true;
-    private HashMap<String, String> commandResult = new HashMap<>();
+    private HashMap<String, String> commandResultFastInterval = new HashMap<>();
+    private HashMap<String, String> commandResultSlowInterval = new HashMap<>();
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -73,8 +75,14 @@ public class ObdGatewayService extends AbstractGatewayService {
     public void startConnection() {
         new Thread(new Runnable() {
             public void run() {
+
+                if (sock != null && sock.isConnected() && AcceleratorApplication.sIsAbdapterConnected) {
+                    showDeviceStatus("Connected");
+                    LogUtil.d(TAG,"return since device is connected");
+                    return;
+                }
                 jobsQueue.clear();
-                LogUtil.i(TAG, "connectToAdapter()");
+                LogUtil.d(TAG, "startConnection()");
                 if (sock != null && sock.isConnected()) {
                     // close socket
                     try {
@@ -84,7 +92,7 @@ public class ObdGatewayService extends AbstractGatewayService {
                     }
                 }
                 final String remoteDevice = SharePref.getInstance(ctx).getItem(Constants.PREF_BT_DEVICE_ADDRESS);
-                LogUtil.i(TAG, "Remote device address:" + remoteDevice);
+                LogUtil.d(TAG, "Remote device address:" + remoteDevice);
                 final BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
                 dev = btAdapter.getRemoteDevice(remoteDevice);
 
@@ -139,7 +147,7 @@ public class ObdGatewayService extends AbstractGatewayService {
 
             // Let's configure the connection.
             LogUtil.d(TAG, "Queueing jobs for connection configuration..");
-            //queueJob(new ObdCommandJob(new ObdResetCommand()));
+            queueJob(new ObdCommandJob(new ObdResetCommand()));
 
             queueJob(new ObdCommandJob(new EchoOffCommand()));
             queueJob(new ObdCommandJob(new LineFeedOffCommand()));
@@ -175,6 +183,7 @@ public class ObdGatewayService extends AbstractGatewayService {
         startConnection();
     }
 
+    private int commandCnt = 0;
     private Timer mTimer;
 
     /*method to initialize timer task*/
@@ -191,23 +200,30 @@ public class ObdGatewayService extends AbstractGatewayService {
         mTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                LogUtil.i(TAG, "5 sec timer queueCommands() and send msg to activity ->" + 5);
+                LogUtil.i(TAG, "timer queueCommands() and send msg to activity ->" + Constants.QUEUE_COMMANDS_SEC);
                 if (sock == null) {
                     LogUtil.d(TAG, "socket is null return");
                     return;
                 }
                 if (queueEmpty()) {
-                    queueCommands();
+                    LogUtil.d(TAG, "Command counter value:" + commandCnt);
+                    if (commandCnt < Constants.QUEUE_RESET_COUNTER) {
+                        commandCnt++;
+                        queueFastIntervalCommands();
+                    } else {
+                        commandCnt = 0;
+                        queueSlowIntervalCommands();
+                    }
                 } else {
                     LogUtil.d(TAG, "Queue is not empty");
                 }
             }
-        }, 0, (5 * 1000));
+        }, 0, (Constants.QUEUE_COMMANDS_SEC * 1000));
     }
 
     private Timer mMsgTimer;
 
-    /*method to initialize timer task*/
+     //*method to initialize timer task*//*
     private void initDataSyncTimerActivity() {
         if (mMsgTimer != null) {
             mMsgTimer.cancel();
@@ -222,12 +238,19 @@ public class ObdGatewayService extends AbstractGatewayService {
             public void run() {
                 sendMessageToActivity();
             }
-        }, 0, (5 * 1000));
+        }, 0, (3 * 1000));
     }
 
-    private void queueCommands() {
-        LogUtil.d(TAG, "queueCommands");
-        for (ObdCommand Command : ObdConfig.getCommands()) {
+    private void queueFastIntervalCommands() {
+        LogUtil.d(TAG, "queueFastIntervalCommands");
+        for (ObdCommand Command : ObdConfig.getFastIntervalCommands()) {
+            queueJob(new ObdCommandJob(Command));
+        }
+    }
+
+    private void queueSlowIntervalCommands() {
+        LogUtil.d(TAG, "queueSlowIntervalCommands");
+        for (ObdCommand Command : ObdConfig.getSlowIntervalCommands()) {
             queueJob(new ObdCommandJob(Command));
         }
     }
@@ -291,7 +314,7 @@ public class ObdGatewayService extends AbstractGatewayService {
     @Override
     public void queueJob(ObdCommandJob job) {
         // This is a good place to enforce the imperial units option
-        job.getCommand().useImperialUnits(prefs.getBoolean(ConfigActivity.IMPERIAL_UNITS_KEY, false));
+        //job.getCommand().useImperialUnits(prefs.getBoolean(ConfigActivity.IMPERIAL_UNITS_KEY, false));
 
         // Now we can pass it along
         super.queueJob(job);
@@ -314,17 +337,18 @@ public class ObdGatewayService extends AbstractGatewayService {
                     if (sock != null && sock.isConnected()) {
                         job.getCommand().run(sock.getInputStream(), sock.getOutputStream());
                     } else {
+                        LogUtil.d(TAG, "Can't run command on a closed socket.");
                         showDeviceStatus("Disconnected");
                         job.setState(ObdCommandJobState.EXECUTION_ERROR);
                         jobsQueue.clear();
                         stopTimer();
+                        AcceleratorApplication.sIsAbdapterConnected = false;
                         AbstractGatewayService.sIgnitionStatusCallback.onConnectionStatusChange(false);
-                        LogUtil.e(TAG, "Can't run command on a closed socket.");
                         break;
                     }
                 } else
                     // log not new job
-                    LogUtil.e(TAG,
+                    LogUtil.d(TAG,
                             "Job state was not new, so it shouldn't be in queue. BUG ALERT!");
             } catch (UnsupportedCommandException u) {
                 if (job != null) {
@@ -338,22 +362,30 @@ public class ObdGatewayService extends AbstractGatewayService {
                     job.setState(ObdCommandJobState.EXECUTION_ERROR);
                 stopService();
                 showDeviceStatus("Disconnected");
-                LogUtil.e(TAG, "IO error. -> " + io.getMessage());
+                LogUtil.d(TAG, "IO error. -> " + io.getMessage());
                 break;
             } catch (Exception e) {
                 if (job != null) {
                     job.setState(ObdCommandJobState.EXECUTION_ERROR);
                 }
-                LogUtil.e(TAG, "Failed to run command. -> " + e.getMessage());
+                LogUtil.d(TAG, "Failed to run command. -> " + e.getMessage());
             }
-
             if (job != null) {
                 final ObdCommandJob job2 = job;
                 updateParameter(job2);
                 stateUpdate(job2);
             }
-            Thread.sleep(1000);
         }
+        /*commandResultFastInterval.clear();
+        commandResultSlowInterval.clear();
+        if (gpsTracker.getIsGPSTrackingEnabled()) {
+            commandResultFastInterval.put("Latitude", String.valueOf(gpsTracker.getLatitude()));
+            commandResultFastInterval.put("Longitude", String.valueOf(gpsTracker.getLongitude()));
+            mParameter.Latitude = String.valueOf(gpsTracker.getLatitude());
+            mParameter.Longitude = String.valueOf(gpsTracker.getLongitude());
+            LogUtil.d(TAG, "GPSTracker latitude: " + gpsTracker.getLatitude() + " longitude: " + gpsTracker.getLongitude());
+        }
+        sendMessageToActivity();*/
     }
 
     private void stopTimer() {
@@ -378,20 +410,60 @@ public class ObdGatewayService extends AbstractGatewayService {
             cmdResult = job.getCommand().getFormattedResult();
         }
 
-        commandResult.put(cmdName, cmdResult);
-        commandResult.put("Speed", String.valueOf(mParameter.Speed));
-        int speedcount = getSpeedCount(String.valueOf(mParameter.Speed));
-        commandResult.put("Speedcount", String.valueOf(speedcount));
-        commandResult.put("RPM", String.valueOf(mParameter.RPM));
+        if (cmdName.equalsIgnoreCase("Distance since codes cleared")) {
+            if (TextUtils.isEmpty(cmdResult)) {
+                return;
+            }
+            LogUtil.d(TAG, "Distance since codes cleared in Miles:" + cmdResult);
+            try {
+                String distance="";
+                if (cmdResult != null && cmdResult.length() > 0) {
+                    distance = cmdResult.substring(0, cmdResult.length() - 6);
+                }
+                float value = Float.valueOf(distance);
+            } catch (Exception e) {
+                e.printStackTrace();
+                LogUtil.d(TAG, "Distance since codes cleared in Miles: Garbage value RETURN");
+                return;
+            }
+        }
 
+        LogUtil.d(TAG,"cmdResult length:"+cmdResult.length());
+        if (cmdResult!=null && TextUtils.isEmpty(cmdResult.trim())) {
+            LogUtil.d(TAG,"cmdResult is empty so not to put result");
+        }else {
+            if (isfastIntervalCommand(cmdName)) {
+                commandResultFastInterval.put(cmdName, cmdResult);
+            } else {
+                commandResultSlowInterval.put(cmdName, cmdResult);
+            }
+        }
+        commandResultFastInterval.put("Speed", String.valueOf(mParameter.Speed)+" mph");
+        int speedcount = getSpeedCount(String.valueOf(mParameter.Speed));
+        commandResultFastInterval.put("Speedcount", String.valueOf(speedcount));
+        commandResultFastInterval.put("RPM", String.valueOf(mParameter.RPM)+" RPM");
         if (gpsTracker.getIsGPSTrackingEnabled()) {
-            commandResult.put("latitude", String.valueOf(gpsTracker.getLatitude()));
-            commandResult.put("longitude", String.valueOf(gpsTracker.getLongitude()));
+            commandResultFastInterval.put("Latitude", String.valueOf(gpsTracker.getLatitude()));
+            commandResultFastInterval.put("Longitude", String.valueOf(gpsTracker.getLongitude()));
             mParameter.Latitude = String.valueOf(gpsTracker.getLatitude());
             mParameter.Longitude = String.valueOf(gpsTracker.getLongitude());
             updateLocations(getBaseContext(), mParameter);
             LogUtil.d(TAG, "GPSTracker latitude: " + gpsTracker.getLatitude() + " longitude: " + gpsTracker.getLongitude());
         }
+    }
+
+    private Boolean isfastIntervalCommand(String cmd) {
+        Boolean flag = false;
+        switch (cmd) {
+            case "Distance since codes cleared":
+            case "Engine RPM":
+            case "Fuel Level":
+            case "Vehicle Speed":
+                LogUtil.d(TAG, "fastIntervalCommand cmd" + cmd);
+                flag = true;
+                break;
+        }
+        return flag;
     }
 
     private void sendMessageToActivity() {
@@ -405,13 +477,14 @@ public class ObdGatewayService extends AbstractGatewayService {
             String diff = getTimeDiff(getBaseContext(), ongoingtrip);
             NotificationManagerUtil.getInstance().upDateNotification(getBaseContext(), diff);
         }
-        if (commandResult != null && commandResult.size() <= 0) {
+        if (commandResultFastInterval.size() <= 0) {
             LogUtil.d(TAG, "Command result is zero return");
             return;
         }
         Intent intent = new Intent(Constants.LOCAL_RECEIVER_ACTION_NAME);
         // You can also include some extra data.
-        intent.putExtra(Constants.LOCAL_RECEIVER_NAME, commandResult);
+        intent.putExtra(Constants.LOCAL_RECEIVER_NAME, commandResultFastInterval);
+        intent.putExtra(Constants.LOCAL_RECEIVER_NAME_SLOW, commandResultSlowInterval);
         mContext.sendBroadcast(intent);
     }
 
@@ -456,20 +529,19 @@ public class ObdGatewayService extends AbstractGatewayService {
                     if (TextUtils.isEmpty(cmdResult)) {
                         return;
                     }
+                    LogUtil.d(TAG, "Distance since codes cleared in Miles:" + cmdResult);
+                    String distance=new String(cmdResult);
                     if (cmdResult != null && cmdResult.length() > 0) {
-                        cmdResult = cmdResult.substring(0, cmdResult.length() - 2);
+                        distance = distance.substring(0, distance.length() - 6);
                     }
-                    if (TextUtils.isEmpty(cmdResult)) {
-                        return;
-                    }
-                    float value = Float.valueOf(cmdResult);
-                    LogUtil.d(TAG, "Distance since codes cleared in kms:" + value);
-                    if (16689.0 == value) {
+                    float value = Float.valueOf(distance);
+                    LogUtil.d(TAG, "Distance since codes cleared in Miles After formatting:" + value);
+                    /*if (16689.0 == value) {
                         LogUtil.d(TAG, "Distance since codes cleared value is 16689.0 setting distance 0.0:");
                         break;
                     }
                     value = value * 0.621371F;
-                    LogUtil.d(TAG, "Distance since codes cleared in miles:" + value);
+                    LogUtil.d(TAG, "Distance since codes cleared in miles:" + value);*/
                     mParameter.Distance = value;
                     break;
                 case "Diagnostic Trouble Codes":
@@ -508,15 +580,16 @@ public class ObdGatewayService extends AbstractGatewayService {
                     if (TextUtils.isEmpty(cmdResult)) {
                         return;
                     }
+                    String rpm = "";
                     if (cmdResult != null && cmdResult.length() > 0) {
-                        cmdResult = cmdResult.substring(0, cmdResult.length() - 3);
+                        rpm = cmdResult.substring(0, cmdResult.length() - 4);
                     }
-                    if (TextUtils.isEmpty(cmdResult)) {
+                    if (TextUtils.isEmpty(rpm)) {
                         return;
                     }
-                    int rpm = Integer.valueOf(cmdResult);
+                    int rpmInt = Integer.valueOf(rpm);
                     LogUtil.d(TAG, "Engine RPM:" + rpm);
-                    mParameter.RPM = rpm;
+                    mParameter.RPM = rpmInt;
                     //mParameter.EngineRPM = cmdResult;
                     break;
                 case "Engine Runtime":
@@ -584,15 +657,15 @@ public class ObdGatewayService extends AbstractGatewayService {
                     if (TextUtils.isEmpty(cmdResult)) {
                         return;
                     }
+                    String speed = "";
                     if (cmdResult != null && cmdResult.length() > 0) {
-                        cmdResult = cmdResult.substring(0, cmdResult.length() - 4);
+                        speed = cmdResult.substring(0, cmdResult.length() - 4);
                     }
-                    if (TextUtils.isEmpty(cmdResult)) {
+                    if (TextUtils.isEmpty(speed)) {
                         return;
                     }
-                    float speed = Float.valueOf(cmdResult);
-                    mParameter.Speed = (float) 0.6214 * speed;
-                    //mParameter.VehicleSpeed = mParameter.Speed;
+                    float speedFloat = Float.valueOf(speed);
+                    mParameter.Speed = speedFloat;//(float) 0.6214 * speed;
                     LogUtil.d(TAG, "OBD Vehicle Speed :" + mParameter.Speed);
                     break;
                 case "Mass Air Flow":
@@ -603,7 +676,6 @@ public class ObdGatewayService extends AbstractGatewayService {
                     if (TextUtils.isEmpty(cmdResult)) {
                         return;
                     }
-                    //mParameter.AccelPedal = cmdResult;
                     LogUtil.d(TAG, "Relative accelerator pedal position:" + cmdResult);
                     break;
                 default:
@@ -671,11 +743,12 @@ public class ObdGatewayService extends AbstractGatewayService {
         if (!TextUtils.isEmpty(speed)) {
             if (speed != null) {
                 mSpeedCount = SharePref.getInstance(getApplicationContext()).getItem(Constants.SPEEDING, 0);
+                int limit = SharePref.getInstance(getApplicationContext()).getSpeedLimit();
                 Float speedingInt = Float.parseFloat(speed);
-                if (speedingInt < 100) {
+                if (speedingInt < limit) {
                     isSpeedLowered = true;
                 }
-                if (speedingInt > 100 && isSpeedLowered) {
+                if (speedingInt > limit && isSpeedLowered) {
                     mSpeedCount++;
                     SharePref.getInstance(getApplicationContext()).addItem(Constants.SPEEDING, mSpeedCount);
                     isSpeedLowered = false;

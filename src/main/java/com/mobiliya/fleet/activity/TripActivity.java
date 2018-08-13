@@ -74,10 +74,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     private TextView mFuelUsed;
     private TextView mStops;
     public static TextView mPause_tv;
-    private TextView mStop_tv;
     public TextView mSpeeding, mEngineRPM;
-    private LinearLayout mPause, mStop;
-    private Trip mLasttrip;
     private SharePref mPref;
     private String mProtocol;
     private Intent mServiceIntent;
@@ -89,7 +86,6 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GpsLocationReceiver gpsLocationReceiver = new GpsLocationReceiver();
     MapView mapView;
     public static ImageView mPauseIcon;
-    LatLng mLatLong;
     GPSTracker gps;
 
     @Override
@@ -125,7 +121,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         mFuelUsed = (TextView) findViewById(R.id.tv_fuelused);
         mStops = (TextView) findViewById(R.id.tv_stops);
         mSpeeding = (TextView) findViewById(R.id.tv_speeding);
-        mEngineRPM = (TextView) findViewById(R.id.tv_hardbraking);
+        mEngineRPM = (TextView) findViewById(R.id.tv_engine_rpm);
         LinearLayout mPause = (LinearLayout) findViewById(R.id.btn_pause);
         LinearLayout mStop = (LinearLayout) findViewById(R.id.btn_stop);
         mPause_tv = (TextView) findViewById(R.id.tv_pause);
@@ -136,9 +132,9 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
         down_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(TripActivity.this, DashboardActivity.class);//The class you want to show
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
+                //Intent intent = new Intent(TripActivity.this, DashboardActivity.class);//The class you want to show
+                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                //startActivity(intent);
                 finish();
                 overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_down);
             }
@@ -332,7 +328,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                 int count = DatabaseProvider.getInstance(getBaseContext()).getStopsCount(mTrip.commonId);
                 mStops.setText(Integer.toString(count));
                 float milage = SharePref.getInstance(getApplicationContext()).getItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
-                mMilesDriven.setText("" + String.format("%.1f", milage) + " miles");
+                mMilesDriven.setText("" + String.format("%.2f", milage) + " miles");
                 String diff = SharePref.getInstance(getBaseContext()).getItem(Constants.TIME_ONGOING, "0");
                 mTripTime.setText(diff);
                 mMap.clear();
@@ -439,8 +435,8 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                 dialogProgress.setCancelable(false);
                 dialogProgress.setMessage("Loading trip details, please wait...");
                 dialogProgress.show();
-
-                Trip trip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
+                try{
+                //Trip trip = DatabaseProvider.getInstance(getBaseContext()).getCurrentTrip();
                 long record_affected = TripManagementUtils.stopTrip(TripActivity.this);
                 if (record_affected > 0) {
                     NotificationManagerUtil.getInstance().dismissNotification(getBaseContext());
@@ -455,7 +451,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                                                     try {
                                                         if (object.getString("message").equals("Success")) {
                                                             String data = object.getString("data");
-                                                            LogUtil.d(TAG, "addTripOnServer() sucess DATA:"+data);
+                                                            LogUtil.d(TAG, "addTripOnServer() sucess DATA:" + data);
                                                             Type type = new TypeToken<Trip>() {
                                                             }.getType();
                                                             Gson gson = new Gson();
@@ -505,6 +501,10 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                     dialogProgress.dismiss();
                     finish();
                 }
+            }catch (Exception e){
+                    e.printStackTrace();
+                    LogUtil.d(TAG,"error in trips");
+                }
             }
         });
         AlertDialog dialog = alert.create();
@@ -534,8 +534,8 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mEngineRPM.setText(rpm);
             }
             setParameterData(totalHours, fuelUsed, speed);
-            if (hashMap.get("latitude") != null && hashMap.get("longitude") != null) {
-                LatLong latLong = new LatLong(hashMap.get("latitude"), hashMap.get("longitude"));
+            if (hashMap.get("Latitude") != null && hashMap.get("Longitude") != null) {
+                LatLong latLong = new LatLong(hashMap.get("Latitude"), hashMap.get("Longitude"));
                 Double lat = Double.valueOf(latLong.latitude);
                 Double longi = Double.valueOf(latLong.longitude);
 
@@ -557,7 +557,7 @@ public class TripActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         if (mMilesDriven != null) {
             float milage = SharePref.getInstance(getApplicationContext()).getItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
-            mMilesDriven.setText("" + String.format("%.1f", milage) + " miles");
+            mMilesDriven.setText("" + String.format("%.2f", milage) + " miles");
         }
 
         if (!TextUtils.isEmpty(fuelUsed)) {

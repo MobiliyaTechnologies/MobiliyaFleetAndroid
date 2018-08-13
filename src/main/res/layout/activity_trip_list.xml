@@ -8,26 +8,31 @@
     tools:context="com.mobiliya.fleet.activity.TripListActivity">
 
     <RelativeLayout
-        android:layout_width="match_parent"
+        android:id="@+id/back_button"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/dim_22"
         android:orientation="horizontal"
         tools:ignore="RtlHardcoded">
-
-
-        <ImageButton
-            android:id="@+id/back_button"
+        <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@null"
-            android:paddingLeft="@dimen/dim_30"
-            android:paddingRight="@dimen/dim_24"
-            android:paddingTop="@dimen/dim_11"
-            android:src="@drawable/back_arrow"
-            tools:ignore="ContentDescription,RtlHardcoded" />
+            android:layout_marginTop="@dimen/dim_22"
+            android:orientation="horizontal"
+            tools:ignore="RtlHardcoded">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+            <ImageButton
+                android:id="@+id/back_button_img"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:paddingLeft="@dimen/dim_30"
+                android:paddingRight="@dimen/dim_24"
+                android:paddingTop="@dimen/dim_11"
+                android:src="@drawable/back_arrow"
+                tools:ignore="ContentDescription,RtlHardcoded" />
+
+            <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
@@ -42,6 +47,7 @@
                 tools:ignore="RtlHardcoded" />
 
         </LinearLayout>
+         </RelativeLayout>
     </RelativeLayout>
 
     <android.support.v7.widget.RecyclerView

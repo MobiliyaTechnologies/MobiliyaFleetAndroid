@@ -365,28 +365,6 @@ public class CommonUtil {
         return currentdate;
     }
 
-    public static void removeShiftMode(BottomNavigationView view) {
-        BottomNavigationMenuView menuView = (BottomNavigationMenuView) view.getChildAt(0);
-        try {
-            Field shiftingMode = menuView.getClass().getDeclaredField("mShiftingMode");
-            shiftingMode.setAccessible(true);
-            shiftingMode.setBoolean(menuView, false);
-            shiftingMode.setAccessible(false);
-            for (int i = 0; i < menuView.getChildCount(); i++) {
-                BottomNavigationItemView item = (BottomNavigationItemView) menuView.getChildAt(i);
-                //noinspection RestrictedApi
-                item.setShiftingMode(false);
-                // set once again checked value, so view will be updated
-                //noinspection RestrictedApi
-                item.setChecked(item.getItemData().isChecked());
-            }
-        } catch (NoSuchFieldException e) {
-            Log.e("BottomNav", "Unable to get shift mode field", e);
-        } catch (IllegalAccessException e) {
-            Log.e("BottomNav", "Unable to change value of shift mode", e);
-        }
-    }
-
     @SuppressLint("ObsoleteSdkInt")
     public static boolean isAppInBackground(Context context) {
         boolean isInBackground = true;
@@ -679,14 +657,14 @@ public class CommonUtil {
             return 0.0f;
         }
         //calculation for miles driven
-        float firstmilage = SharePref.getInstance(context).getItem(Constants.FIRST_MILES_ONGOING, -1.0f);
-        LogUtil.d(TAG, "firstmilage:" + firstmilage);
-        if (firstmilage == -1.0) {
+        float firstMilage = SharePref.getInstance(context).getItem(Constants.FIRST_MILES_ONGOING, -1.0f);
+        LogUtil.d(TAG, "firstmilage:" + firstMilage);
+        if (firstMilage == -1.0) {
             SharePref.getInstance(context).addItem(Constants.FIRST_MILES_ONGOING, distance);
             LogUtil.d(TAG, "First milage reading set:" + distance);
             return milesdriven;
         } else {
-            milesdriven = distance - firstmilage;
+            milesdriven = distance - firstMilage;
             if (milesdriven <= 0) {
                 LogUtil.d(TAG, "Miles driven less then previous cached miles");
                 return 0.0f;

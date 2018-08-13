@@ -62,7 +62,7 @@ public class BluetoothConnectionActivity extends BaseActivity implements Adapter
     private Handler mHandler;
     private Boolean mBLEdevice = false;
     // Stops scanning after 5 seconds.
-    private static final long SCAN_PERIOD = 5000;
+    private static final long SCAN_PERIOD = 15000;
     private TextView mDeviceStatus_tv;
     private Boolean mDevicePaired = false;
     private BluetoothDevice mPairedBTdevice = null;

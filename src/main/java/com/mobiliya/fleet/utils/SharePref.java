@@ -790,9 +790,21 @@ public class SharePref {
         editor.apply();
     }
 
+    public void setSpeedLimit(int speedLimit) {
+        SharedPreferences sharedPreferences = mCtx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(Constants.SPEED_LIMIT, speedLimit);
+        editor.apply();
+    }
+
     public int getMemorySize() {
         SharedPreferences sharedPreferences = mCtx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getInt(KEY_DB_STORAGE, 0);
+    }
+
+    public int getSpeedLimit() {
+        SharedPreferences sharedPreferences = mCtx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        return sharedPreferences.getInt(Constants.SPEED_LIMIT, 0);
     }
 
     public void setFaultAlertCount(int count) {

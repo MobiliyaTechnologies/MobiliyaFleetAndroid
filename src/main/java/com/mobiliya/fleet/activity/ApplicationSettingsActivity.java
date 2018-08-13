@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -45,13 +46,13 @@ public class ApplicationSettingsActivity extends AppCompatActivity implements Vi
         }
         mOfflineStorage_tv = (TextView) findViewById(R.id.offline_storage);
         mDataSyncTime_tv = (TextView) findViewById(R.id.data_sync_time);
-        ImageView ivOfflineStorageSub = (ImageView) findViewById(R.id.offline_storage_time_sub);
+        LinearLayout ivOfflineStorageSub = (LinearLayout) findViewById(R.id.offline_storage_time_sub);
         ivOfflineStorageSub.setOnClickListener(this);
-        ImageView ivOfflineStorageAdd = (ImageView) findViewById(R.id.offline_storage_time_add);
+        LinearLayout ivOfflineStorageAdd = (LinearLayout) findViewById(R.id.offline_storage_time_add);
         ivOfflineStorageAdd.setOnClickListener(this);
-        ImageView ivDataSyncTimeSub = (ImageView) findViewById(R.id.data_sync_time_sub);
+        LinearLayout ivDataSyncTimeSub = (LinearLayout) findViewById(R.id.data_sync_time_sub);
         ivDataSyncTimeSub.setOnClickListener(this);
-        ImageView ivDataSyncTimeAdd = (ImageView) findViewById(R.id.data_sync_time_add);
+        LinearLayout ivDataSyncTimeAdd = (LinearLayout) findViewById(R.id.data_sync_time_add);
         ivDataSyncTimeAdd.setOnClickListener(this);
         radioGroup = (RadioGroup) findViewById(R.id.rd_distance);
         radioGps = (RadioButton) findViewById(R.id.gps_distance);

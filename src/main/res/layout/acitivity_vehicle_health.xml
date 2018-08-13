@@ -5,50 +5,49 @@
     android:layout_height="match_parent"
     tools:context="com.mobiliya.fleet.activity.VehicleHealthActivity">
 
-    <LinearLayout
+        <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:weightSum="10">
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="2"
+            android:layout_height="100dp"
             android:background="@drawable/vehical_health_rec_gradient"
-            android:gravity="center"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingTop="@dimen/dim_12">
 
             <LinearLayout
                 android:id="@+id/back_button"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="@dimen/dim_30">
-
-                <ImageView
+                android:paddingTop="@dimen/dim_25"
+                android:paddingBottom="@dimen/dim_25"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="horizontal">
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:src="@drawable/back_white" />
+                    android:gravity="center"
+                    android:paddingLeft="@dimen/dim_30">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:src="@drawable/back_white" />
             </LinearLayout>
 
-            <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                <com.mobiliya.fleet.customViews.CustomTextViewMedium
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingLeft="@dimen/dim_24"
                 android:text="@string/vehicle_health_text"
                 android:textColor="@color/text_color_white"
                 android:textSize="@dimen/font_24sp" />
+            </LinearLayout>
         </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="8">
-
-
             <LinearLayout
                 android:id="@+id/error_layout"
                 android:layout_width="match_parent"
@@ -78,64 +77,62 @@
                     android:textColor="@color/ash_tray"
                     android:textSize="@dimen/font_14sp" />
 
-
             </LinearLayout>
+            <android.support.v4.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                    <LinearLayout
+                        android:id="@+id/data_id"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:orientation="vertical">
 
-
-            <android.support.v7.widget.RecyclerView
+                 <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/frequently_header"
+                android:visibility="gone"
+                android:orientation="vertical">
+                <com.mobiliya.fleet.customViews.CustomTextViewBold
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/dim_10"
+                    android:layout_marginLeft="@dimen/dim_15"
+                    android:textColor="@color/text_color_setting"
+                    android:textSize="16sp"
+                    android:text="@string/vehicle_parameters"
+                    />
+            </LinearLayout>
+                  <android.support.v7.widget.RecyclerView
                 android:id="@+id/recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="visible" />
+
+                <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/slow_header"
+                android:visibility="gone"
+                android:orientation="vertical">
+                <com.mobiliya.fleet.customViews.CustomTextViewBold
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/dim_10"
+                    android:layout_marginTop="@dimen/dim_10"
+                    android:layout_marginLeft="@dimen/dim_15"
+                    android:textColor="@color/text_color_setting"
+                    android:textSize="16sp"
+                    android:text="@string/additional_parameters"
+                    />
+            </LinearLayout>
+                 <android.support.v7.widget.RecyclerView
+                android:id="@+id/recycler_view_slow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:visibility="gone" />
-        </LinearLayout>
+              </LinearLayout>
+            </android.support.v4.widget.NestedScrollView>
     </LinearLayout>
-
-    <!--<TableRow
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:tag="FUEL_CONSUMPTION"
-            android:text="@string/text_consumption_default" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:tag="ENGINE_RUNTIME"
-            android:text="@string/text_runtime_default" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:tag="ENGINE_RPM"
-            android:text="" />
-    </TableRow>
-
-    <ScrollView
-        android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:layout_gravity="top"
-        android:layout_margin="10dp"
-        android:layout_weight="1"
-        android:elevation="2dp"
-        android:visibility="gone"
-        android:outlineProvider="bounds">
-
-        <TableLayout
-            android:id="@+id/data_table"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:stretchColumns="*">
-        </TableLayout>
-    </ScrollView>
--->
 </LinearLayout>

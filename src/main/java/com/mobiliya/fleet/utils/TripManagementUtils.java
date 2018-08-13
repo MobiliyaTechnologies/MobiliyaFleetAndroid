@@ -62,9 +62,6 @@ public class TripManagementUtils {
         dialog.show();
 
         String tripId = null;
-
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("EEEE, MMMM dd, hh:mm a");
-        String formattedDate = df.format(new Date());
         String vehicle = SharePref.getInstance(activity).getVehicleID();
 
         String address = null;
@@ -82,11 +79,11 @@ public class TripManagementUtils {
                 locations = new LatLong(String.valueOf(latitude), String.valueOf(longitude));
                 address = gps.getAddressFromLatLong(activity.getBaseContext(), locations);
             } catch (Exception ex) {
-                Log.d(TAG, "Failed to get address");
+                Log.d(TAG, "Failed to get address from geocoder");
             }
         }
 
-        if (latitude != 0.0 && longitude != 0.0 && address != null && locations != null) {
+        if (latitude != 0.0 && longitude != 0.0 && !TextUtils.isEmpty(address) && locations != null) {
             pref.addItem(Constants.FIRST_MILES_ONGOING, -1.0f);
             pref.addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
             pref.addItem(Constants.SPEEDING, 0);
@@ -198,11 +195,13 @@ public class TripManagementUtils {
         Double longitude = 0.0;
         try {
             GPSTracker gpsTracker = GPSTracker.getInstance(activity);
-            latitude = gpsTracker.getLatitude();//Double.valueOf(SharePref.getInstance(activity.getBaseContext()).getItem(LATITUDE,"0.0"));
-            longitude = gpsTracker.getLongitude();//Double.valueOf(SharePref.getInstance(activity.getBaseContext()).getItem(LONGITUDE,"0.0"));
+            latitude = gpsTracker.getLatitude();
+            longitude = gpsTracker.getLongitude();
             locations = new LatLong(String.valueOf(latitude), String.valueOf(longitude));
-            //address = gpsTracker.getAddressFromLatLong(activity.getBaseContext(), locations);
-            address = pref.getItem(Constants.LAST_ADDRESS,"");
+            address = gpsTracker.getAddressFromLatLong(activity.getBaseContext(), locations);
+            if(TextUtils.isEmpty(address)) {
+                address = SharePref.getInstance(activity.getBaseContext()).getItem(Constants.LAST_ADDRESS, "");
+            }
         } catch (Exception ex) {
             Log.d(TAG, "Failed to get address");
         }
@@ -222,7 +221,9 @@ public class TripManagementUtils {
                 newTrip.stops = DatabaseProvider.getInstance(activity).getStopsCount(newTrip.commonId);
                 float miles = SharePref.getInstance(activity.getBaseContext()).getItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
                 newTrip.milesDriven = String.format("%.2f", miles);
+                int mSpeedCount = SharePref.getInstance(activity.getBaseContext()).getItem(Constants.SPEEDING, 0);
                 newTrip.IsSynced = false;
+                newTrip.speedings = String.valueOf(mSpeedCount);
 
                 pref.addItem(Constants.FIRST_MILES_ONGOING, -1.0f);
                 pref.addItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
@@ -371,6 +372,7 @@ public class TripManagementUtils {
             jsonBody.put("stops", trip.stops);
             jsonBody.put("status", trip.status);
             jsonBody.put("milesDriven", trip.milesDriven);
+            jsonBody.put("speedings", trip.speedings);
             newTripRequestData = CommonUtil.getPostDataString(jsonBody);
             LogUtil.d(TAG, "addTripOnServer() with Json:" + newTripRequestData);
         } catch (JSONException e) {
@@ -380,7 +382,7 @@ public class TripManagementUtils {
         }
         String tenantId = SharePref.getInstance(ctx).getUser().getTenantId();
         String url = String.format(Constants.getTripsURLs(ctx, Constants.ADD_TRIP_URL), tenantId);
-
+        LogUtil.d(TAG,"addTripOnServer() URL : "+url);
         try {
             VolleyCommunicationManager.getInstance().SendRequest(url, Request.Method.POST, newTripRequestData, ctx, new VolleyCallback() {
                 @Override

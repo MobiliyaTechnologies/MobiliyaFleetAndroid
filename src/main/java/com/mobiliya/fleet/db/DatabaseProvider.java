@@ -182,6 +182,7 @@ public class DatabaseProvider {
         table.EndTime = trip.endTime;
         table.VehicleID = trip.vehicleId;
         table.Status = trip.status;
+        table.speedings = trip.speedings;
 
         long id = dbHandler.AddNewObject(table);
         if (id > 0) {
@@ -212,6 +213,7 @@ public class DatabaseProvider {
             cv.put("IsSynced", trip.IsSynced ? 1 : 0);
             cv.put("ServerId", trip._id);
             cv.put("milesDriven", trip.milesDriven);
+            cv.put("speedings", trip.speedings);
 
             return dbHandler.UpdateRow(TripTable.class, cv, "TripId='" + trip.commonId + "'");
         } catch (Exception ex) {
@@ -264,6 +266,7 @@ public class DatabaseProvider {
             trip.status = table.Status;
             trip.IsSynced = table.IsSynced;
             trip._id = table.ServerId;
+            trip.speedings = table.speedings;
 
             return trip;
         } else {
@@ -290,6 +293,7 @@ public class DatabaseProvider {
             trip.vehicleId = table.VehicleID;
             trip.status = table.Status;
             trip.IsSynced = table.IsSynced;
+            trip.speedings = table.speedings;
             trip._id = table.ServerId;
 
             return trip;
@@ -320,6 +324,7 @@ public class DatabaseProvider {
                 trip.status = table.Status;
                 trip.stops = table.Stops;
                 trip.milesDriven = table.milesDriven;
+                trip.speedings = table.speedings;
                 trip._id = table.ServerId;
                 tripslist.add(trip);
             }
@@ -669,7 +674,7 @@ public class DatabaseProvider {
     /**
      * Add all latitude and longitude to db
      *
-     * @param TripId
+     * @param tripId
      * @param latlong
      * @return
      */

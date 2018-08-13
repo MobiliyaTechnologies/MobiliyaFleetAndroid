@@ -24,6 +24,10 @@ public class TripDetailModel {
     public String milesDriven;
     public String tripDuration;
     public String description;
+
+    public String hardBraking;
+    public String aggressiveAccelerator;
+    public String faultCount;
 }
 
 

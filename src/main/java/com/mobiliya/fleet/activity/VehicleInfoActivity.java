@@ -43,11 +43,13 @@ public class VehicleInfoActivity extends AppCompatActivity {
     private TextView mVehicleRegistrationNo_tv, mStatus_tv, mVehicleName_tv;
     private SharePref mPref;
     private GpsLocationReceiver gpsLocationReceiver = new GpsLocationReceiver();
+    ProgressDialog dialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vehicle_info);
+        dialog = new ProgressDialog(this);
         mPref = SharePref.getInstance(this);
         mBrandName_tv = (TextView) findViewById(R.id.brand_name);
         mModel_tv = (TextView) findViewById(R.id.model);
@@ -130,7 +132,6 @@ public class VehicleInfoActivity extends AppCompatActivity {
     };
 
     private void getVehicleDetails() {
-            final ProgressDialog dialog = new ProgressDialog(this);
             dialog.setIndeterminate(true);
             dialog.setMessage("Please wait....");
             dialog.setCancelable(false);
@@ -158,12 +159,12 @@ public class VehicleInfoActivity extends AppCompatActivity {
                                 JSONObject responseData = (JSONObject) responseArray.get(0);
                                 Vehicle vehicle = mPref.convertVehicleResponse(responseData);
                                 setValues(vehicle);
-                                dialog.dismiss();
+                                dismissDialog();
                             } catch (JSONException e) {
-                                dialog.dismiss();
+                                dismissDialog();
                                 e.printStackTrace();
                             } catch (Exception e) {
-                                dialog.dismiss();
+                                dismissDialog();
                                 e.printStackTrace();
                             }
                         }
@@ -171,13 +172,13 @@ public class VehicleInfoActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(VolleyError result) {
-                        dialog.dismiss();
+                        dismissDialog();
                         Toast.makeText(VehicleInfoActivity.this, getString(R.string.failed_to_get_vehicleInfo),
                                 Toast.LENGTH_LONG).show();
                     }
                 });
             } catch (Exception e) {
-                dialog.dismiss();
+                dismissDialog();
                 e.printStackTrace();
             }
     }
@@ -190,5 +191,16 @@ public class VehicleInfoActivity extends AppCompatActivity {
         mYearOfManifacture_tv.setText(vehicle.getYearOfManufacture());
         mFuelType_tv.setText(vehicle.getFuleType());
         mVehicleName_tv.setText(vehicle.getModel());
+    }
+
+    private void dismissDialog(){
+        try {
+            if (dialog != null && dialog.isShowing()) {
+                dialog.dismiss();
+                dialog = null;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }

@@ -572,9 +572,8 @@
                                 <com.mobiliya.fleet.customViews.CustomTextViewRegular
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:ellipsize="end"
                                     android:lines="1"
-                                    android:text="@string/hard_braking"
+                                    android:text="@string/enginefaults"
                                     android:textAllCaps="true"
                                     android:textColor="@color/manatee"
                                     android:textSize="@dimen/font_10sp" />
@@ -584,7 +583,7 @@
                                     android:layout_height="wrap_content">
 
                                     <com.mobiliya.fleet.customViews.CustomTextViewMedium
-                                        android:id="@+id/tv_hardbraking"
+                                        android:id="@+id/tv_enginefaults"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:layout_marginTop="@dimen/dim_2"
@@ -607,6 +606,7 @@
                             android:weightSum="15">
 
                             <LinearLayout
+                                android:id="@+id/id_layout_breaking"
                                 android:layout_width="0dp"
                                 android:layout_height="match_parent"
                                 android:layout_weight="5"
@@ -616,7 +616,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:lines="2"
-                                    android:text="@string/enginefaults"
+                                    android:text="@string/hard_braking"
                                     android:textAllCaps="true"
                                     android:textColor="@color/manatee"
                                     android:textSize="@dimen/font_10sp" />
@@ -626,7 +626,7 @@
                                     android:layout_height="wrap_content">
 
                                     <com.mobiliya.fleet.customViews.CustomTextViewMedium
-                                        android:id="@+id/tv_enginefaults"
+                                        android:id="@+id/tv_hardbraking"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:layout_marginTop="@dimen/dim_10"
@@ -639,6 +639,7 @@
                             </LinearLayout>
 
                             <LinearLayout
+                                android:id="@+id/id_layout_accel"
                                 android:layout_width="0dp"
                                 android:layout_height="match_parent"
                                 android:layout_weight="5"

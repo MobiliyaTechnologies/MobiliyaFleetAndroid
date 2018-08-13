@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
@@ -120,7 +121,7 @@ public abstract class AbstractGatewayService extends RoboService {
         }
         powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                "AcceleratorLockTag");
+                "myApp:AcceleratorLockTag");
         wakeLock.acquire();
         gpsTracker = GPSTracker.getInstance(this);
 
@@ -211,8 +212,10 @@ public abstract class AbstractGatewayService extends RoboService {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
+                //Looper.prepare();
                 LogUtil.i(TAG, "timer callback callled ->" + delay + " Sec");
                 processData();
+                //Looper.loop();
             }
         }, 0, (delay * 1000));
     }
@@ -231,7 +234,9 @@ public abstract class AbstractGatewayService extends RoboService {
             LogUtil.i(TAG, "SendLocalTripsToServer");
             SendLocalTripsToServer(getApplicationContext());
         }
-        //gpsTracker.getLocation();
+        gpsTracker = GPSTracker.getInstance(this);
+
+        /*gpsTracker.getLocation();*/
         if (gpsTracker.getIsGPSTrackingEnabled()) {
             mParameter.Latitude = String.valueOf(gpsTracker.getLatitude());
             mParameter.Longitude = String.valueOf(gpsTracker.getLongitude());

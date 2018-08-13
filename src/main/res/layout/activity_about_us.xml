@@ -5,39 +5,47 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-
     <RelativeLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/back_button"
+        android:orientation="horizontal"
+        tools:ignore="RtlHardcoded">
+        <RelativeLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/dim_30"
         android:orientation="horizontal"
         tools:ignore="RtlHardcoded">
 
         <ImageButton
-            android:id="@+id/back_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@null"
+            android:id="@+id/btn_backImg"
             android:paddingLeft="@dimen/dim_30"
             android:paddingRight="@dimen/dim_24"
             android:paddingTop="@dimen/dim_11"
             android:src="@drawable/back_arrow"
             tools:ignore="ContentDescription,RtlHardcoded" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/dim_84">
-
-            <com.mobiliya.fleet.customViews.CustomTextViewMedium
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/about_us"
-                android:textColor="@color/outer_space"
-                android:textSize="@dimen/font_24sp"
-                tools:ignore="RtlHardcoded" />
-        </LinearLayout>
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:paddingLeft="@dimen/dim_84">
+
+                <com.mobiliya.fleet.customViews.CustomTextViewMedium
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/about_us"
+                    android:textColor="@color/outer_space"
+                    android:textSize="@dimen/font_24sp"
+                    tools:ignore="RtlHardcoded" />
+            </LinearLayout>
+    </RelativeLayout>
     </RelativeLayout>
 
     <ImageView

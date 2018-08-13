@@ -35,6 +35,7 @@ import com.android.volley.VolleyError;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.j1939.api.enums.ConnectionStates;
+import com.mobiliya.fleet.AcceleratorApplication;
 import com.mobiliya.fleet.R;
 import com.mobiliya.fleet.adapters.ApiCallBackListener;
 import com.mobiliya.fleet.adapters.CustomIgnitionListenerTracker;
@@ -45,12 +46,12 @@ import com.mobiliya.fleet.db.DatabaseProvider;
 import com.mobiliya.fleet.io.AbstractGatewayService;
 import com.mobiliya.fleet.io.J1939DongleService;
 import com.mobiliya.fleet.io.ObdGatewayService;
+import com.mobiliya.fleet.location.GPSTracker;
+import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.models.DriverScore;
 import com.mobiliya.fleet.models.LastTrip;
 import com.mobiliya.fleet.models.Trip;
 import com.mobiliya.fleet.models.Vehicle;
-import com.mobiliya.fleet.location.GPSTracker;
-import com.mobiliya.fleet.location.GpsLocationReceiver;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.DateUtils;
@@ -126,7 +127,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
         intiViews();
-
+        LogUtil.d(TAG, "onCreate");
         mIsSkipEnabled = SharePref.getInstance(this).getBooleanItem(Constants.SEND_IOT_DATA_FORCEFULLY, false);
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -221,12 +222,29 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
     }
 
     private void reConnectToAdapter() {
-        if (mService != null) {
-            LogUtil.i(TAG, "reConnectToAdapter button clicked");
-            mAdapterConnectionStateTextView.setText(getResources().getString(R.string.status_bluetooth_connecting));
-            mAdapterConnectionStateTextView.setVisibility(View.VISIBLE);
-            mReconnectBtn.setVisibility(View.GONE);
-            mService.connectToAdapter();
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!mIsSkipEnabled) {
+            if (!mBluetoothAdapter.isEnabled()) {
+                LogUtil.d(TAG, "Bluetooth is not enable, trying to enable..");
+                mAdapterConnectionStateTextView.setText(getResources().getString(R.string.status_bluetooth_connecting));
+                mAdapterConnectionStateTextView.setVisibility(View.VISIBLE);
+                mReconnectBtn.setVisibility(View.GONE);
+                mBluetoothAdapter.enable();
+            } else if (mService != null) {
+                LogUtil.i(TAG, "reConnectToAdapter button clicked");
+                mAdapterConnectionStateTextView.setText(getResources().getString(R.string.status_bluetooth_connecting));
+                mAdapterConnectionStateTextView.setVisibility(View.VISIBLE);
+                mReconnectBtn.setVisibility(View.GONE);
+                mService.connectToAdapter();
+            }
+        }else {
+            if (mService != null) {
+                LogUtil.i(TAG, "reConnectToAdapter button clicked");
+                mAdapterConnectionStateTextView.setText(getResources().getString(R.string.status_bluetooth_connecting));
+                mAdapterConnectionStateTextView.setVisibility(View.VISIBLE);
+                mReconnectBtn.setVisibility(View.GONE);
+                mService.connectToAdapter();
+            }
         }
     }
 
@@ -247,17 +265,30 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
     @Override
     protected void onRestart() {
         super.onRestart();
-        //connectToAdapetrService();
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         GPSTracker.getInstance(this).getLocation();
-        setAdapterConnectionStatus();
+        //setAdapterConnectionStatus();
+        if (AcceleratorApplication.sIsAbdapterConnected) {
+            mAdapterConnectionStateTextView.setText(getResources().getText(R.string.status_obd_connected));
+            mAdapterConnectionStateTextView.setVisibility(View.VISIBLE);
+            mReconnectBtn.setVisibility(View.GONE);
+        } else {
+            reConnectToAdapter();
+            mAdapterConnectionStateTextView.setVisibility(View.GONE);
+            mReconnectBtn.setVisibility(View.VISIBLE);
+        }
         setScoreWithTripsView(null);
+        getSpeedLimit();
         CustomIgnitionListenerTracker.showDialogOnIgnitionChange(this);
         try {
+            // Register for broadcasts on BluetoothAdapter state change
+            IntentFilter intentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+            registerReceiver(mReceiverBT, intentFilter);
             //Receiver to show message on db full
             registerReceiver(
                     mDatabaseMessageReceiver, new IntentFilter(Constants.DATABASEFULL));
@@ -312,6 +343,44 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         getDriverScore();
     }
 
+    public void getSpeedLimit() {
+        String URL = getTripServiceUrl(getApplicationContext());
+        String mTenantId = SharePref.getInstance(this).getUser().getTenantId();
+        URL = URL + mTenantId + "/" + "config";
+        LogUtil.d(TAG, "getDriverScore() URL:" + URL);
+        try {
+            VolleyCommunicationManager.getInstance().SendRequest(URL, Request.Method.GET, "", this, new VolleyCallback() {
+                @Override
+                public void onSuccess(JSONObject result) {
+                    if (result != null) {
+                        try {
+                            if (result.getString("message").equals("Success")) {
+                                String data = result.get("data").toString();
+                                JSONObject jsonObj = new JSONObject(data);
+                                int speedLimit = (int) jsonObj.get("speedLimit");
+                                SharePref.getInstance(getApplicationContext()).setSpeedLimit(speedLimit);
+                                LogUtil.d(TAG, "Limit:" + speedLimit);
+                            } else {
+                                LogUtil.d(TAG, "Got result but without success");
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        LogUtil.d(TAG, "driver result is null");
+                    }
+                }
+
+                @Override
+                public void onError(VolleyError result) {
+                    LogUtil.d(TAG, "onError");
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void setProgressScore() {
         DriverScore Score = SharePref.getInstance(this).getDriverScore();
         int score = Score.driverBehaviour.driverScore;
@@ -330,7 +399,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
             mTimer = null;
         }*/
         try {
-
+            unregisterReceiver(mReceiverBT);
             unregisterReceiver(
                     mDatabaseMessageReceiver);
             unregisterReceiver(
@@ -364,7 +433,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
 
     /*method to bind to service based on selected adapter protocol type*/
     private void connectToAdapetrService() {
-        Intent mServiceIntent,mSerIntent;
+        Intent mServiceIntent;
         if (mProtocol.equals(Constants.J1939)) {
             mServiceIntent = new Intent(this, J1939DongleService.class);
         } else {
@@ -506,7 +575,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         mFloatingTimeLayout = (LinearLayout) mPopupView.findViewById(R.id.floating_time_layout);
         mMilesDriven = (TextView) mPopupView.findViewById(R.id.miles_driven);
         float milage = SharePref.getInstance(getApplicationContext()).getItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
-        mMilesDriven.setText("" + String.format("%.1f", milage) + " miles");
+        mMilesDriven.setText("" + String.format("%.2f", milage) + " miles");
         mTripTime = (TextView) mPopupView.findViewById(R.id.trip_time);
         setTime();
         mFloatingMilesLayout.setOnClickListener(this);
@@ -743,7 +812,7 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
     private void setMiles() {
         if (mMilesDriven != null) {
             float milage = SharePref.getInstance(getApplicationContext()).getItem(Constants.TOTAL_MILES_ONGOING, 0.0f);
-            mMilesDriven.setText("" + String.format("%.1f", milage) + " miles");
+            mMilesDriven.setText("" + String.format("%.2f", milage) + " miles");
         }
     }
 
@@ -788,6 +857,8 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
                         startdetailsPage.putExtra(Constants.TRIPID, mLastSynctrip.commonId);
                         startActivity(startdetailsPage);
                         overridePendingTransition(R.anim.enter, R.anim.leave);
+                    } else {
+                        //showToast(this, getString(R.string.no_internet_connection));
                     }
                 }
                 break;
@@ -861,4 +932,41 @@ public class DashboardActivity extends BaseActivity implements View.OnClickListe
         }
     };
 
+
+    private final BroadcastReceiver mReceiverBT = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+                int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
+
+                switch (state) {
+                    case BluetoothAdapter.STATE_OFF:
+                        //Indicates the local Bluetooth adapter is off.
+                        LogUtil.d(TAG, "Bluetooth STATE_OFF");
+                        break;
+
+                    case BluetoothAdapter.STATE_TURNING_ON:
+                        //Indicates the local Bluetooth adapter is turning on. However local clients should wait for STATE_ON before attempting to use the adapter.
+                        LogUtil.d(TAG, "Bluetooth STATE_TURNING_ON");
+                        break;
+
+                    case BluetoothAdapter.STATE_ON:
+                        //Indicates the local Bluetooth adapter is on, and ready for use.
+                        LogUtil.d(TAG, "Bluetooth STATE_ON");
+                        if (!mIsSkipEnabled && mService != null) {
+                            mService.connectToAdapter();
+                        }
+                        break;
+
+                    case BluetoothAdapter.STATE_TURNING_OFF:
+                        //Indicates the local Bluetooth adapter is turning off. Local clients should immediately attempt graceful disconnection of any remote links.
+                        LogUtil.d(TAG, "Bluetooth STATE_TURNING_OFF");
+                        break;
+                }
+            }
+        }
+    };
 }

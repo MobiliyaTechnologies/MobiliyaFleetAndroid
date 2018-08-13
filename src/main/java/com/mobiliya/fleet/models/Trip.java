@@ -17,4 +17,5 @@ public class Trip {
     public String commonId;
     public String tripDuration;
     public String milesDriven;
+    public String speedings;
 }

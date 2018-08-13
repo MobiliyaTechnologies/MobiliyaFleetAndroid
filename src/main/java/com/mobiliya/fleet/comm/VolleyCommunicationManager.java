@@ -118,6 +118,7 @@ public class VolleyCommunicationManager {
                     Map<String, String> params = new HashMap<>();
                     String access_token = SharePref.getInstance(context).getInstance(context).getItem(Constants.PREF_ACCESS_TOKEN, "");
                     if (!TextUtils.isEmpty(access_token)) {
+                        LogUtil.d(TAG, "Authorization token:"+access_token);
                         params.put("Authorization", access_token);
                     } else {
                         LogUtil.d(TAG, "No headers set");

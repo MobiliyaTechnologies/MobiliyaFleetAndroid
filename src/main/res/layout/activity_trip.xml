@@ -244,7 +244,6 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="5"
-                android:visibility="gone"
                 android:orientation="vertical">
 
                 <com.mobiliya.fleet.customViews.CustomTextViewRegular
@@ -268,7 +267,7 @@
                         android:layout_marginTop="@dimen/dim_10"
                         android:ellipsize="end"
                         android:lines="1"
-                        android:text="@string/_00"
+                        android:text="@string/_0"
                         android:textColor="@color/outer_space"
                         android:textSize="@dimen/font_16sp" />
                 </LinearLayout>

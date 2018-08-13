@@ -15,7 +15,17 @@ public class HelpSettingsActivity extends AppCompatActivity {
     }
 
     public void back(View view ){
+       finishThisActivity();
+    }
+
+    private void finishThisActivity() {
         finish();
         overridePendingTransition(R.anim.left_to_right, R.anim.right_to_left);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finishThisActivity();
     }
 }

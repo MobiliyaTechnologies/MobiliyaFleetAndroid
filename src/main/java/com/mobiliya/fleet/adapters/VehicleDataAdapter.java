@@ -1,13 +1,18 @@
 package com.mobiliya.fleet.adapters;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.mobiliya.fleet.R;
+import com.mobiliya.fleet.utils.Constants;
+import com.mobiliya.fleet.utils.LogUtil;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -17,6 +22,11 @@ public class VehicleDataAdapter extends RecyclerView.Adapter<VehicleDataAdapter.
     private ArrayList<Map.Entry<String, String>> mData;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
+
+    @Override
+    public int getItemViewType(int position) {
+        return super.getItemViewType(position);
+    }
 
     // data is passed into the constructor
     public VehicleDataAdapter(Context context, Map<String, String> map) {
@@ -36,8 +46,20 @@ public class VehicleDataAdapter extends RecyclerView.Adapter<VehicleDataAdapter.
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         @SuppressWarnings("unchecked") Map.Entry<String, String> entry = (Map.Entry) mData.get(position);
+
         holder.textViewUnits.setText(entry.getKey());
         holder.textViewSignalType.setText(entry.getValue());
+        if(Constants.ADDITIONAL_PARAMETERS.equalsIgnoreCase(entry.getKey())
+                ||Constants.VEHICLE_PARAMETERS.equalsIgnoreCase(entry.getKey())) {
+            LogUtil.d("Kunal","set font bold");
+            holder.textViewSignalType.setTypeface(null, Typeface.BOLD);
+            holder.textViewUnits.setTypeface(null, Typeface.BOLD);
+            holder.textViewUnits.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
+            holder.textViewSignalType.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
+            holder.textViewUnits.setTextColor(Color.parseColor("#4a4a4a"));
+            holder.textViewSignalType.setTextColor(Color.parseColor("#4a4a4a"));
+        }
+
     }
 
     // total number of rows

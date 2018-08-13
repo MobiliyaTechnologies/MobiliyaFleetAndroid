@@ -36,15 +36,21 @@
                     android:textColor="@color/heading_text_color"
                     android:textSize="@dimen/font_26sp" />
 
-                <ImageView
+                <LinearLayout
                     android:id="@+id/info"
-                    android:layout_width="@dimen/dim_37"
-                    android:layout_height="@dimen/dim_37"
-                    android:layout_marginLeft="@dimen/dim_11"
-                    android:background="@null"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
                     android:onClick="startHelpActivity"
-                    android:src="@drawable/info"
-                    android:tint="@color/accent" />
+                    android:orientation="horizontal">
+                    <ImageView
+                        android:layout_width="@dimen/dim_37"
+                        android:layout_height="@dimen/dim_37"
+                        android:layout_marginLeft="@dimen/dim_20"
+                        android:background="@null"
+                        android:src="@drawable/info"
+                        android:tint="@color/accent" />
+                </LinearLayout>
             </LinearLayout>
 
 
@@ -52,11 +58,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_gravity="center"
-                android:paddingTop="@dimen/dim_20"
                 android:layout_marginBottom="@dimen/dim_8"
                 android:layout_weight="6.5"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingTop="@dimen/dim_20">
 
 
                 <LinearLayout
@@ -65,6 +71,7 @@
                     android:layout_gravity="center_horizontal"
                     android:orientation="vertical"
                     tools:ignore="ScrollViewSize">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -87,32 +94,50 @@
                             android:orientation="horizontal"
                             tools:ignore="RtlHardcoded">
 
-                            <ImageView
+                            <LinearLayout
                                 android:id="@+id/offline_storage_time_sub"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
+                                android:layout_width="@dimen/dim_53"
+                                android:layout_height="match_parent"
                                 android:layout_gravity="center"
-                                android:src="@drawable/substract"
-                                tools:ignore="ContentDescription" />
+                                android:gravity="center"
+                                android:orientation="horizontal"
+                                tools:ignore="RtlHardcoded">
+
+                                <ImageView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/substract"
+                                    tools:ignore="ContentDescription" />
+                            </LinearLayout>
 
                             <com.mobiliya.fleet.customViews.CustomTextViewRegular
                                 android:id="@+id/offline_storage"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:paddingBottom="@dimen/dim_18"
-                                android:paddingLeft="@dimen/dim_18"
-                                android:paddingRight="@dimen/dim_18"
+                                android:paddingLeft="@dimen/dim_6"
+                                android:paddingRight="@dimen/dim_6"
                                 android:paddingTop="@dimen/dim_18"
                                 android:textColor="@color/text_color_setting"
                                 android:textSize="@dimen/font_16sp" />
 
-                            <ImageView
+                            <LinearLayout
                                 android:id="@+id/offline_storage_time_add"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
+                                android:layout_width="@dimen/dim_53"
+                                android:layout_height="match_parent"
                                 android:layout_gravity="center"
-                                android:src="@drawable/add"
-                                tools:ignore="ContentDescription" />
+                                android:gravity="center"
+                                android:orientation="horizontal"
+                                tools:ignore="RtlHardcoded">
+
+                                <ImageView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/add"
+                                    tools:ignore="ContentDescription" />
+                            </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
 
@@ -143,32 +168,48 @@
                             android:orientation="horizontal"
                             tools:ignore="RtlHardcoded">
 
-                            <ImageView
+                            <LinearLayout
                                 android:id="@+id/data_sync_time_sub"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
+                                android:layout_width="@dimen/dim_53"
+                                android:layout_height="match_parent"
                                 android:layout_gravity="center"
-                                android:src="@drawable/substract"
-                                tools:ignore="ContentDescription" />
+                                android:gravity="center"
+                                android:orientation="horizontal"
+                                tools:ignore="RtlHardcoded">
+                                <ImageView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/substract"
+                                    tools:ignore="ContentDescription" />
+                            </LinearLayout>
 
                             <com.mobiliya.fleet.customViews.CustomTextViewRegular
                                 android:id="@+id/data_sync_time"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:paddingBottom="@dimen/dim_18"
-                                android:paddingLeft="@dimen/dim_18"
-                                android:paddingRight="@dimen/dim_18"
+                                android:paddingLeft="@dimen/dim_6"
+                                android:paddingRight="@dimen/dim_6"
                                 android:paddingTop="@dimen/dim_18"
                                 android:textColor="@color/text_color_setting"
                                 android:textSize="@dimen/font_16sp" />
 
-                            <ImageView
+                            <LinearLayout
                                 android:id="@+id/data_sync_time_add"
+                                android:layout_width="@dimen/dim_53"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:orientation="horizontal"
+                                tools:ignore="RtlHardcoded">
+                                <ImageView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
                                 android:src="@drawable/add"
                                 tools:ignore="ContentDescription" />
+                            </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
 
@@ -176,6 +217,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:background="@color/text_color_separator" />
+
                     <com.mobiliya.fleet.customViews.CustomTextViewMedium
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -239,10 +281,10 @@
 
                 <com.mobiliya.fleet.customViews.CustomTextViewMedium
                     android:id="@+id/btn_back"
-                    android:layout_width="wrap_content"
-                    android:layout_height="@dimen/dim_24"
+                    android:layout_width="@dimen/dim_126"
+                    android:layout_height="@dimen/dim_60"
                     android:layout_gravity="center"
-                    android:layout_marginTop="@dimen/dim_30"
+                    android:gravity="center"
                     android:onClick="back"
                     android:paddingLeft="@dimen/dim_18"
                     android:paddingRight="@dimen/dim_18"

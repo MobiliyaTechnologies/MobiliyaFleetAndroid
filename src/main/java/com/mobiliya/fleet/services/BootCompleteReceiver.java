@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import com.mobiliya.fleet.io.J1939DongleService;
 import com.mobiliya.fleet.io.ObdGatewayService;
+import com.mobiliya.fleet.location.GPSTracker;
 import com.mobiliya.fleet.utils.CommonUtil;
 import com.mobiliya.fleet.utils.Constants;
 import com.mobiliya.fleet.utils.LogUtil;
@@ -21,6 +22,7 @@ public class BootCompleteReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         LogUtil.d(TAG,"onReceive called");
         try {
+            //GPSTracker.getInstance(context).resetGPSInstance();
             SharePref mPref = SharePref.getInstance(context);
             String mAdapterProtocol = mPref.getItem(Constants.PREF_ADAPTER_PROTOCOL, "");
             LogUtil.d(TAG,"onReceive protocol: "+mAdapterProtocol);

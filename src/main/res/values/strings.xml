@@ -129,7 +129,7 @@
     <string name="average_speed">Avg. Speed</string>
     <string name="topspeed">Top Speed</string>
     <string name="milage">Mileage</string>
-    <string name="enginefaults">Engine \nFaults</string>
+    <string name="enginefaults">Engine Faults</string>
     <string name="aggresive_accelerator">Aggressive \nAccelator</string>
     <string name="phone_usage">Phone \nUsage</string>
     <string name="vehicle_info">Vehicle info</string>
@@ -256,8 +256,11 @@
     <string name="gps_based_distance">GPS based distance</string>
     <string name="help">Help</string>
     <string name="engine_rpm">Engine RPM</string>
-    <string name="help_string">\u2022 OBD based distance tracking feature uses /"Distance from Code Clear/" parameter from OBD to measure the distance travelled by vehicle once user starts a trip. As this parameter can hold maximum value of 65535, the feature may not work properly if your vehicle "DCC" parameter has already reached this value. This is an experimental feature and it is recommended to use GPS based distance tracking option for better results.\n \n \u2022
+    <string name="help_string">OBD based distance tracking feature uses Distance from Code Clear parameter from OBD to measure the distance traveled by a vehicle once user starts a trip. As this parameter can hold maximum value of 65535, the feature may not work properly if your vehicle "DCC" parameter has already reached this value. This is an experimental feature and it is recommended to use GPS based distance tracking option for better results.\n \n
 GPS based distance tracking system using device GPS locations to calculate the distance travelled by vehicle during the trip. As GPS has an inaccuracy of certain extent, the distance calculated will be an approximation only.
     </string>
+    <string name="vehicle_parameters">Vehicle parameters</string>
+    <string name="additional_parameters">Additional parameters</string>
+    <string name="_0">0</string>
 
 </resources>
